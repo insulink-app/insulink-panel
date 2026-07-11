@@ -1,0 +1,123 @@
+"use client";
+
+import {
+  flexRender,
+  type PaginationState,
+  type Table,
+} from "@tanstack/react-table";
+
+import { TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  ChevronDownIcon,
+  ChevronsUpDownIcon,
+  ChevronUpIcon,
+} from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useEffect, useRef } from "react";
+
+function DataTableSelectAll<T>({ table }: { table: Table<T> }) {
+  const ref = useRef<HTMLInputElement>(null);
+  const isSome = table.getIsSomePageRowsSelected();
+  const isAll = table.getIsAllPageRowsSelected();
+
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.indeterminate = isSome && !isAll;
+    }
+  }, [isSome, isAll]);
+
+  return (
+    <Checkbox
+      checked={table.getIsAllPageRowsSelected()}
+      onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+      aria-label="Select all"
+      className="data-[state=checked]:border-blue-600 data-[state=checked]:bg-blue-600 data-[state=checked]:text-white dark:data-[state=checked]:border-blue-700 dark:data-[state=checked]:bg-blue-700"
+    />
+  );
+}
+
+export default function DataTableHeader<T>({
+  table,
+  pagination,
+}: {
+  table: Table<T>;
+  pagination: PaginationState;
+}) {
+  const { t } = useTranslation();
+  const horizontalSpacing = pagination.pageSize <= 5 ? 30 : 25;
+
+  return (
+    <TableHeader>
+      {table.getHeaderGroups().map((headerGroup) => (
+        <TableRow
+          key={headerGroup.id}
+          className="hover:bg-transparent border-none"
+        >
+          <TableHead
+            key="select_all"
+            className="h-11 w-0"
+            style={{
+              paddingRight: 20,
+              paddingLeft: 0,
+            }}
+          >
+            <DataTableSelectAll table={table} />
+          </TableHead>
+          {headerGroup.headers.map((header) => {
+            return (
+              <TableHead
+                key={header.id}
+                className="h-11"
+                style={{
+                  width: header.getSize(),
+                  minWidth: header.column.columnDef.minSize,
+                  maxWidth: header.column.columnDef.maxSize,
+                  paddingLeft: horizontalSpacing,
+                  paddingRight: horizontalSpacing,
+                }}
+              >
+                {header.isPlaceholder ? null : header.column.getCanSort() ? (
+                  <div
+                    className="flex items-center justify-start cursor-pointer select-none group"
+                    onClick={header.column.getToggleSortingHandler()}
+                  >
+                    {flexRender(
+                      typeof header.column.columnDef.header === "string"
+                        ? t(header.column.columnDef.header)
+                        : header.column.columnDef.header,
+                      header.getContext(),
+                    )}
+                    {{
+                      asc: (
+                        <ChevronUpIcon size={16} className="opacity-60 ml-4" />
+                      ),
+                      desc: (
+                        <ChevronDownIcon
+                          size={16}
+                          className="opacity-60 ml-4"
+                        />
+                      ),
+                    }[header.column.getIsSorted() as string] ?? (
+                      <ChevronsUpDownIcon
+                        size={16}
+                        className="opacity-0 group-hover:opacity-60 transition-opacity ml-4"
+                      />
+                    )}
+                  </div>
+                ) : (
+                  flexRender(
+                    typeof header.column.columnDef.header === "string"
+                      ? t(header.column.columnDef.header)
+                      : header.column.columnDef.header,
+                    header.getContext(),
+                  )
+                )}
+              </TableHead>
+            );
+          })}
+        </TableRow>
+      ))}
+    </TableHeader>
+  );
+}

@@ -1,0 +1,50 @@
+{
+  "table": {
+    "columns": {
+      "search": "Spalte suchen...",
+      "all": "Alle",
+      "reset": "Zurücksetzen",
+      "label": "Spalten"
+    },
+    "filter": {
+      "placeholder": "Auswählen...",
+      "empty": "Kein Filter"
+    },
+    "search": "Suche...",
+    "of": "von",
+    "page": "Seite",
+    "empty": "Keine Ergebnisse.",
+    "bottom.bar": {
+      "selected": "AUSGEWÄHLT"
+    }
+  },
+  "authentication": {
+    "login": {
+      "successful": "Erfolgreich angemeldet"
+    }
+  },
+  "error": {
+    "403": {
+      "description": "Sie haben keine Berechtigung, auf diese Ressource zuzugreifen.",
+      "title": "Zugriff verweigert"
+    },
+    "404": {
+      "title": "Ups! Seite nicht gefunden!",
+      "description": "Die gesuchte Seite existiert nicht oder wurde verschoben."
+    },
+    "500": {
+      "title": "Interner Serverfehler!",
+      "description": "Entschuldigen Sie bitte die Unannehmlichkeiten."
+    },
+    "return": "Zurück zur Website"
+  },
+  "panel": {
+    "sidebar": {
+      "language": "Sprache",
+      "theme": "Aussehen",
+      "theme.dark": "Dunkel",
+      "theme.light": "Hell",
+      "theme.system": "System"
+    }
+  }
+}

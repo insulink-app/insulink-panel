@@ -1,9 +1,9 @@
 import client from "../client";
 
-// NOTE: glucose `time` is epoch SECONDS (unlike events/meals/health which are ms).
+// glucose `time` is minute-aligned epoch ms (matching the app's glucose sync).
 export interface GlucoseEntry {
   value: number; // mg/dL
-  time: number; // epoch seconds
+  time: number; // epoch ms
 }
 
 export type GlucoseHistoryResponse = {

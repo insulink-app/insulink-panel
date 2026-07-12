@@ -21,18 +21,25 @@ export default function HealthPage() {
   const { t } = useTranslation();
   const { view } = useParams();
 
+  const workouts = useQuery({ queryKey: ["workouts"], queryFn: sportService.workouts });
+  const routines = useQuery({ queryKey: ["routines"], queryFn: sportService.routines });
+
+  // Workouts carry only a routine id; resolve it to the routine's display name.
+  const routineNames = new Map(
+    (routines.data?.routines ?? []).map((routine) => [routine.id, routine.name]),
+  );
+
   const workoutCols: ListColumn<Workout>[] = [
-    { header: t("health.col_name"), cell: (w) => w.name ?? "–" },
-    { header: t("health.col_time"), cell: (w) => ms(w.at) },
+    { header: t("health.col_name"), cell: (w) => routineNames.get(w.routine) ?? "–" },
+    { header: t("health.col_time"), cell: (w) => ms(w.started) },
     { header: t("health.col_sets"), cell: (w) => String(w.sets?.length ?? 0) },
   ];
   const trainingCols: ListColumn<Training>[] = [
     { header: t("health.col_type"), cell: (tr) => tr.type ?? "–" },
-    { header: t("health.col_start"), cell: (tr) => ms(tr.startMs) },
+    { header: t("health.col_start"), cell: (tr) => ms(tr.start) },
     {
       header: t("health.col_distance"),
-      cell: (tr) =>
-        tr.distanceM != null ? (tr.distanceM / 1000).toFixed(2) : "–",
+      cell: (tr) => (tr.dist != null ? (tr.dist / 1000).toFixed(2) : "–"),
     },
   ];
   const measurementCols: ListColumn<Measurement>[] = [
@@ -54,7 +61,6 @@ export default function HealthPage() {
     { header: t("health.col_bpm"), cell: (p) => num(p.b) },
   ];
 
-  const workouts = useQuery({ queryKey: ["workouts"], queryFn: sportService.workouts });
   const trainings = useQuery({ queryKey: ["trainings"], queryFn: sportService.trainings });
   const measurements = useQuery({
     queryKey: ["measurements"],

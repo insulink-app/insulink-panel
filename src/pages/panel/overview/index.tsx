@@ -165,13 +165,13 @@ export default function OverviewPage() {
       ? ([...entries]
           .reverse()
           .find((e) => {
-            const g = (latest.time - e.time) / 60;
-            return g >= 1 && g <= 60;
+            const minutesApart = (latest.time - e.time) / 60000;
+            return minutesApart >= 1 && minutesApart <= 60;
           }) ?? entries[entries.length - 2])
       : undefined;
   const trendPerMin =
     latest && prev && latest.time !== prev.time
-      ? (latest.value - prev.value) / ((latest.time - prev.time) / 60)
+      ? (latest.value - prev.value) / ((latest.time - prev.time) / 60000)
       : undefined;
 
   const counts = { low: 0, "in-range": 0, high: 0 };
@@ -181,7 +181,7 @@ export default function OverviewPage() {
   const tir = pct(counts["in-range"]);
 
   const chartData = entries.slice(-288).map((e) => ({
-    t: e.time * 1000, // seconds -> ms
+    t: e.time, // already epoch ms
     value: e.value,
   }));
 
@@ -244,7 +244,7 @@ export default function OverviewPage() {
               <span className="mt-1 text-xs text-muted-foreground">
                 {latest
                   ? t("overview.last", {
-                      time: format(new Date(latest.time * 1000), "dd.MM. HH:mm"),
+                      time: format(new Date(latest.time), "dd.MM. HH:mm"),
                     })
                   : t("overview.no_readings")}
               </span>
@@ -399,7 +399,7 @@ export default function OverviewPage() {
                   />
                   {latest && (
                     <ReferenceDot
-                      x={latest.time * 1000}
+                      x={latest.time}
                       y={latest.value}
                       r={5}
                       fill={latestColor}

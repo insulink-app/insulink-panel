@@ -105,9 +105,9 @@ Adapted from the mobile app's conventions:
 
 ## Timestamp gotcha
 
-Timestamps are inconsistent across endpoints (matching the app):
-- **Glucose `time` is epoch SECONDS** → multiply by 1000 for `Date`.
-- Events, meals, drinks, sport, health, pulse are epoch **milliseconds**.
+All timestamps are epoch **milliseconds** — pass straight to `new Date()`.
+Glucose `time` is minute-aligned epoch ms (see the app's `glucose_sync.dart`);
+it just carries no sub-minute precision, so don't multiply it by 1000.
 
 Each service file notes its unit — check before formatting with `date-fns`.
 

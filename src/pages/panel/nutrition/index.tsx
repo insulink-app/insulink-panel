@@ -9,6 +9,9 @@ import nutritionService, {
   type FoodProduct,
   type Meal,
 } from "@/api/services/nutrition-service";
+import ProductDialog, { ProductRowActions } from "./add-product-dialog";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 const ms = (at?: number) => (at ? format(new Date(at), "dd.MM.yyyy HH:mm") : "–");
 const num = (v?: number) => (v == null ? "–" : String(v));
@@ -28,19 +31,25 @@ export default function NutritionPage() {
     { header: t("nutrition.col_ml"), cell: (d) => num(d.ml) },
     { header: t("nutrition.col_type"), cell: (d) => d.kind ?? "–" },
   ];
-  const productCols: ListColumn<FoodProduct>[] = [
-    { header: t("nutrition.col_name"), cell: (p) => p.name ?? "–" },
-    { header: t("nutrition.col_brand"), cell: (p) => p.brand ?? "–" },
-    { header: t("nutrition.col_carbs_100"), cell: (p) => num(p.carbs) },
-    { header: t("nutrition.col_kcal_100"), cell: (p) => num(p.kcal) },
-  ];
-
   const meals = useQuery({ queryKey: ["meals"], queryFn: nutritionService.meals });
   const drinks = useQuery({ queryKey: ["drinks"], queryFn: nutritionService.drinks });
   const products = useQuery({
     queryKey: ["products"],
     queryFn: nutritionService.products,
   });
+
+  const productList = products.data?.products ?? [];
+  const productCols: ListColumn<FoodProduct>[] = [
+    { header: t("nutrition.col_name"), cell: (p) => p.name ?? "–" },
+    { header: t("nutrition.col_brand"), cell: (p) => p.brand ?? "–" },
+    { header: t("nutrition.col_carbs_100"), cell: (p) => num(p.carbs) },
+    { header: t("nutrition.col_kcal_100"), cell: (p) => num(p.kcal) },
+    {
+      header: "",
+      className: "text-right",
+      cell: (p) => <ProductRowActions existing={productList} product={p} />,
+    },
+  ];
 
   const views = {
     meals: (
@@ -60,12 +69,25 @@ export default function NutritionPage() {
       />
     ),
     products: (
-      <DataList
-        title={t("nutrition.products")}
-        columns={productCols}
-        data={products.data?.products ?? []}
-        isLoading={products.isLoading}
-      />
+      <div className="space-y-4">
+        <div className="flex justify-end">
+          <ProductDialog
+            existing={productList}
+            trigger={
+              <Button size="sm">
+                <Plus className="size-4" />
+                {t("nutrition.add.button")}
+              </Button>
+            }
+          />
+        </div>
+        <DataList
+          title={t("nutrition.products")}
+          columns={productCols}
+          data={productList}
+          isLoading={products.isLoading}
+        />
+      </div>
     ),
   };
 

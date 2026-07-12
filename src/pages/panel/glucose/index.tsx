@@ -62,7 +62,7 @@ export default function GlucosePage() {
     () => [
       {
         header: t("glucose.col_time"),
-        cell: (e) => format(new Date(e.time * 1000), "dd.MM.yyyy HH:mm"),
+        cell: (e) => format(new Date(e.time), "dd.MM.yyyy HH:mm"),
       },
       {
         header: t("glucose.col_value"),

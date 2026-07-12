@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import PanelPage from "@/layouts/panel";
@@ -28,10 +28,13 @@ export default function SettingsPage() {
   });
 
   // Keep the full blob so app-only keys survive the full-replace save.
+  // Reset local edits whenever fresh server data arrives (adjust-state-on-prop-change).
   const [form, setForm] = useState<UserSettings>({});
-  useEffect(() => {
-    if (data) setForm(data);
-  }, [data]);
+  const [synced, setSynced] = useState<UserSettings>();
+  if (data && data !== synced) {
+    setSynced(data);
+    setForm(data);
+  }
 
   const mutation = useMutation({
     mutationFn: (s: UserSettings) => settingsService.change(s),

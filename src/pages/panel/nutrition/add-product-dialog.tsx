@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import nutritionService, {
   type FoodProduct,
 } from "@/api/services/nutrition-service";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
@@ -154,17 +154,17 @@ export default function ProductDialog({
     onError: () => toast.error(t("nutrition.add.search_failed")),
   });
 
-  const save = useSyncProducts(() => {
-    toast.success(t(editing ? "nutrition.add.updated" : "nutrition.add.saved"));
-    close();
-  });
-
   const close = () => {
     setOpen(false);
     setDraft(initial());
     setTerms("");
     setResults(null);
   };
+
+  const save = useSyncProducts(() => {
+    toast.success(t(editing ? "nutrition.add.updated" : "nutrition.add.saved"));
+    close();
+  });
 
   const handleSave = () => {
     if (!draft.name.trim()) {
@@ -341,6 +341,7 @@ export function ProductRowActions({
               onClick={() =>
                 remove.mutate(existing.filter((entry) => entry !== product))
               }
+              className={buttonVariants({ variant: "destructive" })}
             >
               {t("common.delete")}
             </AlertDialogAction>

@@ -20,6 +20,7 @@ export function DataList<T>({
   isLoading,
   pageSize = 15,
   empty,
+  onRowClick,
 }: {
   title?: string;
   columns: ListColumn<T>[];
@@ -27,6 +28,7 @@ export function DataList<T>({
   isLoading?: boolean;
   pageSize?: number;
   empty?: string;
+  onRowClick?: (row: T) => void;
 }) {
   const { t } = useTranslation();
   const [page, setPage] = useState(0);
@@ -81,7 +83,11 @@ export function DataList<T>({
               rows.map((row, r) => (
                 <tr
                   key={r}
-                  className="border-b last:border-0 transition-colors hover:bg-muted/40"
+                  onClick={onRowClick ? () => onRowClick(row) : undefined}
+                  className={cn(
+                    "border-b last:border-0 transition-colors hover:bg-muted/40",
+                    onRowClick && "cursor-pointer",
+                  )}
                 >
                   {columns.map((c, i) => (
                     <td

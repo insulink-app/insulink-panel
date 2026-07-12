@@ -1,5 +1,4 @@
 import client from "../client";
-import { t } from "@/locales/i18n";
 
 // /sensor/current/ -> { success, id, data }. `data` is an opaque sensor blob;
 // expiry (when present) is exposed by the backend as epoch MILLISECONDS.
@@ -31,18 +30,26 @@ export type SensorHistoryResponse = {
 const history = () =>
   client.get<SensorHistoryResponse>({ url: "/sensor/history/" });
 
-// Map the `sensor_type` wireKey from the data blob to a readable label.
+// Map a sensor type to a readable label. Keyed by both the blob's `sensor_type`
+// wireKey and the backend `SensorType` name, so it works whichever the caller
+// has.
 export const SENSOR_TYPE_LABEL: Record<string, string> = {
   dexcom_g7: "Dexcom G7",
+  DEXCOM_G7: "Dexcom G7",
   abbott_libre3: "Abbott Libre 3",
+  ABBOTT_LIBRE3: "Abbott Libre 3",
 };
 
+// A missing/unrecognized type resolves to the Dexcom G7 — it was the original,
+// sole CGM, so pre-multi-sensor blobs carry no `sensor_type`. This mirrors the
+// app's SensorType.fromWireKey (orElse dexcomG7); without it, older G7
+// registrations showed up as "unknown".
 export function sensorType(data: string): string {
   try {
     const key = JSON.parse(data)?.sensor_type as string | undefined;
-    return (key && SENSOR_TYPE_LABEL[key]) || t("sensor.unknown");
+    return (key && SENSOR_TYPE_LABEL[key]) || SENSOR_TYPE_LABEL.dexcom_g7;
   } catch {
-    return t("sensor.unknown");
+    return SENSOR_TYPE_LABEL.dexcom_g7;
   }
 }
 

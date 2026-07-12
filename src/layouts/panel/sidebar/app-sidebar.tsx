@@ -14,7 +14,9 @@ import {
   Syringe,
   Timer,
   Utensils,
-  CalendarDays,
+  Moon,
+  Settings,
+  Flag,
 } from "lucide-react";
 
 import { SidebarNavigation } from "./navigation";
@@ -51,6 +53,19 @@ export function AppNavigation(t: TFunction) {
       items: [],
     },
     {
+      title: t("nav.health"),
+      url: "/health/",
+      icon: Activity,
+      isActive: false,
+      items: [
+        { title: t("nav.routines"), url: "/health/routines", icon: Timer },
+        { title: t("nav.activity"), url: "/health/activity", icon: Dumbbell },
+        { title: t("nav.pulse"), url: "/health/pulse", icon: HeartPulse },
+        { title: t("nav.sleep"), url: "/health/sleep", icon: Moon },
+        { title: t("nav.body"), url: "/health/body", icon: Ruler },
+      ],
+    },
+    {
       title: t("nav.nutrition"),
       url: "/nutrition/",
       icon: Utensils,
@@ -62,19 +77,6 @@ export function AppNavigation(t: TFunction) {
       ],
     },
     {
-      title: t("nav.health"),
-      url: "/health/",
-      icon: Activity,
-      isActive: false,
-      items: [
-        { title: t("nav.workouts"), url: "/health/workouts", icon: Dumbbell },
-        { title: t("nav.cardio"), url: "/health/cardio", icon: Timer },
-        { title: t("nav.measurements"), url: "/health/measurements", icon: Ruler },
-        { title: t("nav.health_days"), url: "/health/days", icon: CalendarDays },
-        { title: t("nav.pulse"), url: "/health/pulse", icon: HeartPulse },
-      ],
-    },
-    {
       title: t("nav.devices"),
       url: "/devices/",
       icon: Cpu,
@@ -82,6 +84,19 @@ export function AppNavigation(t: TFunction) {
       items: [
         { title: t("nav.sensor"), url: "/devices/sensor", icon: Droplet },
         { title: t("nav.pump"), url: "/devices/pump", icon: Syringe },
+      ],
+    },
+    {
+      title: t("nav.settings"),
+      url: "/settings/",
+      icon: Settings,
+      isActive: false,
+      items: [
+        { title: t("settings.section_glucose"), url: "/settings/glucose", icon: Droplet },
+        { title: t("settings.section_bolus"), url: "/settings/bolus", icon: Syringe },
+        { title: t("settings.section_body"), url: "/settings/body", icon: Ruler },
+        { title: t("settings.section_activity_goals"), url: "/settings/activity_goals", icon: Flag },
+        { title: t("settings.section_nutrition"), url: "/settings/nutrition", icon: Utensils },
       ],
     },
   ];

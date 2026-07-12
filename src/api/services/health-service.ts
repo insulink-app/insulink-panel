@@ -1,11 +1,30 @@
 import client from "../client";
 
+// Minutes spent in each sleep stage over the night.
+export interface SleepStages {
+  deep: number;
+  rem: number;
+  light: number;
+  awake: number;
+  restless?: number;
+}
+
+// One hypnogram segment: stage index (0=deep,1=rem,2=light,3=awake,4=restless,
+// matching the app's SleepStage enum order) over [a, b] epoch ms.
+export interface SleepSegment {
+  s: number;
+  a: number;
+  b: number;
+}
+
 export interface HealthDay {
-  d: string; // date key
+  d: string; // date key (yyyy-mm-dd)
   rhr?: number; // resting heart rate
-  sleep?: number; // minutes
+  sleep?: number; // total sleep minutes
   spo2?: number;
   rr?: number; // respiratory rate
+  stages?: SleepStages;
+  tl?: SleepSegment[]; // hypnogram timeline
 }
 
 export interface PulseSample {

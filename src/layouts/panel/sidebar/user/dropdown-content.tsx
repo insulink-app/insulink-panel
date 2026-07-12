@@ -5,7 +5,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu.tsx";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar.tsx";
-import { LogOut, Settings, User, UserRound } from "lucide-react";
+import { LogOut, Settings, UserRound } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { SidebarThemeSelector } from "@/layouts/panel/sidebar/user/theme-selector.tsx";
 import { SidebarLanguageSelector } from "@/layouts/panel/sidebar/user/language-selector.tsx";
@@ -36,10 +36,6 @@ export function SidebarUserDropdownContent({
       </DropdownMenuLabel>
       <DropdownMenuSeparator />
       <DropdownMenuGroup>
-        <DropdownMenuItem onClick={() => onOpenSettings("account")}>
-          <User />
-          {t("settings.account")}
-        </DropdownMenuItem>
         <DropdownMenuItem onClick={() => onOpenSettings()}>
           <Settings />
           {t("nav.settings")}

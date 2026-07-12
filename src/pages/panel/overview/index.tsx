@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import {
@@ -34,29 +33,7 @@ import {
   toDisplay,
   unitLabel,
 } from "@/lib/glucose";
-
-// SVG attributes (stop-color, stroke, lucide `color`) don't resolve CSS var(),
-// so resolve the glucose vars to concrete hex; re-read when the theme flips.
-function useGlucoseHex() {
-  const read = () => {
-    const s = getComputedStyle(document.documentElement);
-    return {
-      low: s.getPropertyValue("--glucose-low").trim() || "#e0533d",
-      "in-range": s.getPropertyValue("--glucose-in-range").trim() || "#2e9e5b",
-      high: s.getPropertyValue("--glucose-high").trim() || "#e8a13a",
-    } as Record<string, string>;
-  };
-  const [colors, setColors] = useState(read);
-  useEffect(() => {
-    const obs = new MutationObserver(() => setColors(read()));
-    obs.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class", "data-theme", "style"],
-    });
-    return () => obs.disconnect();
-  }, []);
-  return colors;
-}
+import { useGlucoseHex } from "@/lib/use-glucose-hex";
 
 // Trend arrow buckets (mg/dL per minute), mirroring the app's 5 directions.
 // Colour comes from `currentColor` (set on the wrapper) so it can't fall foul
@@ -235,8 +212,11 @@ export default function OverviewPage() {
               </div>
               {latest && (
                 <span
-                  className="mt-1 w-fit rounded-full px-3 py-1 text-xs font-semibold text-white"
-                  style={{ backgroundColor: latestColor }}
+                  className="mt-1 w-fit rounded-full px-3 py-1 text-xs font-semibold"
+                  style={{
+                    color: latestColor,
+                    backgroundColor: `color-mix(in srgb, ${latestColor} 18%, transparent)`,
+                  }}
                 >
                   {statusLabel[latestStatus]}
                 </span>

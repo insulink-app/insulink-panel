@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import PanelPage from "@/layouts/panel";
@@ -14,6 +14,7 @@ import sensorService, {
 export default function DevicesPage() {
   const { t } = useTranslation();
   const { view } = useParams();
+  const navigate = useNavigate();
   const { data, isLoading } = useQuery({
     queryKey: ["sensor-history"],
     queryFn: sensorService.history,
@@ -50,14 +51,13 @@ export default function DevicesPage() {
         header: t("devices.col_status"),
         cell: (s) => {
           const active = s.expires_at > Date.now();
+          const color = active
+            ? "var(--glucose-in-range)"
+            : "var(--muted-foreground)";
           return (
             <span
-              className="rounded-full px-2 py-0.5 text-xs font-semibold text-white"
-              style={{
-                backgroundColor: active
-                  ? "var(--glucose-in-range)"
-                  : "var(--muted-foreground)",
-              }}
+              className="rounded-full px-2 py-0.5 text-xs font-semibold"
+              style={{ color, backgroundColor: `color-mix(in srgb, ${color} 18%, transparent)` }}
             >
               {active ? t("devices.active") : t("devices.expired")}
             </span>
@@ -89,6 +89,7 @@ export default function DevicesPage() {
             data={sensors}
             isLoading={isLoading}
             pageSize={25}
+            onRowClick={(s) => navigate(`/devices/sensor/${s.id}`)}
           />
         )}
       </div>

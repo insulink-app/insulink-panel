@@ -192,3 +192,10 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Leaflet draws a focus outline on the map container; kill it. */
+.leaflet-container:focus,
+.leaflet-container {
+  outline: none !important;
+  border: none !important;
+}

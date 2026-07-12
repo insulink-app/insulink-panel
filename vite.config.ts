@@ -14,4 +14,12 @@ export default defineConfig({
       '@': path.resolve(__dirname, 'src'),
     },
   },
+  server: {
+    proxy: {
+      '/v1': {
+        target: 'https://home.lukasbreuer.de',
+        headers: { Host: 'api.insulink.de' },
+      },
+    },
+  },
 })

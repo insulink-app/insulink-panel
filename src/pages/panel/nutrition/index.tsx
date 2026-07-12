@@ -1,40 +1,40 @@
 import { useQuery } from "@tanstack/react-query";
+import { useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
-import type { ColumnDef } from "@tanstack/react-table";
 import PanelPage from "@/layouts/panel";
-import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DataTable } from "@/components/table";
+import { DataList, type ListColumn } from "@/components/data-list";
 import nutritionService, {
   type Drink,
   type FoodProduct,
   type Meal,
 } from "@/api/services/nutrition-service";
 
-const ms = (t?: number) => (t ? format(new Date(t), "dd.MM.yyyy HH:mm") : "–");
+const ms = (at?: number) => (at ? format(new Date(at), "dd.MM.yyyy HH:mm") : "–");
 const num = (v?: number) => (v == null ? "–" : String(v));
 
-const mealCols: ColumnDef<Meal, unknown>[] = [
-  { accessorKey: "time", header: "Zeitpunkt", cell: ({ row }) => ms(row.original.time) },
-  { accessorKey: "carbs", header: "KH (g)", cell: ({ row }) => num(row.original.carbs) },
-  { accessorKey: "glucose", header: "Glukose", cell: ({ row }) => num(row.original.glucose) },
-  { accessorKey: "bolus", header: "Bolus", cell: ({ row }) => num(row.original.bolus) },
-];
-
-const drinkCols: ColumnDef<Drink, unknown>[] = [
-  { accessorKey: "at", header: "Zeitpunkt", cell: ({ row }) => ms(row.original.at) },
-  { accessorKey: "ml", header: "ml", cell: ({ row }) => num(row.original.ml) },
-  { accessorKey: "kind", header: "Art", cell: ({ row }) => row.original.kind ?? "–" },
-];
-
-const productCols: ColumnDef<FoodProduct, unknown>[] = [
-  { accessorKey: "name", header: "Name", cell: ({ row }) => row.original.name ?? "–" },
-  { accessorKey: "brand", header: "Marke", cell: ({ row }) => row.original.brand ?? "–" },
-  { accessorKey: "carbs", header: "KH/100g", cell: ({ row }) => num(row.original.carbs) },
-  { accessorKey: "kcal", header: "kcal/100g", cell: ({ row }) => num(row.original.kcal) },
-];
-
 export default function NutritionPage() {
+  const { t } = useTranslation();
+  const { view } = useParams();
+
+  const mealCols: ListColumn<Meal>[] = [
+    { header: t("nutrition.col_time"), cell: (m) => ms(m.time) },
+    { header: t("nutrition.col_carbs"), cell: (m) => num(m.carbs) },
+    { header: t("nutrition.col_glucose"), cell: (m) => num(m.glucose) },
+    { header: t("nutrition.col_bolus"), cell: (m) => num(m.bolus) },
+  ];
+  const drinkCols: ListColumn<Drink>[] = [
+    { header: t("nutrition.col_time"), cell: (d) => ms(d.at) },
+    { header: t("nutrition.col_ml"), cell: (d) => num(d.ml) },
+    { header: t("nutrition.col_type"), cell: (d) => d.kind ?? "–" },
+  ];
+  const productCols: ListColumn<FoodProduct>[] = [
+    { header: t("nutrition.col_name"), cell: (p) => p.name ?? "–" },
+    { header: t("nutrition.col_brand"), cell: (p) => p.brand ?? "–" },
+    { header: t("nutrition.col_carbs_100"), cell: (p) => num(p.carbs) },
+    { header: t("nutrition.col_kcal_100"), cell: (p) => num(p.kcal) },
+  ];
+
   const meals = useQuery({ queryKey: ["meals"], queryFn: nutritionService.meals });
   const drinks = useQuery({ queryKey: ["drinks"], queryFn: nutritionService.drinks });
   const products = useQuery({
@@ -42,53 +42,36 @@ export default function NutritionPage() {
     queryFn: nutritionService.products,
   });
 
+  const views = {
+    meals: (
+      <DataList
+        title={t("nutrition.meals")}
+        columns={mealCols}
+        data={meals.data?.meals ?? []}
+        isLoading={meals.isLoading}
+      />
+    ),
+    drinks: (
+      <DataList
+        title={t("nutrition.drinks")}
+        columns={drinkCols}
+        data={drinks.data?.drinks ?? []}
+        isLoading={drinks.isLoading}
+      />
+    ),
+    products: (
+      <DataList
+        title={t("nutrition.products")}
+        columns={productCols}
+        data={products.data?.products ?? []}
+        isLoading={products.isLoading}
+      />
+    ),
+  };
+
   return (
-    <PanelPage title="Ernährung">
-      <div className="py-6">
-        <Tabs defaultValue="meals">
-          <TabsList>
-            <TabsTrigger value="meals">Mahlzeiten</TabsTrigger>
-            <TabsTrigger value="drinks">Getränke</TabsTrigger>
-            <TabsTrigger value="products">Produkte</TabsTrigger>
-          </TabsList>
-          <TabsContent value="meals">
-            <Card>
-              <CardContent className="pt-6">
-                <DataTable
-                  name="meals"
-                  columns={mealCols}
-                  data={meals.data?.meals ?? []}
-                  isLoading={meals.isLoading}
-                />
-              </CardContent>
-            </Card>
-          </TabsContent>
-          <TabsContent value="drinks">
-            <Card>
-              <CardContent className="pt-6">
-                <DataTable
-                  name="drinks"
-                  columns={drinkCols}
-                  data={drinks.data?.drinks ?? []}
-                  isLoading={drinks.isLoading}
-                />
-              </CardContent>
-            </Card>
-          </TabsContent>
-          <TabsContent value="products">
-            <Card>
-              <CardContent className="pt-6">
-                <DataTable
-                  name="products"
-                  columns={productCols}
-                  data={products.data?.products ?? []}
-                  isLoading={products.isLoading}
-                />
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
+    <PanelPage title={t("nutrition.title")}>
+      <div className="py-6">{views[(view as keyof typeof views) ?? "meals"] ?? views.meals}</div>
     </PanelPage>
   );
 }

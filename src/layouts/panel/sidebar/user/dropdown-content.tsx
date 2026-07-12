@@ -6,16 +6,19 @@ import {
 } from "@/components/ui/dropdown-menu.tsx";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar.tsx";
 import { LogOut, Settings, User, UserRound } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { SidebarThemeSelector } from "@/layouts/panel/sidebar/user/theme-selector.tsx";
 import { SidebarLanguageSelector } from "@/layouts/panel/sidebar/user/language-selector.tsx";
 import { useLogout } from "@/store/user-store.ts";
-import { Link } from "react-router-dom";
 
 export function SidebarUserDropdownContent({
   user,
+  onOpenSettings,
 }: {
   user: { name: string };
+  onOpenSettings: (category?: string) => void;
 }) {
+  const { t } = useTranslation();
   const logout = useLogout();
   return (
     <>
@@ -33,17 +36,13 @@ export function SidebarUserDropdownContent({
       </DropdownMenuLabel>
       <DropdownMenuSeparator />
       <DropdownMenuGroup>
-        <DropdownMenuItem asChild>
-          <Link to="/account/">
-            <User />
-            Account
-          </Link>
+        <DropdownMenuItem onClick={() => onOpenSettings("account")}>
+          <User />
+          {t("settings.account")}
         </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link to="/settings/">
-            <Settings />
-            Einstellungen
-          </Link>
+        <DropdownMenuItem onClick={() => onOpenSettings()}>
+          <Settings />
+          {t("nav.settings")}
         </DropdownMenuItem>
         <SidebarThemeSelector />
         <SidebarLanguageSelector />
@@ -51,7 +50,7 @@ export function SidebarUserDropdownContent({
       <DropdownMenuSeparator />
       <DropdownMenuItem onClick={async () => await logout()}>
         <LogOut />
-        Abmelden
+        {t("common.logout")}
       </DropdownMenuItem>
     </>
   );

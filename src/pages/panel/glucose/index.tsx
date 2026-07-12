@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
-import type { ColumnDef } from "@tanstack/react-table";
 import PanelPage from "@/layouts/panel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DataTable } from "@/components/table";
+import { DataList, type ListColumn } from "@/components/data-list";
 import glucoseService, {
   type GlucoseEntry,
 } from "@/api/services/glucose-service";
@@ -18,9 +18,13 @@ import {
   unitLabel,
 } from "@/lib/glucose";
 
-const statusLabel = { low: "Niedrig", "in-range": "Im Ziel", high: "Hoch" };
-
 export default function GlucosePage() {
+  const { t } = useTranslation();
+  const statusLabel: Record<string, string> = {
+    low: t("glucose.status_low"),
+    "in-range": t("glucose.status_in_range"),
+    high: t("glucose.status_high"),
+  };
   const { data: settings } = useQuery({
     queryKey: ["settings"],
     queryFn: settingsService.find,
@@ -54,60 +58,46 @@ export default function GlucosePage() {
     };
   }, [entries, low, high]);
 
-  const columns = useMemo<ColumnDef<GlucoseEntry, unknown>[]>(
+  const columns = useMemo<ListColumn<GlucoseEntry>[]>(
     () => [
       {
-        accessorKey: "time",
-        header: "Zeitpunkt",
-        cell: ({ row }) =>
-          format(new Date(row.original.time * 1000), "dd.MM.yyyy HH:mm"),
+        header: t("glucose.col_time"),
+        cell: (e) => format(new Date(e.time * 1000), "dd.MM.yyyy HH:mm"),
       },
       {
-        accessorKey: "value",
-        header: "Wert",
-        cell: ({ row }) =>
-          `${toDisplay(row.original.value, unit)} ${unitLabel(unit)}`,
+        header: t("glucose.col_value"),
+        cell: (e) => `${toDisplay(e.value, unit)} ${unitLabel(unit)}`,
       },
       {
-        id: "status",
-        header: "Status",
-        cell: ({ row }) => {
-          const s = classify(row.original.value, low, high);
+        header: t("glucose.col_status"),
+        cell: (e) => {
+          const s = classify(e.value, low, high);
           return (
             <span style={{ color: statusColorVar[s] }}>{statusLabel[s]}</span>
           );
         },
       },
     ],
-    [unit, low, high],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [unit, low, high, t],
   );
 
   return (
-    <PanelPage title="Glukose">
+    <PanelPage title={t("glucose.title")}>
       <div className="py-6 flex flex-col gap-6">
         <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-          <Stat title="Durchschnitt" value={fmt(stats?.avg, unit)} />
-          <Stat title="Minimum" value={fmt(stats?.min, unit)} />
-          <Stat title="Maximum" value={fmt(stats?.max, unit)} />
-          <Stat
-            title="Im Zielbereich"
-            value={stats ? `${stats.tir} %` : "–"}
-          />
+          <Stat title={t("glucose.average")} value={fmt(stats?.avg, unit)} />
+          <Stat title={t("glucose.minimum")} value={fmt(stats?.min, unit)} />
+          <Stat title={t("glucose.maximum")} value={fmt(stats?.max, unit)} />
+          <Stat title={t("glucose.in_range")} value={stats ? `${stats.tir} %` : "–"} />
         </div>
-        <Card>
-          <CardHeader>
-            <CardTitle>Messungen</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <DataTable
-              name="glucose"
-              columns={columns}
-              data={entries}
-              isLoading={isLoading}
-              pageSize={25}
-            />
-          </CardContent>
-        </Card>
+        <DataList
+          title={t("glucose.readings")}
+          columns={columns}
+          data={entries}
+          isLoading={isLoading}
+          pageSize={25}
+        />
       </div>
     </PanelPage>
   );

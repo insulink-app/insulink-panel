@@ -30,7 +30,7 @@ export function SidebarNavigation({
     items: {
       title: string;
       url: string;
-      icon: LucideIcon;
+      icon?: LucideIcon;
       notifications?: number;
       disabled?: boolean;
     }[];
@@ -45,7 +45,7 @@ export function SidebarNavigation({
             <Collapsible
               key={item.title}
               asChild
-              defaultOpen={item.isActive}
+              defaultOpen
               className="group/collapsible"
             >
               <SidebarMenuItem>

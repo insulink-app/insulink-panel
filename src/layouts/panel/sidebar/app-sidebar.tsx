@@ -3,11 +3,18 @@
 import * as React from "react";
 import {
   Activity,
+  CupSoda,
+  Cpu,
   Droplet,
+  Dumbbell,
+  HeartPulse,
   LayoutDashboard,
-  Settings,
-  User,
+  Package,
+  Ruler,
+  Syringe,
+  Timer,
   Utensils,
+  CalendarDays,
 } from "lucide-react";
 
 import { SidebarNavigation } from "./navigation";
@@ -23,56 +30,65 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import { useUserInformation } from "@/store/user-store.ts";
 
-export function AppNavigation() {
+export function AppNavigation(t: TFunction) {
   return [
     {
-      title: "Übersicht",
+      title: t("nav.overview"),
       url: "/overview/",
       icon: LayoutDashboard,
       isActive: false,
       items: [],
     },
     {
-      title: "Glukose",
+      title: t("nav.glucose"),
       url: "/glucose/",
       icon: Droplet,
       isActive: false,
       items: [],
     },
     {
-      title: "Ernährung",
+      title: t("nav.nutrition"),
       url: "/nutrition/",
       icon: Utensils,
       isActive: false,
-      items: [],
+      items: [
+        { title: t("nav.meals"), url: "/nutrition/meals", icon: Utensils },
+        { title: t("nav.drinks"), url: "/nutrition/drinks", icon: CupSoda },
+        { title: t("nav.products"), url: "/nutrition/products", icon: Package },
+      ],
     },
     {
-      title: "Sport & Gesundheit",
+      title: t("nav.health"),
       url: "/health/",
       icon: Activity,
       isActive: false,
-      items: [],
+      items: [
+        { title: t("nav.workouts"), url: "/health/workouts", icon: Dumbbell },
+        { title: t("nav.cardio"), url: "/health/cardio", icon: Timer },
+        { title: t("nav.measurements"), url: "/health/measurements", icon: Ruler },
+        { title: t("nav.health_days"), url: "/health/days", icon: CalendarDays },
+        { title: t("nav.pulse"), url: "/health/pulse", icon: HeartPulse },
+      ],
     },
     {
-      title: "Einstellungen",
-      url: "/settings/",
-      icon: Settings,
+      title: t("nav.devices"),
+      url: "/devices/",
+      icon: Cpu,
       isActive: false,
-      items: [],
-    },
-    {
-      title: "Account",
-      url: "/account/",
-      icon: User,
-      isActive: false,
-      items: [],
+      items: [
+        { title: t("nav.sensor"), url: "/devices/sensor", icon: Droplet },
+        { title: t("nav.pump"), url: "/devices/pump", icon: Syringe },
+      ],
     },
   ];
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { t } = useTranslation();
   const userInformation = useUserInformation();
   const user = { name: userInformation?.name ?? "" };
   return (
@@ -97,7 +113,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenu>
         </SidebarHeader>
         <SidebarContent>
-          <SidebarNavigation items={AppNavigation()} />
+          <SidebarNavigation items={AppNavigation(t)} />
         </SidebarContent>
         <SidebarFooter>
           <SidebarUser user={user} />

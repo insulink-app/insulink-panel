@@ -9,10 +9,12 @@ const getRoutes = (): RouteObject[] => {
   return [
     { path: "overview", element: Component("/pages/panel/overview") },
     { path: "glucose", element: Component("/pages/panel/glucose") },
-    { path: "nutrition", element: Component("/pages/panel/nutrition") },
-    { path: "health", element: Component("/pages/panel/health") },
-    { path: "settings", element: Component("/pages/panel/settings") },
-    { path: "account", element: Component("/pages/panel/account") },
+    { path: "nutrition", element: <Navigate to="/nutrition/meals" replace /> },
+    { path: "nutrition/:view", element: Component("/pages/panel/nutrition") },
+    { path: "health", element: <Navigate to="/health/workouts" replace /> },
+    { path: "health/:view", element: Component("/pages/panel/health") },
+    { path: "devices", element: <Navigate to="/devices/sensor" replace /> },
+    { path: "devices/:view", element: Component("/pages/panel/devices") },
   ];
 };
 

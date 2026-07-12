@@ -10,6 +10,7 @@ import {
 import { Navigate, useNavigate } from "react-router";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { useLogin, useUserToken } from "@/store/user-store";
 import { toast } from "sonner";
 import {
@@ -22,6 +23,7 @@ import {
 } from "@/components/ui/form.tsx";
 
 export default function LoginForm() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const login = useLogin();
@@ -60,8 +62,8 @@ export default function LoginForm() {
       } else {
         toast.error(
           response.error === 1000
-            ? "Benutzername oder Passwort falsch."
-            : "Anmeldung fehlgeschlagen.",
+            ? t("login.invalid_credentials")
+            : t("login.failed"),
         );
       }
     } finally {
@@ -90,10 +92,8 @@ export default function LoginForm() {
       </div>
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">Willkommen zurück</CardTitle>
-          <CardDescription>
-            Melde dich mit deinen Insulink-Zugangsdaten an.
-          </CardDescription>
+          <CardTitle className="text-xl">{t("login.welcome")}</CardTitle>
+          <CardDescription>{t("login.subtitle")}</CardDescription>
         </CardHeader>
 
         <CardContent>
@@ -102,14 +102,14 @@ export default function LoginForm() {
               <FormField
                 control={form.control}
                 name="name"
-                rules={{ required: "Benutzername fehlt" }}
+                rules={{ required: t("login.username_missing") }}
                 render={({ field }) => (
                   <FormItem className="mb-5">
-                    <FormLabel>Benutzername</FormLabel>
+                    <FormLabel>{t("login.username")}</FormLabel>
                     <FormControl>
                       <input
                         id="name"
-                        placeholder="Benutzername"
+                        placeholder={t("login.username")}
                         className="w-full px-4 py-2.5 rounded-xl bg-secondary border border-transparent focus:border-primary focus:outline-none transition-colors"
                         {...field}
                       />
@@ -122,15 +122,15 @@ export default function LoginForm() {
               <FormField
                 control={form.control}
                 name="password"
-                rules={{ required: "Passwort fehlt" }}
+                rules={{ required: t("login.password_missing") }}
                 render={({ field }) => (
                   <FormItem className="mb-5">
-                    <FormLabel>Passwort</FormLabel>
+                    <FormLabel>{t("login.password")}</FormLabel>
                     <FormControl>
                       <input
                         id="password"
                         type="password"
-                        placeholder="Passwort"
+                        placeholder={t("login.password")}
                         className="w-full px-4 py-2.5 rounded-xl bg-secondary border border-transparent focus:border-primary focus:outline-none transition-colors"
                         {...field}
                       />
@@ -149,7 +149,7 @@ export default function LoginForm() {
                   className="h-4 w-4 mr-3 border border-gray-600 rounded-sm bg-transparent"
                 />
                 <label htmlFor="remember-check" className="select-none">
-                  Angemeldet bleiben
+                  {t("login.remember")}
                 </label>
               </div>
 
@@ -159,7 +159,7 @@ export default function LoginForm() {
                 className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground font-medium hover:opacity-90 transition inline-flex items-center justify-center disabled:opacity-60"
                 disabled={loading}
               >
-                Anmelden
+                {t("login.submit")}
                 {loading && <Spinner className="ml-3" />}
               </button>
             </form>

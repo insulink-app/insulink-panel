@@ -3,6 +3,10 @@ import client from "../client";
 // The server stores settings as one opaque JSON string (full-replace on change).
 // We only type the keys the panel edits; everything else is passed through
 // untouched so we never drop app-only settings.
+// Keys mirror the app's ProfileSettings.collect() (profile_settings.dart) so the
+// panel can edit the same account settings blob. Language/theme are excluded on
+// purpose — the app treats them as device-local view prefs (the panel has its
+// own selectors in the shell).
 export interface UserSettings {
   glucose_unit?: "mgdl" | "mmol";
   glucose_target_low?: number;
@@ -11,20 +15,69 @@ export interface UserSettings {
   glucose_urgent_high?: number;
   glucose_low?: number;
   glucose_high?: number;
+  bolus_correction_factor?: number;
+  bolus_carb_factor?: number;
+  prediction_enabled?: boolean;
+  prediction_horizon?: number;
   notifications?: boolean;
   live_glucose_notification?: boolean;
-  sensor_expiry_alert?: boolean;
   connection_lost_alert?: boolean;
-  prediction_enabled?: boolean;
+  sensor_expiry_alert?: boolean;
+  sensor_halftime_alert?: boolean;
+  training_detected_alert?: boolean;
+  predictive_advisory_alert?: boolean;
+  alarm_sound?: boolean;
+  silent_mode?: boolean;
+  developer?: boolean;
+  // Dotted keys match the app's secure-storage keys exactly (SportStore /
+  // NutritionStore) so a pull on the app side writes them straight back.
+  "sport.height_cm"?: number;
+  "sport.stride_cm"?: number;
+  "sport.steps_goal"?: number;
+  "sport.distance_goal_m"?: number;
+  "sport.calories_goal"?: number;
+  "sport.weight_goal_kg"?: number;
+  "nutrition.water_goal_ml"?: number;
+  "nutrition.carbs_goal_g"?: number;
+  "nutrition.protein_goal_g"?: number;
   [key: string]: unknown;
 }
+
+// The app persists these as strings ("180"), so parsed JSON yields strings.
+// Coerce to numbers or `"180" + 20` silently concatenates to "18020" downstream.
+const NUMERIC_KEYS = [
+  "glucose_target_low",
+  "glucose_target_high",
+  "glucose_urgent_low",
+  "glucose_urgent_high",
+  "glucose_low",
+  "glucose_high",
+  "bolus_correction_factor",
+  "bolus_carb_factor",
+  "prediction_horizon",
+  "sport.height_cm",
+  "sport.stride_cm",
+  "sport.steps_goal",
+  "sport.distance_goal_m",
+  "sport.calories_goal",
+  "sport.weight_goal_kg",
+  "nutrition.water_goal_ml",
+  "nutrition.carbs_goal_g",
+  "nutrition.protein_goal_g",
+] as const;
 
 const find = async (): Promise<UserSettings> => {
   const res = await client.get<{ success: boolean; settings?: string }>({
     url: "/user/settings/find/",
   });
   try {
-    return res.settings ? (JSON.parse(res.settings) as UserSettings) : {};
+    const settings = res.settings
+      ? (JSON.parse(res.settings) as UserSettings)
+      : {};
+    for (const key of NUMERIC_KEYS) {
+      if (settings[key] != null) settings[key] = Number(settings[key]);
+    }
+    return settings;
   } catch {
     return {};
   }

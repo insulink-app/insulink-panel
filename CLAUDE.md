@@ -58,14 +58,26 @@ the API base. **CORS:** the panel origin must be in the backend `config.ini`
 
 ## Conventions
 
-- **UI language is German**, hardcoded in pages. i18n (`src/locales`) is only
-  still used by leftover shell bits (theme/language selector, DataTable, error
-  pages); its JSON holds just those keys. Don't reintroduce translation keys for
-  new pages — write German literals.
+- **Localize everything — no hard-coded user-facing strings.** Every displayed
+  string goes through i18next: `const { t } = useTranslation()` then
+  `t("key")`. Keys live in `src/locales/lang/en_US/en_US.json` and
+  `de_DE/de_DE.json` (nested objects, `snake_case` keys); add to **both**.
+  **English (`en_US`) is the default and fallback language.** Interpolate with
+  `{{var}}` (e.g. `t("devices.days", { n })`) — don't build display strings by
+  concatenating literals. Module-scope constants (column arrays, label maps)
+  can't call the reactive `t`, so build them **inside** the component; the one
+  non-hook exception is `sensor-service.ts`, which imports the shared `t` from
+  `@/locales/i18n`.
+- **Never key state/routing off a translated string** — switching language
+  would change it and break the match. Use a stable, language-independent `id`
+  and resolve the display label with `t()` (see `settings-dialog.tsx`: each
+  category has an `id` like `"glucose"`, shown via `t("settings.section_" + id)`).
+  Keep the two locale JSONs at **key parity** — every key must exist in both.
 - Data fetching in pages: `useQuery` with a stable `queryKey`. Settings is
   shared under `queryKey: ["settings"]`.
-- Tables: reuse `DataTable` from `@/components/table` (`name`, `columns`,
-  `data`, `isLoading`). Columns are TanStack `ColumnDef<T, unknown>[]`.
+- Tables/lists: reuse `DataList` from `@/components/data-list` (`title`,
+  `columns`, `data`, `isLoading`, `pageSize`). Columns are
+  `ListColumn<T>[]` (`{ header, cell }`).
 - Glucose logic: `src/lib/glucose.ts` — `classify`, `statusColorVar`,
   `toDisplay`, `unitLabel`. Values are **mg/dL** everywhere; mmol/L is
   display-only (÷18).
@@ -73,6 +85,23 @@ the API base. **CORS:** the panel origin must be in the backend `config.ini`
   surfaces, 14px radius) plus `--glucose-in-range/low/high` vars. Brand assets
   in `public/` (`icon.png`, `logo-black.png`, `logo-white.png` — swap
   black/white by theme).
+
+## Code style (follow these — they override default habits)
+
+Adapted from the mobile app's conventions:
+
+- **All code comments in English.** Every comment (`//`, `/* */`, JSDoc) is
+  English — no German. If you touch a file with a German comment, translate it.
+- **No one-line `if`s.** Always use braces, even for a single statement.
+- **Descriptive, unique names.** No generic or duplicated names, and **no
+  one-letter variables** (loop/callback params included) — the name says what it
+  holds.
+- **Short functions and files.** One job each; split them when they grow. Treat
+  a long component/file as a smell, not a hard limit.
+- **Avoid boilerplate.** No scaffolding "for later", no copy-pasted patterns a
+  shared helper/component removes — extract the repetition.
+- **2-space indentation.**
+- **Localize everything** (see Conventions above).
 
 ## Timestamp gotcha
 
@@ -85,7 +114,9 @@ Each service file notes its unit — check before formatting with `date-fns`.
 ## Adding a page
 
 1. New service in `src/api/services/` (mirror an existing one).
-2. New folder `src/pages/panel/<name>/index.tsx`, default-export a component
-   wrapped in `<PanelPage title="…">`.
-3. Register the route in `routes/sections/panel/panel.tsx`.
-4. Add a nav entry in `AppNavigation()` in `app-sidebar.tsx`.
+2. Add the page's strings to both locale JSONs (`en_US` + `de_DE`).
+3. New folder `src/pages/panel/<name>/index.tsx`, default-export a component
+   wrapped in `<PanelPage title={t("<name>.title")}>`.
+4. Register the route in `routes/sections/panel/panel.tsx`.
+5. Add a nav entry (with a `t("nav.<name>")` title) in `AppNavigation()` in
+   `app-sidebar.tsx`, and its `nav.*` key to both locale JSONs.

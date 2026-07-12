@@ -4,7 +4,7 @@ import { initReactI18next } from "react-i18next";
 import en_US from "./lang/en_US";
 import de_DE from "./lang/de_DE";
 
-const defaultLng = localStorage.getItem("i18nextLng") || "de_DE";
+const defaultLng = localStorage.getItem("i18nextLng") || "en_US";
 document.documentElement.lang = defaultLng;
 
 i18n
@@ -13,7 +13,7 @@ i18n
   .init({
     debug: false,
     lng: defaultLng,
-    fallbackLng: "de_DE",
+    fallbackLng: "en_US",
     interpolation: {
       escapeValue: false,
     },

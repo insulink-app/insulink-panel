@@ -75,24 +75,53 @@ export default function LoginForm() {
     return <Navigate to="/overview/" replace />;
   }
 
+  // Homepage heading font (loaded in index.html), mirrors insulink.de.
+  const headFont = '"Space Grotesk", system-ui, sans-serif';
+
   return (
-    <div className="min-h-screen flex items-center justify-center flex-col px-4 bg-gradient-to-b from-accent/40 to-background">
-      <div className="flex items-center gap-3 mb-8">
-        <img
-          src="/logo-black.png"
-          alt="Insulink"
-          className="h-11 w-11 block dark:hidden"
-        />
-        <img
-          src="/logo-white.png"
-          alt="Insulink"
-          className="h-11 w-11 hidden dark:block"
-        />
-        <span className="font-bold text-3xl tracking-tight">Insulink</span>
+    <div className="relative min-h-screen flex items-center justify-start flex-col px-4 pt-[20vh] pb-16 overflow-hidden bg-background">
+      {/* Indigo hero glow, mirroring the homepage radial background. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute left-1/2 top-[-10%] -translate-x-1/2 w-[900px] max-w-[140vw] aspect-square rounded-full"
+        style={{
+          background:
+            "radial-gradient(circle, color-mix(in srgb, var(--primary) 32%, transparent) 0%, transparent 60%)",
+        }}
+      />
+
+      <div className="relative flex flex-col items-center mb-10 text-center">
+        <div className="flex items-center gap-3 mb-8">
+          <img
+            src="/logo-black.png"
+            alt="Insulink"
+            className="h-11 w-11 block dark:hidden"
+          />
+          <img
+            src="/logo-white.png"
+            alt="Insulink"
+            className="h-11 w-11 hidden dark:block"
+          />
+          <span
+            className="font-bold text-3xl tracking-tight"
+            style={{ fontFamily: headFont }}
+          >
+            Insulink
+          </span>
+        </div>
+        <h1
+          className="text-4xl sm:text-5xl font-semibold tracking-tight max-w-[14ch]"
+          style={{ fontFamily: headFont }}
+        >
+          {t("login.tagline")}
+        </h1>
       </div>
-      <Card className="w-full max-w-md shadow-lg">
+
+      <Card className="relative w-full max-w-md shadow-xl">
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">{t("login.welcome")}</CardTitle>
+          <CardTitle className="text-xl" style={{ fontFamily: headFont }}>
+            {t("login.welcome")}
+          </CardTitle>
           <CardDescription>{t("login.subtitle")}</CardDescription>
         </CardHeader>
 
@@ -156,7 +185,12 @@ export default function LoginForm() {
               <button
                 type="submit"
                 id="login"
-                className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground font-medium hover:opacity-90 transition inline-flex items-center justify-center disabled:opacity-60"
+                className="w-full py-3 rounded-full text-primary-foreground font-semibold hover:brightness-110 transition inline-flex items-center justify-center disabled:opacity-60"
+                style={{
+                  fontFamily: headFont,
+                  background:
+                    "radial-gradient(circle at center, color-mix(in srgb, var(--primary) 78%, #000) 0%, var(--primary) 85%)",
+                }}
                 disabled={loading}
               >
                 {t("login.submit")}

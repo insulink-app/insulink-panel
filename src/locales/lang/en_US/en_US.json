@@ -95,7 +95,8 @@
     "remember": "Stay signed in",
     "submit": "Sign in",
     "invalid_credentials": "Wrong username or password.",
-    "failed": "Login failed."
+    "failed": "Login failed.",
+    "tagline": "Make diabetes easy."
   },
   "overview": {
     "title": "Overview",

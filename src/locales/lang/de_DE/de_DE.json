@@ -95,7 +95,8 @@
     "remember": "Angemeldet bleiben",
     "submit": "Anmelden",
     "invalid_credentials": "Benutzername oder Passwort falsch.",
-    "failed": "Anmeldung fehlgeschlagen."
+    "failed": "Anmeldung fehlgeschlagen.",
+    "tagline": "Diabetes leicht gemacht."
   },
   "overview": {
     "title": "Übersicht",

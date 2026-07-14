@@ -17,6 +17,7 @@ const getRoutes = (): RouteObject[] => {
     { path: "health/activity/:kind/:id", element: Component("/pages/panel/activity-detail") },
     { path: "health/routines", element: Component("/pages/panel/routines") },
     { path: "health/routines/exercises", element: Component("/pages/panel/exercises") },
+    { path: "health/routines/stats", element: Component("/pages/panel/exercise-stats") },
     { path: "health/routines/new", element: Component("/pages/panel/routine-editor") },
     { path: "health/routines/:id", element: Component("/pages/panel/routine-detail") },
     { path: "health/routines/:id/edit", element: Component("/pages/panel/routine-editor") },

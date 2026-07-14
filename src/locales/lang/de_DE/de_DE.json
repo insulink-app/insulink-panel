@@ -67,6 +67,8 @@
     "account": "Account",
     "activity": "Aktivität",
     "routines": "Routinen",
+    "exercises": "Übungen",
+    "exercise_stats": "Statistiken",
     "sleep": "Schlaf",
     "body": "Körper"
   },
@@ -442,5 +444,32 @@
     "kind_reps": "Wiederholungen",
     "kind_weighted": "Gewicht",
     "kind_timed": "Zeit"
+  },
+  "exercise_stats": {
+    "title": "Übungsstatistiken",
+    "per_exercise": "Pro Übung",
+    "total_sessions": "Einheiten",
+    "total_sets": "Sätze",
+    "total_reps": "Wiederholungen gesamt",
+    "best": "Bestwert",
+    "progression": "Verlauf",
+    "not_enough_data": "Noch zu wenige Einheiten für einen Trend.",
+    "empty": "Noch keine abgeschlossenen Workouts.",
+    "col_exercise": "Übung",
+    "col_kind": "Typ",
+    "col_sets": "Sätze",
+    "col_best": "Bestwert",
+    "col_last": "Zuletzt",
+    "reps": "{{n}} Wdh.",
+    "seconds": "{{n}} s",
+    "sort_last": "Zuletzt gemacht",
+    "sort_name": "Name",
+    "sort_sets": "Meiste Sätze",
+    "sort_best": "Bestes Ergebnis",
+    "chart_frequency": "Workouts pro Woche",
+    "chart_comparison": "Routinen-Durchgänge im Vergleich",
+    "comparison_empty": "Führe eine Routine mindestens zweimal durch, um die Durchgänge zu vergleichen.",
+    "achieved": "erreicht",
+    "workouts": "Workouts"
   }
 }

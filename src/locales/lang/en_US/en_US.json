@@ -67,6 +67,8 @@
     "account": "Account",
     "activity": "Activity",
     "routines": "Routines",
+    "exercises": "Exercises",
+    "exercise_stats": "Statistics",
     "sleep": "Sleep",
     "body": "Body"
   },
@@ -442,5 +444,32 @@
     "kind_reps": "Reps",
     "kind_weighted": "Weighted",
     "kind_timed": "Timed"
+  },
+  "exercise_stats": {
+    "title": "Exercise statistics",
+    "per_exercise": "Per exercise",
+    "total_sessions": "Sessions",
+    "total_sets": "Sets",
+    "total_reps": "Total reps",
+    "best": "Best",
+    "progression": "Progression",
+    "not_enough_data": "Not enough sessions yet to chart a trend.",
+    "empty": "No completed workouts yet.",
+    "col_exercise": "Exercise",
+    "col_kind": "Type",
+    "col_sets": "Sets",
+    "col_best": "Best",
+    "col_last": "Last done",
+    "reps": "{{n}} reps",
+    "seconds": "{{n}} s",
+    "sort_last": "Recently done",
+    "sort_name": "Name",
+    "sort_sets": "Most sets",
+    "sort_best": "Best result",
+    "chart_frequency": "Workouts per week",
+    "chart_comparison": "Routine runs compared",
+    "comparison_empty": "Run a routine at least twice to compare its sessions.",
+    "achieved": "achieved",
+    "workouts": "Workouts"
   }
 }

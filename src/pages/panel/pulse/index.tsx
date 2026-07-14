@@ -6,6 +6,8 @@ import {
   CartesianGrid,
   Line,
   LineChart,
+  ReferenceArea,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -16,9 +18,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataList, type ListColumn } from "@/components/data-list";
 import { TimeRangePicker, TimeWindowNav } from "@/components/time-window";
 import { DAY, useTimeWindow, useWindowedData } from "@/lib/use-time-window";
+import { useGlucoseHex } from "@/lib/use-glucose-hex";
+import { ThresholdGradient } from "@/components/threshold-gradient";
+import { CHART_HEIGHT, CHART_MARGIN, X_AXIS_HEIGHT } from "@/lib/chart-geometry";
 import healthService, { type PulseSample } from "@/api/services/health-service";
 
-const PULSE_COLOR = "#e0533d";
+// ponytail: fixed resting-HR zone edges (normal < 100 ≤ elevated < 140 ≤ high).
+// No per-user HR-zone setting exists yet; wire these to settings if the app
+// grows one. Kept in sync with the routine runner's pulseZone.
+const PULSE_ELEVATED = 100;
+const PULSE_HIGH = 140;
 
 export default function PulsePage() {
   const { t } = useTranslation();
@@ -95,10 +104,17 @@ function PulseChart({
   isLoading: boolean;
 }) {
   const { t } = useTranslation();
+  const hex = useGlucoseHex();
   const latest = samples[samples.length - 1]?.t ?? Date.now();
   const earliest = samples[0]?.t ?? latest;
   const window = useTimeWindow(latest, earliest);
   const windowData = useWindowedData(samples, (sample) => sample.t, window);
+
+  // The gradient needs the axis bounds as numbers, so they are computed here
+  // rather than left to the axis' own dataMin/dataMax strings.
+  const beats = windowData.map((sample) => sample.b);
+  const yMin = beats.length ? Math.min(...beats) - 5 : 0;
+  const yMax = beats.length ? Math.max(...beats) + 5 : PULSE_HIGH;
 
   return (
     <Card>
@@ -115,8 +131,8 @@ function PulseChart({
             {t("common.no_data")}
           </p>
         ) : (
-          <ResponsiveContainer width="100%" height={320}>
-            <LineChart data={windowData}>
+          <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
+            <LineChart data={windowData} margin={CHART_MARGIN}>
               <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
               <XAxis
                 dataKey="t"
@@ -127,13 +143,37 @@ function PulseChart({
                   format(new Date(value), window.rangeMs > DAY ? "dd.MM." : "HH:mm")
                 }
                 fontSize={12}
+                height={X_AXIS_HEIGHT}
               />
-              <YAxis fontSize={12} width={36} domain={["dataMin - 5", "dataMax + 5"]} />
-              <Tooltip content={<PulseTooltip unit={t("pulse.bpm")} />} isAnimationActive={false} />
+              <YAxis fontSize={12} width={36} domain={[yMin, yMax]} />
+              <Tooltip
+                content={<PulseTooltip unit={t("pulse.bpm")} />}
+                cursor={{ stroke: "var(--border)" }}
+                isAnimationActive={false}
+              />
+              {/* Heart-rate zones: normal green, elevated orange, high red.
+                  Outer bounds run past the axis; Recharts clips them. */}
+              <ReferenceArea y1={0} y2={PULSE_ELEVATED} fill={hex["in-range"]} fillOpacity={0.07} />
+              <ReferenceArea y1={PULSE_ELEVATED} y2={PULSE_HIGH} fill={hex.high} fillOpacity={0.07} />
+              <ReferenceArea y1={PULSE_HIGH} y2={400} fill={hex.low} fillOpacity={0.07} />
+              <ReferenceLine y={PULSE_ELEVATED} stroke={hex.high} strokeOpacity={0.5} strokeDasharray="4 4" />
+              <ReferenceLine y={PULSE_HIGH} stroke={hex.low} strokeOpacity={0.5} strokeDasharray="4 4" />
+              <defs>
+                <ThresholdGradient
+                  id="pulse-line"
+                  yMin={yMin}
+                  yMax={yMax}
+                  bands={[
+                    { color: hex.low, until: PULSE_HIGH },
+                    { color: hex.high, until: PULSE_ELEVATED },
+                    { color: hex["in-range"] },
+                  ]}
+                />
+              </defs>
               <Line
                 type="monotone"
                 dataKey="b"
-                stroke={PULSE_COLOR}
+                stroke="url(#pulse-line)"
                 strokeWidth={2}
                 dot={false}
                 isAnimationActive={false}

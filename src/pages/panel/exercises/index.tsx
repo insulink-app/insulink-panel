@@ -1,9 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { ArrowLeft, Pencil, Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import PanelPage from "@/layouts/panel";
 import { CardSkeleton } from "@/components/card-skeleton";
 import { Button } from "@/components/ui/button";
@@ -64,21 +63,9 @@ export default function ExercisesPage() {
     mutation.mutate(list.filter((entry) => entry.id !== exercise.id));
 
   return (
-    <PanelPage
-      title={t("exercises.title")}
-      parents={[
-        { title: t("nav.health") },
-        { title: t("routines.title"), href: "/health/routines" },
-      ]}
-    >
+    <PanelPage title={t("exercises.title")} parents={[{ title: t("nav.health") }]}>
       <div className="py-6 flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <Button asChild variant="ghost" size="sm">
-            <Link to="/health/routines">
-              <ArrowLeft className="size-4" />
-              {t("routines.back")}
-            </Link>
-          </Button>
+        <div className="flex items-center justify-end">
           <Button onClick={() => setEditing({ id: newId(), name: "", kind: "reps" })}>
             <Plus className="size-4" />
             {t("exercises.add")}

@@ -31,6 +31,8 @@ import {
   unitLabel,
 } from "@/lib/glucose";
 import { useGlucoseHex } from "@/lib/use-glucose-hex";
+import { ThresholdGradient } from "@/components/threshold-gradient";
+import { CHART_HEIGHT, CHART_MARGIN, X_AXIS_HEIGHT } from "@/lib/chart-geometry";
 
 export default function GlucosePage() {
   const { t } = useTranslation();
@@ -158,8 +160,8 @@ function GlucoseChart({
             {t("common.no_data")}
           </p>
         ) : (
-          <ResponsiveContainer width="100%" height={320}>
-            <AreaChart data={windowData}>
+          <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
+            <AreaChart data={windowData} margin={CHART_MARGIN}>
               <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
               <XAxis
                 dataKey="time"
@@ -170,6 +172,7 @@ function GlucoseChart({
                   format(new Date(value), window.rangeMs > DAY ? "dd.MM." : "HH:mm")
                 }
                 fontSize={12}
+                height={X_AXIS_HEIGHT}
               />
               <YAxis domain={[yMin, yMax]} fontSize={12} width={36} />
               <Tooltip
@@ -177,20 +180,31 @@ function GlucoseChart({
                 cursor={{ stroke: "var(--border)" }}
                 isAnimationActive={false}
               />
-              <ReferenceArea
-                y1={low}
-                y2={high}
-                fill={hex["in-range"]}
-                fillOpacity={0.08}
-              />
+              {/* Threshold zones: below low reads red, in-target green, above
+                  high orange. Outer bounds run past the axis; Recharts clips. */}
+              <ReferenceArea y1={0} y2={low} fill={hex.low} fillOpacity={0.07} />
+              <ReferenceArea y1={low} y2={high} fill={hex["in-range"]} fillOpacity={0.08} />
+              <ReferenceArea y1={high} y2={1000} fill={hex.high} fillOpacity={0.07} />
               <ReferenceLine y={low} stroke={hex.low} strokeOpacity={0.5} strokeDasharray="4 4" />
               <ReferenceLine y={high} stroke={hex.high} strokeOpacity={0.5} strokeDasharray="4 4" />
+              <defs>
+                <ThresholdGradient
+                  id="glucose-line"
+                  yMin={yMin}
+                  yMax={yMax}
+                  bands={[
+                    { color: hex.high, until: high },
+                    { color: hex["in-range"], until: low },
+                    { color: hex.low },
+                  ]}
+                />
+              </defs>
               <Area
                 type="monotone"
                 dataKey="value"
-                stroke={hex["in-range"]}
+                stroke="url(#glucose-line)"
                 strokeWidth={2}
-                fill={hex["in-range"]}
+                fill="url(#glucose-line)"
                 fillOpacity={0.12}
                 dot={false}
                 isAnimationActive={false}

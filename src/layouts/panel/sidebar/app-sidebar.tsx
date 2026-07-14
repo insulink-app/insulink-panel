@@ -3,11 +3,13 @@
 import * as React from "react";
 import {
   Activity,
+  ChartColumnBig,
   CupSoda,
   Cpu,
   Droplet,
   Dumbbell,
   HeartPulse,
+  ListChecks,
   LayoutDashboard,
   Package,
   Ruler,
@@ -59,6 +61,8 @@ export function AppNavigation(t: TFunction) {
       isActive: false,
       items: [
         { title: t("nav.routines"), url: "/health/routines", icon: Timer },
+        { title: t("nav.exercises"), url: "/health/routines/exercises", icon: ListChecks },
+        { title: t("nav.exercise_stats"), url: "/health/routines/stats", icon: ChartColumnBig },
         { title: t("nav.activity"), url: "/health/activity", icon: Dumbbell },
         { title: t("nav.pulse"), url: "/health/pulse", icon: HeartPulse },
         { title: t("nav.sleep"), url: "/health/sleep", icon: Moon },

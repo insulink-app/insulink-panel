@@ -4,8 +4,12 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import {
+  ArrowDown,
+  ArrowDownRight,
   ArrowLeft,
   ArrowRight,
+  ArrowUp,
+  ArrowUpRight,
   Droplet,
   Heart,
   Minus,
@@ -44,9 +48,10 @@ import sportService, {
   type SportExercise,
   type Workout,
 } from "@/api/services/sport-service";
-import glucoseService from "@/api/services/glucose-service";
+import glucoseService, { type GlucoseEntry } from "@/api/services/glucose-service";
 import healthService from "@/api/services/health-service";
-import { toDisplay, unitLabel } from "@/lib/glucose";
+import { classify, toDisplay, unitLabel, DEFAULT_TARGET_LOW, DEFAULT_TARGET_HIGH } from "@/lib/glucose";
+import { useGlucoseHex } from "@/lib/use-glucose-hex";
 import settingsService from "@/api/services/settings-service";
 
 export default function RoutineRunnerPage() {
@@ -133,7 +138,7 @@ function RunnerShell({
           </BreadcrumbList>
         </Breadcrumb>
       </header>
-      <div className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-8 px-4 py-6">{children}</div>
+      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-8 px-4 py-6">{children}</div>
     </div>
   );
 }
@@ -313,6 +318,29 @@ function Runner({
       };
     });
 
+  // Enter advances: complete the current set, or skip the rest countdown. The
+  // reps field keeps focus (see ExerciseView), so a set is one value typed +
+  // Enter. Mounted once — the handlers drive `setCore` and read fresh state, so
+  // no stale closure; a phase ref keeps the dispatch current.
+  const phaseRef = useRef(core.phase);
+  phaseRef.current = core.phase;
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Enter") {
+        return;
+      }
+      event.preventDefault();
+      if (phaseRef.current === "exercising") {
+        completeSet();
+      } else if (phaseRef.current === "resting") {
+        skipRest();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Follow the account so a workout ended on the phone ends here too. Only the
   // ending is adopted, never the state: this tab drives the workout while it is
   // open, and applying a snapshot mid-set would fight the user's own input.
@@ -431,21 +459,21 @@ function Runner({
         {/* The elapsed time is the anchor, so it sits centred. The pause button
             is parked at the edge rather than laid out beside it — in a row the
             time would drift off-centre as digits are added. */}
-        <div className="relative flex flex-col items-center gap-0.5">
-          <span className="text-xs font-medium tracking-widest text-muted-foreground uppercase">
+        <div className="relative flex flex-col items-center gap-1">
+          <span className="text-sm font-medium tracking-widest text-muted-foreground uppercase">
             {t("routines.total")}
           </span>
-          <span className="text-3xl leading-none font-bold tracking-tight tabular-nums">
+          <span className="text-6xl leading-none font-bold tracking-tight tabular-nums">
             {formatDuration(sessionElapsed)}
           </span>
           <Button
             variant="ghost"
             size="icon"
-            className="absolute top-1/2 right-0 -translate-y-1/2 rounded-full"
+            className="absolute top-1/2 right-0 size-12 -translate-y-1/2 rounded-full"
             aria-label={core.pausedAt ? t("routines.resume") : t("routines.pause")}
             onClick={() => (core.pausedAt ? resume() : pause())}
           >
-            {core.pausedAt ? <Play className="size-5" /> : <Pause className="size-5" />}
+            {core.pausedAt ? <Play className="size-7" /> : <Pause className="size-7" />}
           </Button>
         </div>
         <div className="h-1 overflow-hidden rounded-full bg-secondary">
@@ -527,6 +555,14 @@ function ExerciseView(props: {
   onFinish: () => void;
 }) {
   const { t } = useTranslation();
+  // Refocus (and select) the reps field on every new set so Enter alone logs it.
+  const repsInputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (!props.isTimed) {
+      repsInputRef.current?.focus();
+      repsInputRef.current?.select();
+    }
+  }, [props.exerciseIndex, props.setNumber, props.isTimed]);
   return (
     <div className="flex flex-1 flex-col items-stretch justify-center gap-6 text-center">
       <JumpHeader
@@ -535,24 +571,25 @@ function ExerciseView(props: {
         exerciseById={props.exerciseById}
         onJump={props.onJump}
       />
-      <div className="text-3xl font-bold tracking-tight">{props.name}</div>
-      <div className="text-[clamp(4rem,17vw,8rem)] leading-none font-bold tracking-tight tabular-nums">
+      <div className="text-5xl font-bold tracking-tight">{props.name}</div>
+      <div className="text-[clamp(5rem,19vw,9rem)] leading-none font-bold tracking-tight tabular-nums">
         {formatDuration(props.elapsed)}
       </div>
 
       {props.isTimed ? (
-        <div className="text-sm text-muted-foreground">
+        <div className="text-lg text-muted-foreground">
           {t("routines.target_time", { n: props.targetSecs })}
         </div>
       ) : (
         <div className="flex flex-col items-center gap-3">
-          <span className="text-sm text-muted-foreground">{t("routines.reps")}</span>
+          <span className="text-lg text-muted-foreground">{t("routines.reps")}</span>
           <Input
+            ref={repsInputRef}
             type="number"
             min={0}
             value={props.reps}
             onChange={(event) => props.onReps(Number(event.target.value) || 0)}
-            className="w-28 text-center text-2xl font-bold h-12"
+            className="w-52 text-center text-6xl md:text-6xl font-bold h-24"
           />
           {props.isWeighted && (
             <WeightRow weight={props.weight} onDelta={props.onWeight} />
@@ -561,12 +598,12 @@ function ExerciseView(props: {
       )}
 
       {props.lastComparable && (
-        <div className="text-sm text-muted-foreground">
+        <div className="text-lg text-muted-foreground">
           {t("routines.last_time", { value: describeSet(props.lastComparable) })}
         </div>
       )}
 
-      <Button className="mt-2 h-14 text-base" onClick={props.onComplete}>
+      <Button className="mt-2 h-[4.5rem] text-xl" onClick={props.onComplete}>
         {t("routines.complete_set")}
       </Button>
       <FinishButton onFinish={props.onFinish} />
@@ -593,11 +630,11 @@ function RestView(props: {
   const { t } = useTranslation();
   return (
     <div className="flex flex-1 flex-col items-stretch justify-center gap-6 text-center">
-      <span className="text-sm font-medium tracking-widest text-muted-foreground uppercase">
+      <span className="text-lg font-medium tracking-widest text-muted-foreground uppercase">
         {t("routines.resting")}
       </span>
       <div
-        className="text-[clamp(4rem,17vw,8rem)] leading-none font-bold tracking-tight tabular-nums"
+        className="text-[clamp(5rem,19vw,9rem)] leading-none font-bold tracking-tight tabular-nums"
         style={{ color: props.expired ? "var(--glucose-low)" : "var(--primary)" }}
       >
         {props.expired ? `+${formatDuration(props.overtime)}` : formatDuration(props.remaining)}
@@ -611,13 +648,13 @@ function RestView(props: {
 
       {props.lastSet && props.lastSet.reps != null && (
         <div className="flex flex-col items-center gap-3">
-          <span className="text-sm text-muted-foreground">{t("routines.previous_set")}</span>
+          <span className="text-lg text-muted-foreground">{t("routines.previous_set")}</span>
           <Input
             type="number"
             min={0}
             value={props.lastSet.reps}
             onChange={(event) => props.onUpdateLast({ reps: Number(event.target.value) || 0 })}
-            className="w-28 text-center text-xl font-bold h-11"
+            className="w-52 text-center text-6xl md:text-6xl font-bold h-24"
           />
           {props.lastSet.kg != null && (
             <WeightRow
@@ -629,12 +666,12 @@ function RestView(props: {
       )}
 
       <div className="mt-2 flex gap-3">
-        <Button variant="outline" className="h-14 flex-1" onClick={props.onExtend}>
-          <TimerReset className="size-5" />
+        <Button variant="outline" className="h-[4.5rem] flex-1 text-lg" onClick={props.onExtend}>
+          <TimerReset className="size-6" />
           {t("routines.extend")}
         </Button>
-        <Button className="h-14 flex-1" onClick={props.onContinue}>
-          <ArrowRight className="size-5" />
+        <Button className="h-[4.5rem] flex-1 text-lg" onClick={props.onContinue}>
+          <ArrowRight className="size-6" />
           {t("routines.continue")}
         </Button>
       </div>
@@ -668,12 +705,12 @@ function FinishButton({ onFinish }: { onFinish: () => void }) {
 function WeightRow({ weight, onDelta }: { weight: number; onDelta: (delta: number) => void }) {
   return (
     <div className="flex items-center justify-center gap-4">
-      <Button variant="outline" size="icon" className="rounded-full" onClick={() => onDelta(-2.5)}>
-        <Minus className="size-4" />
+      <Button variant="outline" size="icon" className="size-12 rounded-full" onClick={() => onDelta(-2.5)}>
+        <Minus className="size-5" />
       </Button>
-      <span className="w-24 text-xl font-bold tabular-nums">{weight.toFixed(1)} kg</span>
-      <Button variant="outline" size="icon" className="rounded-full" onClick={() => onDelta(2.5)}>
-        <Plus className="size-4" />
+      <span className="w-28 text-2xl font-bold tabular-nums">{weight.toFixed(1)} kg</span>
+      <Button variant="outline" size="icon" className="size-12 rounded-full" onClick={() => onDelta(2.5)}>
+        <Plus className="size-5" />
       </Button>
     </div>
   );
@@ -697,7 +734,7 @@ function JumpHeader({
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="w-full text-sm text-muted-foreground hover:text-foreground"
+        className="w-full text-lg text-muted-foreground hover:text-foreground"
       >
         {label}
       </button>
@@ -711,7 +748,7 @@ function JumpHeader({
                 onJump(index);
                 setOpen(false);
               }}
-              className="block w-full truncate rounded-md px-3 py-1.5 text-left text-sm hover:bg-secondary"
+              className="block w-full truncate rounded-md px-3 py-2 text-left text-base hover:bg-secondary"
             >
               {index + 1}. {exerciseById(entry.ex)?.name ?? "—"}
             </button>
@@ -726,8 +763,10 @@ function JumpHeader({
 // the stored curve: the band delivers ~1 Hz, and reading it back at that rate
 // means one tiny value, not the whole (minute-resolution) history on every poll.
 // An absent `b` already means "not live" — the backend drops a stale reading —
-// so there is no staleness gate to get wrong here.
+// so there is no staleness gate to get wrong here. Both tiles carry a mini
+// sparkline of the last few minutes and are stained by status, not a fixed hue.
 function VitalsTiles() {
+  const hex = useGlucoseHex();
   const { data: settings } = useQuery({ queryKey: ["settings"], queryFn: settingsService.find });
   const { data: glucose } = useQuery({
     queryKey: ["glucose-history"],
@@ -740,28 +779,140 @@ function VitalsTiles() {
     refetchInterval: 1000,
   });
 
-  const latestGlucose = (glucose?.entries ?? []).reduce<{ time: number; value: number } | null>(
-    (latest, entry) => (!latest || entry.time > latest.time ? entry : latest),
-    null,
-  );
-  const bpm = live?.b;
   const unit = settings?.glucose_unit;
+  const low = settings?.glucose_target_low ?? DEFAULT_TARGET_LOW;
+  const high = settings?.glucose_target_high ?? DEFAULT_TARGET_HIGH;
+
+  const entries = useMemo(
+    () => [...(glucose?.entries ?? [])].sort((left, right) => left.time - right.time),
+    [glucose?.entries],
+  );
+  const latestGlucose = entries[entries.length - 1];
+  const glucoseColor = hex[latestGlucose ? classify(latestGlucose.value, low, high) : "in-range"];
+  const perMinute = trendPerMinute(entries);
+  // The last five points make the mini glucose trend; at minute resolution that
+  // is the recent window the user asked to see beside the reading.
+  const glucoseSeries = entries.slice(-5).map((entry) => entry.value);
+
+  // Live bpm has no history from the backend, so accumulate the ~1 Hz relay into
+  // a short ring buffer for its sparkline. Kept in a ref (mirrored to state so the
+  // tile repaints) because the 1 Hz refetch already drives the rerender.
+  const bpm = live?.b;
+  const pulseSeriesRef = useRef<number[]>([]);
+  const [pulseSeries, setPulseSeries] = useState<number[]>([]);
+  useEffect(() => {
+    if (bpm == null) {
+      return;
+    }
+    pulseSeriesRef.current = [...pulseSeriesRef.current, bpm].slice(-60);
+    setPulseSeries(pulseSeriesRef.current);
+  }, [bpm]);
+  const pulseColor = bpm == null ? "var(--muted-foreground)" : hex[pulseZone(bpm)];
 
   return (
     <div className="grid grid-cols-2 gap-3">
       <VitalTile
-        icon={<Droplet className="size-4" />}
+        icon={<Droplet className="size-6" />}
         value={latestGlucose ? toDisplay(latestGlucose.value, unit) : "–"}
         unit={unitLabel(unit)}
-        color="#6366f1"
+        color={glucoseColor}
+        series={glucoseSeries}
+        trend={perMinute}
       />
       <VitalTile
-        icon={<Heart className="size-4" />}
+        icon={<Heart className="size-6" />}
         value={bpm ?? "–"}
         unit="bpm"
-        color="#e0533d"
+        color={pulseColor}
+        series={pulseSeries}
       />
     </div>
+  );
+}
+
+// Trend arrow buckets (mg/dL per minute), mirroring the app's five directions.
+function TrendArrow({ perMin, color }: { perMin: number; color: string }) {
+  const Icon =
+    perMin >= 2
+      ? ArrowUp
+      : perMin >= 1
+        ? ArrowUpRight
+        : perMin > -1
+          ? ArrowRight
+          : perMin > -2
+            ? ArrowDownRight
+            : ArrowDown;
+  return (
+    <span style={{ color }}>
+      <Icon size={48} strokeWidth={2.5} />
+    </span>
+  );
+}
+
+// Slope against a reading 1–60 min before the latest; falls back to the
+// immediately previous reading. Mirrors the overview card's trend.
+function trendPerMinute(entries: GlucoseEntry[]) {
+  const latest = entries[entries.length - 1];
+  if (!latest || entries.length < 2) {
+    return undefined;
+  }
+  const previous =
+    [...entries].reverse().find((entry) => {
+      const minutesApart = (latest.time - entry.time) / 60000;
+      return minutesApart >= 1 && minutesApart <= 60;
+    }) ?? entries[entries.length - 2];
+  if (latest.time === previous.time) {
+    return undefined;
+  }
+  return (latest.value - previous.value) / ((latest.time - previous.time) / 60000);
+}
+
+// ponytail: fixed resting-HR zones (normal / elevated / high). No HR-zone
+// setting exists yet; wire it to settings once the app grows one.
+function pulseZone(bpm: number): "in-range" | "high" | "low" {
+  if (bpm < 100) {
+    return "in-range";
+  }
+  if (bpm < 140) {
+    return "high";
+  }
+  return "low";
+}
+
+// A flat inline sparkline — no chart lib for a dozen points read at arm's length.
+function Sparkline({ values, color }: { values: number[]; color: string }) {
+  if (values.length < 2) {
+    return <div className="h-9" />;
+  }
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const span = max - min || 1;
+  const width = 100;
+  const height = 24;
+  const points = values
+    .map((value, index) => {
+      const x = (index / (values.length - 1)) * width;
+      const y = height - ((value - min) / span) * height;
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    })
+    .join(" ");
+  return (
+    <svg
+      viewBox={`0 0 ${width} ${height}`}
+      preserveAspectRatio="none"
+      className="h-9 w-full"
+      aria-hidden
+    >
+      <polyline
+        points={points}
+        fill="none"
+        stroke={color}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
   );
 }
 
@@ -771,21 +922,29 @@ function VitalTile({
   value,
   unit,
   color,
+  series,
+  trend,
 }: {
   icon: React.ReactNode;
   value: React.ReactNode;
   unit: string;
   color: string;
+  series: number[];
+  trend?: number;
 }) {
   return (
-    <div className="flex flex-col items-center gap-1 rounded-xl border bg-card px-4 py-3">
-      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+    <div className="flex flex-col items-center gap-2 rounded-2xl border bg-card px-4 py-5">
+      <span className="flex items-center gap-2 text-base font-medium text-muted-foreground">
         <span style={{ color }}>{icon}</span>
         {unit}
       </span>
-      <span className="text-3xl leading-none font-bold tabular-nums" style={{ color }}>
-        {value}
-      </span>
+      <div className="flex items-center gap-1.5">
+        <span className="text-8xl leading-none font-bold tabular-nums" style={{ color }}>
+          {value}
+        </span>
+        {trend !== undefined && <TrendArrow perMin={trend} color={color} />}
+      </div>
+      <Sparkline values={series} color={color} />
     </div>
   );
 }

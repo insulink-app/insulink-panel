@@ -323,7 +323,9 @@ function Runner({
   // Enter. Mounted once — the handlers drive `setCore` and read fresh state, so
   // no stale closure; a phase ref keeps the dispatch current.
   const phaseRef = useRef(core.phase);
-  phaseRef.current = core.phase;
+  useEffect(() => {
+    phaseRef.current = core.phase;
+  }, [core.phase]);
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== "Enter") {

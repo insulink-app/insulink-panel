@@ -69,7 +69,7 @@ function ChartTooltip({
 // The forecast rows, anchored at the latest reading so the dashed line starts
 // on the curve. Points at or before that reading are dropped: a stale forecast
 // (its refresh failed) would otherwise double back over the real readings.
-export function predictionRows(
+function predictionRows(
   prediction: GlucosePredictionResponse | undefined,
   latest: GlucoseEntry | undefined,
 ) {

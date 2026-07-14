@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Activity, ChevronRight, Dumbbell, ListChecks, Plus } from "lucide-react";
+import { Activity, ChevronRight, Dumbbell, ListChecks, Play, Plus } from "lucide-react";
 import PanelPage from "@/layouts/panel";
 import { CardSkeleton } from "@/components/card-skeleton";
 import { Button } from "@/components/ui/button";
@@ -49,9 +49,12 @@ export default function RoutinesPage() {
           </p>
         ) : (
           list.map((routine) => (
-            <Link key={routine.id} to={`/health/routines/${routine.id}`}>
-              <Card className="cursor-pointer transition-colors hover:bg-secondary/50">
-                <CardContent className="flex items-center gap-4 py-4">
+            <Card key={routine.id} className="transition-colors hover:bg-secondary/50">
+              <CardContent className="flex items-center gap-4 py-4">
+                <Link
+                  to={`/health/routines/${routine.id}`}
+                  className="flex flex-1 items-center gap-4"
+                >
                   <div className="flex size-10 items-center justify-center rounded-lg bg-secondary">
                     <Dumbbell className="size-5" />
                   </div>
@@ -61,10 +64,22 @@ export default function RoutinesPage() {
                       {t("routines.count", { n: routine.items.length })}
                     </div>
                   </div>
-                  <ChevronRight className="size-5 text-muted-foreground" />
-                </CardContent>
-              </Card>
-            </Link>
+                </Link>
+                {routine.items.length > 0 && (
+                  <Button
+                    asChild
+                    size="icon"
+                    className="size-11 shrink-0 rounded-full"
+                    aria-label={t("routines.start")}
+                  >
+                    <Link to={`/health/routines/${routine.id}/run`}>
+                      <Play className="size-5" />
+                    </Link>
+                  </Button>
+                )}
+                <ChevronRight className="size-5 shrink-0 text-muted-foreground" />
+              </CardContent>
+            </Card>
           ))
         )}
       </div>

@@ -17,6 +17,9 @@ export interface UserSettings {
   glucose_high?: number;
   bolus_correction_factor?: number;
   bolus_carb_factor?: number;
+  // A JSON *string* (the app stores the raw secure-storage blob here) — see
+  // `@/lib/basal`. Keep it stringified or the app's pull() writes "[object …]".
+  basal_profiles?: string;
   prediction_enabled?: boolean;
   prediction_horizon?: number;
   notifications?: boolean;

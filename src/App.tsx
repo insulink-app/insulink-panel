@@ -16,9 +16,14 @@ if (import.meta.env.DEV) {
   });
 }
 
+// Module scope, not inline in the JSX: a client built during render is a new
+// client on every re-render, which throws away the cache and restarts every
+// poll timer.
+const queryClient = new QueryClient();
+
 function App({ children }: { children: React.ReactNode }) {
   return (
-    <QueryClientProvider client={new QueryClient()}>
+    <QueryClientProvider client={queryClient}>
       <ThemeProvider
         attribute="class"
         defaultTheme="system"

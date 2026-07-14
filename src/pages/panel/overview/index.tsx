@@ -12,6 +12,8 @@ import { GlucoseChart } from "./glucose-chart";
 import { NutritionCard } from "./nutrition-card";
 import { ActivityCard } from "./activity-card";
 
+const GLUCOSE_POLL_MS = 60_000;
+
 export default function OverviewPage() {
   const { t } = useTranslation();
 
@@ -22,6 +24,10 @@ export default function OverviewPage() {
   const glucose = useQuery({
     queryKey: ["glucose-history"],
     queryFn: glucoseService.history,
+    // The sensor writes about one reading a minute; polling faster only burns
+    // requests. Paused while the tab is in the background (the TanStack default)
+    // and refetched on focus, so a returning tab is current within a second.
+    refetchInterval: GLUCOSE_POLL_MS,
   });
   // The app defaults the horizon to 30 min and only offers 30/60.
   const horizon = settings?.prediction_horizon ?? 30;
@@ -29,6 +35,7 @@ export default function OverviewPage() {
     queryKey: ["glucose-prediction", horizon],
     queryFn: () => glucoseService.predict(horizon),
     enabled: settings?.prediction_enabled === true,
+    refetchInterval: GLUCOSE_POLL_MS,
   });
   const meals = useQuery({ queryKey: ["meals"], queryFn: nutritionService.meals });
   const drinks = useQuery({ queryKey: ["drinks"], queryFn: nutritionService.drinks });

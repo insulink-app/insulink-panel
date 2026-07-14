@@ -4,6 +4,7 @@ import * as React from "react";
 import {
   Activity,
   ChartColumnBig,
+  ChartLine,
   CupSoda,
   Cpu,
   Droplet,
@@ -98,6 +99,7 @@ export function AppNavigation(t: TFunction) {
       items: [
         { title: t("settings.section_glucose"), url: "/settings/glucose", icon: Droplet },
         { title: t("settings.section_bolus"), url: "/settings/bolus", icon: Syringe },
+        { title: t("settings.section_basal"), url: "/settings/basal", icon: ChartLine },
         { title: t("settings.section_body"), url: "/settings/body", icon: Ruler },
         { title: t("settings.section_activity_goals"), url: "/settings/activity_goals", icon: Flag },
         { title: t("settings.section_nutrition"), url: "/settings/nutrition", icon: Utensils },

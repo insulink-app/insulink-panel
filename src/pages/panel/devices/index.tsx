@@ -10,6 +10,14 @@ import sensorService, {
   type SensorHistoryEntry,
   sensorType,
 } from "@/api/services/sensor-service";
+import {
+  formatSpan,
+  sensorActive,
+  sensorEndedAt,
+  sensorStart,
+  sensorWornMs,
+  uniqueSensors,
+} from "@/lib/sensor";
 
 export default function DevicesPage() {
   const { t } = useTranslation();
@@ -20,52 +28,62 @@ export default function DevicesPage() {
     queryFn: sensorService.history,
   });
 
+  // Newest session first. Sorted by the real start, not `registered_at` — a
+  // sensor restored onto a new install registers late and would jump the queue.
   const sensors = useMemo(
     () =>
-      (data?.sensors ?? [])
-        .slice()
-        .sort((a, b) => b.registered_at - a.registered_at),
+      uniqueSensors(data?.sensors ?? []).sort(
+        (first, second) => sensorStart(second) - sensorStart(first),
+      ),
     [data],
   );
 
   const columns = useMemo<ListColumn<SensorHistoryEntry>[]>(
     () => [
-      { header: t("devices.col_sensor"), cell: (s) => sensorType(s.data) },
       {
-        header: t("devices.col_registered"),
-        cell: (s) => format(new Date(s.registered_at), "dd.MM.yyyy HH:mm"),
+        header: t("devices.col_sensor"),
+        cell: (sensor) => sensorType(sensor.data),
+      },
+      {
+        header: t("devices.col_started"),
+        cell: (sensor) => format(new Date(sensorStart(sensor)), "dd.MM.yyyy HH:mm"),
       },
       {
         header: t("devices.col_expires"),
-        cell: (s) => format(new Date(s.expires_at), "dd.MM.yyyy HH:mm"),
+        cell: (sensor) => format(new Date(sensor.expires_at), "dd.MM.yyyy HH:mm"),
       },
       {
-        header: t("devices.col_lifetime"),
-        cell: (s) => {
-          const days =
-            (s.expires_at - s.registered_at) / (1000 * 60 * 60 * 24);
-          return t("devices.days", { n: Math.round(days) });
-        },
+        header: t("devices.col_runtime"),
+        cell: (sensor) => formatSpan(sensorWornMs(sensor, sensors), t),
       },
       {
         header: t("devices.col_status"),
-        cell: (s) => {
-          const active = s.expires_at > Date.now();
+        cell: (sensor) => {
+          const active = sensorActive(sensor, sensors);
+          // An expiry the sensor never reached means it was swapped out early,
+          // which reads differently from simply running out.
+          const early =
+            !active && (sensorEndedAt(sensor, sensors) ?? 0) < sensor.expires_at;
           const color = active
             ? "var(--glucose-in-range)"
             : "var(--muted-foreground)";
+          const label = active
+            ? t("devices.active")
+            : early
+              ? t("devices.replaced")
+              : t("devices.expired");
           return (
             <span
               className="rounded-full px-2 py-0.5 text-xs font-semibold"
               style={{ color, backgroundColor: `color-mix(in srgb, ${color} 18%, transparent)` }}
             >
-              {active ? t("devices.active") : t("devices.expired")}
+              {label}
             </span>
           );
         },
       },
     ],
-    [t],
+    [t, sensors],
   );
 
   return (
@@ -92,7 +110,7 @@ export default function DevicesPage() {
             data={sensors}
             isLoading={isLoading}
             pageSize={25}
-            onRowClick={(s) => navigate(`/devices/sensor/${s.id}`)}
+            onRowClick={(sensor) => navigate(`/devices/sensor/${sensor.id}`)}
           />
         )}
       </div>

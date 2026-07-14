@@ -29,6 +29,8 @@ const getRoutes = (): RouteObject[] => {
     { path: "devices/sensor/:id", element: Component("/pages/panel/sensor-detail") },
     { path: "devices/:view", element: Component("/pages/panel/devices") },
     { path: "settings", element: <Navigate to="/settings/glucose" replace /> },
+    { path: "settings/basal", element: Component("/pages/panel/basal") },
+    { path: "settings/basal/:index", element: Component("/pages/panel/basal-editor") },
     { path: "settings/:view", element: Component("/pages/panel/settings") },
   ];
 };

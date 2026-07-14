@@ -53,4 +53,25 @@ export function sensorType(data: string): string {
   }
 }
 
+// Nominal ms between live readings, mirroring the app's `SensorType`
+// (`readingIntervalSec`: G7 ~5 min, Libre 3 ~1 min).
+const READING_INTERVAL_MS: Record<string, number> = {
+  dexcom_g7: 5 * 60 * 1000,
+  DEXCOM_G7: 5 * 60 * 1000,
+  abbott_libre3: 60 * 1000,
+  ABBOTT_LIBRE3: 60 * 1000,
+};
+
+/** Defaults to the G7's interval, matching `sensorType`'s own fallback. */
+export function sensorReadingIntervalMs(data: string): number {
+  try {
+    const key = JSON.parse(data)?.sensor_type as string | undefined;
+    return (key && READING_INTERVAL_MS[key]) || READING_INTERVAL_MS.dexcom_g7;
+  } catch {
+    return READING_INTERVAL_MS.dexcom_g7;
+  }
+}
+
+// The runtime maths over these entries lives in `@/lib/sensor`.
+
 export default { current, history };

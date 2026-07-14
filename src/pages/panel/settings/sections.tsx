@@ -2,8 +2,6 @@
 // apply to a helper module.
 /* eslint-disable react-refresh/only-export-components */
 import { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { Droplet, Syringe, Ruler, Flag, Utensils, type LucideIcon } from "lucide-react";
 import { Label } from "@/components/ui/label";
@@ -18,9 +16,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
-import settingsService, {
-  type UserSettings,
-} from "@/api/services/settings-service";
+import { type UserSettings } from "@/api/services/settings-service";
+import { useSettings } from "@/hooks/use-settings";
 
 // Each field mirrors an app setting (see profile_settings.dart / the *_state
 // loaders). `def` is the app's default so the panel shows populated values even
@@ -115,33 +112,16 @@ export const SETTINGS_SECTIONS: Section[] = [
 
 export function SectionPanel({ section }: { section: Section }) {
   const { t } = useTranslation();
-  const queryClient = useQueryClient();
-  const { data } = useQuery({
-    queryKey: ["settings"],
-    queryFn: settingsService.find,
-  });
+  const { settings, save } = useSettings();
 
   // Keep the full blob so app-only keys (box layouts etc.) survive the
   // full-replace save. Reset local edits whenever fresh server data arrives.
   const [form, setForm] = useState<UserSettings>({});
   const [synced, setSynced] = useState<UserSettings>();
-  if (data && data !== synced) {
-    setSynced(data);
-    setForm(data);
+  if (settings && settings !== synced) {
+    setSynced(settings);
+    setForm(settings);
   }
-
-  const mutation = useMutation({
-    mutationFn: (next: UserSettings) => settingsService.change(next),
-    onSuccess: (res) => {
-      if (res.success) {
-        toast.success(t("settings.saved"));
-        queryClient.invalidateQueries({ queryKey: ["settings"] });
-      } else {
-        toast.error(t("settings.save_failed"));
-      }
-    },
-    onError: () => toast.error(t("settings.save_failed")),
-  });
 
   const set = (key: string, value: unknown) =>
     setForm((current) => ({ ...current, [key]: value }));
@@ -173,11 +153,11 @@ export function SectionPanel({ section }: { section: Section }) {
 
       <Button
         className="self-start"
-        onClick={() => mutation.mutate(form)}
-        disabled={mutation.isPending}
+        onClick={() => save.mutate(form)}
+        disabled={save.isPending}
       >
         {t("common.save")}
-        {mutation.isPending && <Spinner className="ml-2" />}
+        {save.isPending && <Spinner className="ml-2" />}
       </Button>
     </div>
   );

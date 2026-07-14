@@ -50,24 +50,35 @@ function formatRate(perMin: number, unit?: string) {
   return `${rate >= 0 ? "+" : "−"}${Math.abs(rate).toFixed(digits)}`;
 }
 
-// Slope against a reading 1–60 min before the latest (scan back so odd
-// spacing/duplicate timestamps at the tail don't drop the arrow); fall back to
-// the immediately previous reading if nothing lands in-window.
+// Slope against the reading closest to 15 min before the latest — the usual CGM
+// delta window. A shorter gap makes the rate noise-dominated: ±1 mg/dL of jitter
+// one minute apart already reads as ±1 mg/dL/min and slams the arrow to a
+// bucket edge. Nothing within 5–30 min back → no arrow rather than a wrong one.
+const TREND_TARGET_MINUTES = 15;
+
 function trendPerMinute(entries: GlucoseEntry[]) {
   const latest = entries[entries.length - 1];
   if (!latest || entries.length < 2) {
     return undefined;
   }
-  const previous =
-    [...entries].reverse().find((entry) => {
-      const minutesApart = (latest.time - entry.time) / 60000;
-      return minutesApart >= 1 && minutesApart <= 60;
-    }) ?? entries[entries.length - 2];
-  if (latest.time === previous.time) {
+  const candidates = entries.filter((entry) => {
+    const minutesApart = (latest.time - entry.time) / 60000;
+    return minutesApart >= 5 && minutesApart <= 30;
+  });
+  if (candidates.length === 0) {
     return undefined;
   }
+  const reference = candidates.reduce((closest, entry) => {
+    const distance = Math.abs(
+      (latest.time - entry.time) / 60000 - TREND_TARGET_MINUTES,
+    );
+    const closestDistance = Math.abs(
+      (latest.time - closest.time) / 60000 - TREND_TARGET_MINUTES,
+    );
+    return distance < closestDistance ? entry : closest;
+  });
   return (
-    (latest.value - previous.value) / ((latest.time - previous.time) / 60000)
+    (latest.value - reference.value) / ((latest.time - reference.time) / 60000)
   );
 }
 

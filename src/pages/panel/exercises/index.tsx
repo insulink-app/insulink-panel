@@ -5,12 +5,20 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { ArrowLeft, Pencil, Plus, Trash2 } from "lucide-react";
 import PanelPage from "@/layouts/panel";
+import { CardSkeleton } from "@/components/card-skeleton";
 import { Button } from "@/components/ui/button";
 import { ConfirmDelete } from "@/components/confirm-delete";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -56,7 +64,13 @@ export default function ExercisesPage() {
     mutation.mutate(list.filter((entry) => entry.id !== exercise.id));
 
   return (
-    <PanelPage title={t("exercises.title")}>
+    <PanelPage
+      title={t("exercises.title")}
+      parents={[
+        { title: t("nav.health") },
+        { title: t("routines.title"), href: "/health/routines" },
+      ]}
+    >
       <div className="py-6 flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <Button asChild variant="ghost" size="sm">
@@ -72,9 +86,7 @@ export default function ExercisesPage() {
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center py-16">
-            <Spinner />
-          </div>
+          <CardSkeleton />
         ) : list.length === 0 ? (
           <p className="py-16 text-center text-sm text-muted-foreground">
             {t("exercises.empty")}
@@ -148,19 +160,23 @@ function ExerciseEditor({
           </div>
           <div className="flex flex-col gap-2">
             <Label>{t("exercises.kind")}</Label>
-            <select
-              className="border rounded-md h-9 px-2 bg-transparent"
+            <Select
               value={draft.kind}
-              onChange={(event) =>
-                setDraft((current) => ({ ...current, kind: event.target.value as ExerciseKind }))
+              onValueChange={(kind) =>
+                setDraft((current) => ({ ...current, kind: kind as ExerciseKind }))
               }
             >
-              {KINDS.map((kind) => (
-                <option key={kind} value={kind}>
-                  {t("exercises.kind_" + kind)}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {KINDS.map((kind) => (
+                  <SelectItem key={kind} value={kind}>
+                    {t("exercises.kind_" + kind)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
         <DialogFooter>

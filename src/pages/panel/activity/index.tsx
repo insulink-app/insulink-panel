@@ -2,12 +2,12 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { format } from "date-fns";
+import { differenceInCalendarDays, format } from "date-fns";
 import { Bike, Dumbbell, Footprints, Zap } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import PanelPage from "@/layouts/panel";
+import { CardSkeleton } from "@/components/card-skeleton";
 import { Card, CardContent } from "@/components/ui/card";
-import { Spinner } from "@/components/ui/spinner";
 import sportService, {
   type CardioType,
   type Training,
@@ -48,29 +48,74 @@ export default function ActivityPage() {
     return merged.sort((left, right) => right.at - left.at);
   }, [workouts.data, trainings.data]);
 
+  // Same-day items share a heading; `items` is already newest-first, so grouping
+  // keeps that order. The key is the plain date — never the translated label.
+  const days = useMemo(() => {
+    const byDay = new Map<string, ActivityItem[]>();
+    for (const item of items) {
+      const day = format(new Date(item.at), "dd.MM.yyyy");
+      const existing = byDay.get(day);
+      if (existing) {
+        existing.push(item);
+      } else {
+        byDay.set(day, [item]);
+      }
+    }
+    return [...byDay];
+  }, [items]);
+
   const isLoading = workouts.isLoading || trainings.isLoading;
 
   return (
-    <PanelPage title={t("activity.title")}>
+    <PanelPage title={t("activity.title")} parents={[{ title: t("nav.health") }]}>
       <div className="py-6">
         {isLoading ? (
-          <div className="flex justify-center py-16">
-            <Spinner />
-          </div>
+          <CardSkeleton />
         ) : items.length === 0 ? (
           <p className="py-16 text-center text-sm text-muted-foreground">
             {t("common.no_data")}
           </p>
         ) : (
-          <div className="flex flex-col gap-2">
-            {items.map((item) => (
-              <ActivityRow key={`${item.kind}-${item.data.id}`} item={item} routineName={routineName} />
+          <div className="flex flex-col gap-6">
+            {days.map(([day, dayItems]) => (
+              <div key={day} className="flex flex-col gap-2">
+                <h2 className="text-sm font-medium text-muted-foreground">
+                  <DayHeading at={dayItems[0].at} date={day} />
+                </h2>
+                {dayItems.map((item) => (
+                  <ActivityRow
+                    key={`${item.kind}-${item.data.id}`}
+                    item={item}
+                    routineName={routineName}
+                  />
+                ))}
+              </div>
             ))}
           </div>
         )}
       </div>
     </PanelPage>
   );
+}
+
+// "Today"/"Yesterday" for the two most recent days, the weekday name within the
+// past week, the plain date before that.
+function DayHeading({ at, date }: { at: number; date: string }) {
+  const { t, i18n } = useTranslation();
+  const daysAgo = differenceInCalendarDays(new Date(), new Date(at));
+  if (daysAgo === 0) {
+    return t("activity.today");
+  }
+  if (daysAgo === 1) {
+    return t("activity.yesterday");
+  }
+  if (daysAgo < 7) {
+    // Intl carries the weekday names, so neither locale JSON has to list them.
+    return new Intl.DateTimeFormat(i18n.language.replace("_", "-"), { weekday: "long" }).format(
+      new Date(at),
+    );
+  }
+  return date;
 }
 
 function ActivityRow({
@@ -100,7 +145,7 @@ function ActivityRow({
           <div className="flex-1">
             <div className="font-medium">{title}</div>
             <div className="text-xs text-muted-foreground">
-              {format(new Date(item.at), "dd.MM.yyyy HH:mm")}
+              {format(new Date(item.at), "HH:mm")}
             </div>
           </div>
           <div className="text-sm text-muted-foreground">{summary}</div>

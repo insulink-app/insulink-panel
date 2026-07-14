@@ -5,22 +5,18 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import {
-  Droplet,
-  Syringe,
-  Ruler,
-  Flag,
-  Utensils,
-  Bell,
-  LineChart,
-  BellOff,
-  Code,
-  type LucideIcon,
-} from "lucide-react";
+import { Droplet, Syringe, Ruler, Flag, Utensils, type LucideIcon } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import settingsService, {
   type UserSettings,
@@ -55,7 +51,8 @@ export type Field =
 // hold translation keys, resolved with t() at render.
 export type Section = { id: string; icon: LucideIcon; fields: Field[] };
 
-// Categories ↔ the app's ProfilePage topics. Order roughly follows the app.
+// Categories ↔ the app's ProfilePage topics the panel can edit. Order roughly
+// follows the app. Alert/prediction/developer topics stay app-only.
 export const SETTINGS_SECTIONS: Section[] = [
   {
     id: "glucose",
@@ -114,58 +111,7 @@ export const SETTINGS_SECTIONS: Section[] = [
       { type: "number", key: "nutrition.protein_goal_g", label: "settings.protein_goal", def: 100, min: 0, step: 5 },
     ],
   },
-  {
-    id: "notifications",
-    icon: Bell,
-    fields: [
-      { type: "toggle", key: "notifications", label: "settings.notifications", def: true },
-      { type: "toggle", key: "live_glucose_notification", label: "settings.live_glucose_notification", def: true },
-      { type: "toggle", key: "connection_lost_alert", label: "settings.connection_lost_alert", def: true },
-      { type: "toggle", key: "sensor_expiry_alert", label: "settings.sensor_expiry_alert", def: true },
-      { type: "toggle", key: "sensor_halftime_alert", label: "settings.sensor_halftime_alert", def: true },
-      { type: "toggle", key: "training_detected_alert", label: "settings.training_detected_alert", def: true },
-      { type: "toggle", key: "predictive_advisory_alert", label: "settings.predictive_advisories", def: true },
-      { type: "toggle", key: "alarm_sound", label: "settings.alarm_sound", def: true },
-    ],
-  },
-  {
-    id: "prediction",
-    icon: LineChart,
-    fields: [
-      { type: "toggle", key: "prediction_enabled", label: "settings.prediction_enabled", def: false },
-      {
-        type: "select",
-        key: "prediction_horizon",
-        label: "settings.prediction_horizon",
-        def: 30,
-        options: [{ value: 30 }, { value: 60 }],
-      },
-    ],
-  },
-  {
-    id: "silent_mode",
-    icon: BellOff,
-    fields: [
-      { type: "toggle", key: "silent_mode", label: "settings.silent_mode", hint: "settings.silent_mode_hint", def: false },
-    ],
-  },
-  {
-    id: "developer",
-    icon: Code,
-    fields: [
-      { type: "toggle", key: "developer", label: "settings.developer_mode", def: false },
-    ],
-  },
 ];
-
-// The five topics the app exposes as full pages; the rest stay in the dialog.
-export const PAGE_SECTION_IDS = ["glucose", "bolus", "body", "activity_goals", "nutrition"];
-
-export const pageSections = () =>
-  SETTINGS_SECTIONS.filter((section) => PAGE_SECTION_IDS.includes(section.id));
-
-export const dialogSections = () =>
-  SETTINGS_SECTIONS.filter((section) => !PAGE_SECTION_IDS.includes(section.id));
 
 export function SectionPanel({ section }: { section: Section }) {
   const { t } = useTranslation();
@@ -203,7 +149,7 @@ export function SectionPanel({ section }: { section: Section }) {
   const Icon = section.icon;
 
   return (
-    <div className="flex max-w-2xl flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
       <div className="flex items-start gap-4">
         <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
           <Icon className="size-6" />
@@ -262,19 +208,21 @@ function FieldRow({
       const current = value ?? field.def;
       const numeric = typeof field.def === "number";
       return (
-        <select
-          className="h-9 w-40 rounded-md border bg-transparent px-2"
+        <Select
           value={String(current)}
-          onChange={(event) =>
-            onChange(numeric ? Number(event.target.value) : event.target.value)
-          }
+          onValueChange={(selected) => onChange(numeric ? Number(selected) : selected)}
         >
-          {field.options.map((option) => (
-            <option key={String(option.value)} value={String(option.value)}>
-              {option.label ?? t("settings.minutes", { n: Number(option.value) })}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger className="w-40">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {field.options.map((option) => (
+              <SelectItem key={String(option.value)} value={String(option.value)}>
+                {option.label ?? t("settings.minutes", { n: Number(option.value) })}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       );
     }
 

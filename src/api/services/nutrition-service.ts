@@ -4,9 +4,21 @@ import client from "../client";
 export interface Meal {
   time: number; // epoch ms
   carbs?: number;
-  glucose?: number;
-  bolus?: number;
-  entries?: unknown[];
+  glucose?: number; // mg/dL
+  bolus?: number; // insulin units
+  entries?: MealEntry[];
+}
+
+// One product portion inside a meal (see the app's meal.dart). A manual carb
+// entry carries no entries at all.
+export interface MealEntry {
+  barcode?: string;
+  name: string;
+  unit?: string; // 'g' or 'ml'
+  amount: number;
+  carbs: number;
+  protein?: number;
+  serving?: number; // the product's serving size in `unit`, if it declares one
 }
 
 export interface Drink {

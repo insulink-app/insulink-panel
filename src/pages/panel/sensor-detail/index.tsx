@@ -7,6 +7,7 @@ import { ArrowLeft } from "lucide-react";
 import PanelPage from "@/layouts/panel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { StatTile } from "@/components/stat-tile";
 import sensorService, { sensorType } from "@/api/services/sensor-service";
 import glucoseService from "@/api/services/glucose-service";
 import { classify } from "@/lib/glucose";
@@ -46,7 +47,13 @@ export default function SensorDetailPage() {
     : 0;
 
   return (
-    <PanelPage title={t("devices.title")}>
+    <PanelPage
+      title={sensor ? sensorType(sensor.data) : t("devices.title")}
+      parents={[
+        { title: t("nav.devices") },
+        { title: t("nav.sensor"), href: "/devices/sensor" },
+      ]}
+    >
       <div className="py-6 flex flex-col gap-6">
         <Button asChild variant="ghost" size="sm" className="self-start">
           <Link to="/devices/sensor">
@@ -75,16 +82,16 @@ export default function SensorDetailPage() {
             </div>
 
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <Stat
+              <StatTile
                 label={t("devices.col_registered")}
                 value={format(new Date(sensor.registered_at), "dd.MM.yyyy HH:mm")}
               />
-              <Stat
+              <StatTile
                 label={t("devices.col_expires")}
                 value={format(new Date(sensor.expires_at), "dd.MM.yyyy HH:mm")}
               />
-              <Stat label={t("devices.col_lifetime")} value={t("devices.days", { n: days })} />
-              <Stat label={t("devices.readings")} value={String(stats?.count ?? 0)} />
+              <StatTile label={t("devices.col_lifetime")} value={t("devices.days", { n: days })} />
+              <StatTile label={t("devices.readings")} value={String(stats?.count ?? 0)} />
             </div>
 
             {stats && stats.count > 0 && (
@@ -93,10 +100,10 @@ export default function SensorDetailPage() {
                   <CardTitle>{t("devices.glucose_summary")}</CardTitle>
                 </CardHeader>
                 <CardContent className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  <Stat label={t("devices.avg")} value={`${stats.avg} mg/dL`} />
-                  <Stat label={t("devices.min")} value={`${stats.min} mg/dL`} />
-                  <Stat label={t("devices.max")} value={`${stats.max} mg/dL`} />
-                  <Stat label={t("devices.in_range")} value={`${stats.inRange}%`} />
+                  <StatTile label={t("devices.avg")} value={`${stats.avg} mg/dL`} />
+                  <StatTile label={t("devices.min")} value={`${stats.min} mg/dL`} />
+                  <StatTile label={t("devices.max")} value={`${stats.max} mg/dL`} />
+                  <StatTile label={t("devices.in_range")} value={`${stats.inRange}%`} />
                 </CardContent>
               </Card>
             )}
@@ -107,13 +114,3 @@ export default function SensorDetailPage() {
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex flex-col gap-1 rounded-xl bg-secondary/50 p-4">
-      <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-        {label}
-      </span>
-      <span className="text-lg font-bold">{value}</span>
-    </div>
-  );
-}

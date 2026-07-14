@@ -79,7 +79,7 @@ export default function BodyPage() {
   ];
 
   return (
-    <PanelPage title={t("body.title")}>
+    <PanelPage title={t("body.title")} parents={[{ title: t("nav.health") }]}>
       <div className="py-6 flex flex-col gap-6">
         <div className="flex flex-wrap gap-1">
           {METRICS.map((entry) => (

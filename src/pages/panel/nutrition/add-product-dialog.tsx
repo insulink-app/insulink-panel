@@ -11,6 +11,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Dialog,
   DialogContent,
   DialogFooter,
@@ -253,14 +260,15 @@ export default function ProductDialog({
             <Input value={draft.brand} onChange={(event) => set("brand", event.target.value)} />
           </Field>
           <Field label={t("nutrition.add.unit")}>
-            <select
-              value={draft.unit}
-              onChange={(event) => set("unit", event.target.value)}
-              className="h-9 w-full rounded-md border bg-transparent px-3 text-sm"
-            >
-              <option value="g">g</option>
-              <option value="ml">ml</option>
-            </select>
+            <Select value={draft.unit} onValueChange={(unit) => set("unit", unit)}>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="g">g</SelectItem>
+                <SelectItem value="ml">ml</SelectItem>
+              </SelectContent>
+            </Select>
           </Field>
           <NumberField label={t("nutrition.add.carbs")} value={draft.carbs} onChange={(v) => set("carbs", v)} />
           <NumberField label={t("nutrition.add.fat")} value={draft.fat} onChange={(v) => set("fat", v)} />

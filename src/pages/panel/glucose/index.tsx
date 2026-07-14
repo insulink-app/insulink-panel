@@ -1,8 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
-import { ChevronLeft, ChevronRight, SkipForward } from "lucide-react";
 import {
   Area,
   AreaChart,
@@ -15,9 +14,10 @@ import {
   YAxis,
 } from "recharts";
 import PanelPage from "@/layouts/panel";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataList, type ListColumn } from "@/components/data-list";
+import { TimeRangePicker, TimeWindowNav } from "@/components/time-window";
+import { DAY, useTimeWindow, useWindowedData } from "@/lib/use-time-window";
 import glucoseService, {
   type GlucoseEntry,
 } from "@/api/services/glucose-service";
@@ -31,20 +31,6 @@ import {
   unitLabel,
 } from "@/lib/glucose";
 import { useGlucoseHex } from "@/lib/use-glucose-hex";
-
-const HOUR = 60 * 60 * 1000;
-const DAY = 24 * HOUR;
-
-// Selectable graph spans. `hours`/`days` drive the localized label so no display
-// string is concatenated from literals.
-const RANGES = [
-  { ms: 3 * HOUR, hours: 3 },
-  { ms: 6 * HOUR, hours: 6 },
-  { ms: 12 * HOUR, hours: 12 },
-  { ms: DAY, hours: 24 },
-  { ms: 3 * DAY, days: 3 },
-  { ms: 7 * DAY, days: 7 },
-];
 
 export default function GlucosePage() {
   const { t } = useTranslation();
@@ -148,92 +134,25 @@ function GlucoseChart({
 }) {
   const { t } = useTranslation();
   const hex = useGlucoseHex();
-  const [rangeMs, setRangeMs] = useState(6 * HOUR);
-  // `null` anchor tracks the latest reading; a number pins the window end.
-  const [anchorEnd, setAnchorEnd] = useState<number | null>(null);
 
-  const latest = entries[0]?.time ?? Date.now();
-  const earliest = entries[entries.length - 1]?.time ?? latest;
-  const end = anchorEnd ?? latest;
-  const start = end - rangeMs;
+  const ascending = useMemo(() => entries.slice().reverse(), [entries]);
+  const latest = ascending[ascending.length - 1]?.time ?? Date.now();
+  const earliest = ascending[0]?.time ?? latest;
+  const window = useTimeWindow(latest, earliest);
+  const windowData = useWindowedData(ascending, (entry) => entry.time, window);
 
-  const windowData = useMemo(
-    () =>
-      entries
-        .filter((entry) => entry.time >= start && entry.time <= end)
-        .map((entry) => ({ time: entry.time, value: entry.value }))
-        .sort((left, right) => left.time - right.time),
-    [entries, start, end],
-  );
-
-  const values = windowData.map((point) => point.value);
+  const values = windowData.map((entry) => entry.value);
   const yMin = Math.min(low - 20, ...(values.length ? values : [low]));
   const yMax = Math.max(high + 20, ...(values.length ? values : [high]));
-
-  const atLatest = anchorEnd == null || end >= latest;
-  const atEarliest = start <= earliest;
-
-  const panBy = (deltaMs: number) => {
-    const proposed = (anchorEnd ?? latest) + deltaMs;
-    // Snap back to live tracking once panned up to (or past) the latest reading.
-    setAnchorEnd(proposed >= latest ? null : proposed);
-  };
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between gap-4 flex-wrap">
         <CardTitle>{t("glucose.chart_title")}</CardTitle>
-        <div className="flex flex-wrap gap-1">
-          {RANGES.map((range) => (
-            <Button
-              key={range.ms}
-              size="sm"
-              variant={rangeMs === range.ms ? "secondary" : "ghost"}
-              onClick={() => setRangeMs(range.ms)}
-            >
-              {range.days
-                ? t("glucose.range_days", { n: range.days })
-                : t("glucose.range_hours", { n: range.hours })}
-            </Button>
-          ))}
-        </div>
+        <TimeRangePicker window={window} />
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
-        <div className="flex items-center justify-between gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={atEarliest}
-            onClick={() => panBy(-rangeMs)}
-          >
-            <ChevronLeft className="size-4" />
-            {t("glucose.older")}
-          </Button>
-          <span className="text-xs text-muted-foreground">
-            {format(new Date(start), "dd.MM. HH:mm")} –{" "}
-            {format(new Date(end), "dd.MM. HH:mm")}
-          </span>
-          <div className="flex gap-1">
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={atLatest}
-              onClick={() => panBy(rangeMs)}
-            >
-              {t("glucose.newer")}
-              <ChevronRight className="size-4" />
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={atLatest}
-              onClick={() => setAnchorEnd(null)}
-            >
-              <SkipForward className="size-4" />
-              {t("glucose.latest")}
-            </Button>
-          </div>
-        </div>
+        <TimeWindowNav window={window} />
         {windowData.length === 0 ? (
           <p className="py-16 text-center text-sm text-muted-foreground">
             {t("common.no_data")}
@@ -246,9 +165,9 @@ function GlucoseChart({
                 dataKey="time"
                 type="number"
                 scale="time"
-                domain={[start, end]}
+                domain={[window.start, window.end]}
                 tickFormatter={(value) =>
-                  format(new Date(value), rangeMs > DAY ? "dd.MM." : "HH:mm")
+                  format(new Date(value), window.rangeMs > DAY ? "dd.MM." : "HH:mm")
                 }
                 fontSize={12}
               />

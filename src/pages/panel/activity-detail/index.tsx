@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -7,10 +7,13 @@ import { format } from "date-fns";
 import { ArrowLeft, Trash2 } from "lucide-react";
 import {
   CartesianGrid,
+  getRelativeCoordinate,
   Line,
   LineChart,
   ResponsiveContainer,
   Tooltip,
+  useXAxisInverseScale,
+  type InverseScaleFunction,
   XAxis,
   YAxis,
 } from "recharts";
@@ -18,7 +21,9 @@ import PanelPage from "@/layouts/panel";
 import { Button } from "@/components/ui/button";
 import { ConfirmDelete } from "@/components/confirm-delete";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { StatTile } from "@/components/stat-tile";
 import { RouteMap } from "@/components/route-map";
+import { positionAt, type TrackPoint } from "@/lib/track";
 import sportService, {
   type SetLog,
   type Training,
@@ -51,11 +56,24 @@ export default function ActivityDetailPage() {
       ? trainings.data?.trainings?.find((entry) => entry.id === id)
       : undefined;
 
-  const routineName = new Map(
-    (routines.data?.routines ?? []).map((routine) => [routine.id, routine.name]),
+  // Everything below is memoised on the query data, not rebuilt per render: the
+  // hover state lives on this component, so anything computed inline here would
+  // re-run on every mouse move across the chart.
+  const routineName = useMemo(
+    () => new Map((routines.data?.routines ?? []).map((routine) => [routine.id, routine.name])),
+    [routines.data],
   );
-  const exerciseName = new Map(
-    (exercises.data?.exercises ?? []).map((exercise) => [exercise.id, exercise.name]),
+  const exerciseName = useMemo(
+    () => new Map((exercises.data?.exercises ?? []).map((exercise) => [exercise.id, exercise.name])),
+    [exercises.data],
+  );
+  const glucoseSeries = useMemo(
+    () => (glucose.data?.entries ?? []).map((entry) => ({ t: entry.time, glucose: entry.value })),
+    [glucose.data],
+  );
+  const pulseSeries = useMemo(
+    () => (pulse.data?.samples ?? []).map((sample) => ({ t: sample.t, pulse: sample.b })),
+    [pulse.data],
   );
 
   // Time window the vitals chart covers.
@@ -106,37 +124,24 @@ export default function ActivityDetailPage() {
 
   // Timestamp under the vitals-chart cursor; drives the marker on the map.
   const [hoverTime, setHoverTime] = useState<number | null>(null);
-  // Interpolate a position along the route for a smooth marker: linearly blend
-  // the two track points that bracket the hover time, rather than snapping.
-  const highlight = useMemo(() => {
-    const track = training?.track;
-    if (!track || track.length === 0 || hoverTime == null) {
-      return null;
-    }
-    const ordered = track.slice().sort((left, right) => left.t - right.t);
-    if (hoverTime <= ordered[0].t) {
-      return { lat: ordered[0].lat, lng: ordered[0].lng };
-    }
-    const last = ordered[ordered.length - 1];
-    if (hoverTime >= last.t) {
-      return { lat: last.lat, lng: last.lng };
-    }
-    let index = 0;
-    while (index < ordered.length - 1 && ordered[index + 1].t < hoverTime) {
-      index += 1;
-    }
-    const before = ordered[index];
-    const after = ordered[index + 1];
-    const span = after.t - before.t;
-    const fraction = span > 0 ? (hoverTime - before.t) / span : 0;
-    return {
-      lat: before.lat + (after.lat - before.lat) * fraction,
-      lng: before.lng + (after.lng - before.lng) * fraction,
-    };
-  }, [training, hoverTime]);
+  // Sorted once per training, not per hover: `positionAt` only reads it.
+  const orderedTrack = useMemo(
+    () => (training?.track ?? []).slice().sort((left, right) => left.t - right.t),
+    [training],
+  );
+  const highlight = useMemo(
+    () => positionAt(orderedTrack, hoverTime),
+    [orderedTrack, hoverTime],
+  );
 
   return (
-    <PanelPage title={t("activity.title")}>
+    <PanelPage
+      title={title || t("activity.title")}
+      parents={[
+        { title: t("nav.health") },
+        { title: t("activity.title"), href: "/health/activity" },
+      ]}
+    >
       <div className="py-6 flex flex-col gap-6">
         <Button asChild variant="ghost" size="sm" className="self-start">
           <Link to="/health/activity">
@@ -177,8 +182,8 @@ export default function ActivityDetailPage() {
             {window && (
               <VitalsChart
                 window={window}
-                glucose={(glucose.data?.entries ?? []).map((entry) => ({ t: entry.time, glucose: entry.value }))}
-                pulse={(pulse.data?.samples ?? []).map((sample) => ({ t: sample.t, pulse: sample.b }))}
+                glucose={glucoseSeries}
+                pulse={pulseSeries}
                 onHover={setHoverTime}
               />
             )}
@@ -201,14 +206,16 @@ function TrainingBody({
   const km = training.dist / 1000;
   // Average pace in seconds per kilometre — the app's per-km metric.
   const paceSecPerKm = km > 0 ? seconds / km : 0;
+  // Walks the whole track, and `highlight` changes on every hover — so memoise.
+  const splits = useMemo(() => kmSplits(training.track ?? []), [training.track]);
 
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Stat label={t("activity.duration")} value={formatDuration(seconds)} />
-        <Stat label={t("activity.distance")} value={`${km.toFixed(2)} ${t("body.km")}`} />
-        <Stat label={t("activity.avg_pace")} value={formatPace(paceSecPerKm)} />
-        <Stat label={t("activity.track_points")} value={String(training.track?.length ?? 0)} />
+        <StatTile label={t("activity.duration")} value={formatDuration(seconds)} />
+        <StatTile label={t("activity.distance")} value={`${km.toFixed(2)} ${t("body.km")}`} />
+        <StatTile label={t("activity.avg_pace")} value={formatPace(paceSecPerKm)} />
+        <StatTile label={t("activity.track_points")} value={String(training.track?.length ?? 0)} />
       </div>
       {training.track && training.track.length >= 2 ? (
         <RouteMap track={training.track} highlight={highlight} />
@@ -219,7 +226,7 @@ function TrainingBody({
           </CardContent>
         </Card>
       )}
-      <SplitsPanel splits={kmSplits(training.track ?? [])} />
+      <SplitsPanel splits={splits} />
     </div>
   );
 }
@@ -320,7 +327,9 @@ function WorkoutBody({
 // Glucose (mg/dL, left axis) and pulse (bpm, right axis) over the activity's
 // window. The two series carry different timestamps, so they're merged into one
 // sorted series and bridged with connectNulls.
-function VitalsChart({
+// Memoised: hovering it updates the map marker via state on the page above, and
+// without this the chart would rebuild its merged series on every mouse move.
+const VitalsChart = memo(function VitalsChart({
   window,
   glucose,
   pulse,
@@ -334,6 +343,13 @@ function VitalsChart({
   const { t } = useTranslation();
   const from = window.start - PAD_MS;
   const to = window.end + PAD_MS;
+  // The cursor pixel, not `activeLabel`: the label is the *nearest data point's*
+  // timestamp, so reporting it makes the map marker hop from reading to reading.
+  // The inverse scale turns the pixel back into an exact time, but it is only
+  // reachable from a hook inside the chart — `ScaleProbe` parks it here so the
+  // handler can read it without holding the cursor in state and re-rendering
+  // the whole chart on every mouse move.
+  const inverseScaleRef = useRef<InverseScaleFunction | null>(null);
 
   const data = useMemo(() => {
     const inWindow = (time: number) => time >= from && time <= to;
@@ -365,11 +381,15 @@ function VitalsChart({
           <ResponsiveContainer width="100%" height={300}>
             <LineChart
               data={data}
-              onMouseMove={(state: { activeLabel?: string | number }) =>
-                onHover(state?.activeLabel != null ? Number(state.activeLabel) : null)
-              }
+              onMouseMove={(_, event) => {
+                const inverseScale = inverseScaleRef.current;
+                if (inverseScale) {
+                  onHover(Number(inverseScale(getRelativeCoordinate(event).relativeX)));
+                }
+              }}
               onMouseLeave={() => onHover(null)}
             >
+              <ScaleProbe scaleRef={inverseScaleRef} />
               <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
               <XAxis
                 dataKey="t"
@@ -390,6 +410,16 @@ function VitalsChart({
       </CardContent>
     </Card>
   );
+});
+
+// Hands the x-axis inverse scale to the chart's mouse handler. The hook only
+// works inside the chart, so this rides along as a child and renders nothing.
+function ScaleProbe({ scaleRef }: { scaleRef: RefObject<InverseScaleFunction | null> }) {
+  const inverseScale = useXAxisInverseScale();
+  useEffect(() => {
+    scaleRef.current = inverseScale ?? null;
+  }, [inverseScale, scaleRef]);
+  return null;
 }
 
 function VitalsTooltip({
@@ -436,16 +466,6 @@ function Legend({ color, label }: { color: string; label: string }) {
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex flex-col gap-1 rounded-xl bg-secondary/50 p-4">
-      <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-        {label}
-      </span>
-      <span className="text-lg font-bold">{value}</span>
-    </div>
-  );
-}
 
 function formatSet(set: SetLog, t: (key: string, opts?: Record<string, unknown>) => string) {
   if (set.dur != null) {
@@ -458,7 +478,6 @@ function formatSet(set: SetLog, t: (key: string, opts?: Record<string, unknown>)
   return t("activity.reps", { n: reps });
 }
 
-type TrackPoint = { lat: number; lng: number; t: number };
 type KmSplit = { index: number; km: number; paceSecPerKm: number };
 
 // Great-circle distance between two coordinates in metres (haversine).

@@ -42,4 +42,13 @@ const pulse = () =>
     url: "/health/pulse/find/",
   });
 
-export default { days, pulse };
+// The band's current bpm, relayed live by the phone (~1 Hz) through a server-side
+// cache — no history, nothing stored. `b` is absent when the band went quiet: the
+// backend only ever hands back a fresh reading, so its presence *is* the liveness
+// check and no clock comparison is needed here.
+const livePulse = () =>
+  client.get<{ success: boolean; b?: number }>({
+    url: "/health/pulse/live/find/",
+  });
+
+export default { days, pulse, livePulse };

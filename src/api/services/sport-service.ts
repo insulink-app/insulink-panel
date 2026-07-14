@@ -49,6 +49,28 @@ export interface Workout {
   sets: SetLog[];
 }
 
+// The workout currently running, shared with the app. Mirrors the app's
+// `WorkoutSnapshot` (workout_snapshot.dart) field for field — whichever device
+// drives the workout pushes this, so the panel can pick up a routine started on
+// the phone mid-set and finish it (and vice versa). All times are epoch ms, so
+// elapsed/rest recompute correctly however long ago the snapshot was written.
+export type WorkoutPhase = "exercising" | "resting" | "done";
+
+export interface ActiveWorkout {
+  routine: string; // routine id
+  started: number;
+  ex: number; // exercise index
+  set: number; // set index
+  phase: WorkoutPhase;
+  setStarted: number;
+  restEnds: number | null;
+  restStarted: number | null;
+  paused: number; // total paused ms
+  reps: number;
+  weight: number;
+  sets: SetLog[];
+}
+
 export type CardioType = "walk" | "jog" | "bike";
 
 export interface Training {
@@ -95,6 +117,25 @@ const measurements = () =>
     url: "/sport/measurements/find/",
   });
 
+// The running workout. Unlike the collections below this is live session state,
+// not an offline mirror: the panel both reads it (to resume what the app
+// started) and writes it (so the app follows what the panel does).
+const activeWorkout = () =>
+  client.get<{ success: boolean; workout?: ActiveWorkout; updated?: number }>({
+    url: "/sport/workout/active/find/",
+  });
+
+const syncActiveWorkout = (workout: ActiveWorkout) =>
+  client.post<{ success: boolean; updated?: number }>({
+    url: "/sport/workout/active/sync/",
+    data: { workout },
+  });
+
+const clearActiveWorkout = () =>
+  client.post<{ success: boolean }>({
+    url: "/sport/workout/active/clear/",
+  });
+
 // Full-replace syncs (the same endpoints the app uses). The caller must send
 // the complete current list — deletes/edits are expressed by omitting/changing
 // entries, never a partial patch.
@@ -128,6 +169,9 @@ export default {
   routines,
   trainings,
   measurements,
+  activeWorkout,
+  syncActiveWorkout,
+  clearActiveWorkout,
   syncRoutines,
   syncExercises,
   syncWorkouts,

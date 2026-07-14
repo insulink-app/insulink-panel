@@ -11,6 +11,7 @@ const getRoutes = (): RouteObject[] => {
     { path: "glucose", element: Component("/pages/panel/glucose") },
     { path: "nutrition", element: <Navigate to="/nutrition/meals" replace /> },
     { path: "nutrition/:view", element: Component("/pages/panel/nutrition") },
+    { path: "nutrition/meals/:time", element: Component("/pages/panel/meal-detail") },
     { path: "health", element: <Navigate to="/health/activity" replace /> },
     { path: "health/activity", element: Component("/pages/panel/activity") },
     { path: "health/activity/:kind/:id", element: Component("/pages/panel/activity-detail") },

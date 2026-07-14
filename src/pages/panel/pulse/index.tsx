@@ -14,6 +14,8 @@ import {
 import PanelPage from "@/layouts/panel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataList, type ListColumn } from "@/components/data-list";
+import { TimeRangePicker, TimeWindowNav } from "@/components/time-window";
+import { DAY, useTimeWindow, useWindowedData } from "@/lib/use-time-window";
 import healthService, { type PulseSample } from "@/api/services/health-service";
 
 const PULSE_COLOR = "#e0533d";
@@ -61,7 +63,7 @@ export default function PulsePage() {
   ];
 
   return (
-    <PanelPage title={t("pulse.title")}>
+    <PanelPage title={t("pulse.title")} parents={[{ title: t("nav.health") }]}>
       <div className="py-6 flex flex-col gap-6">
         <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
           <Stat title={t("pulse.average")} value={bpm(stats?.avg, t)} />
@@ -70,44 +72,7 @@ export default function PulsePage() {
           <Stat title={t("pulse.maximum")} value={bpm(stats?.max, t)} />
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("pulse.chart_title")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
-            ) : ascending.length === 0 ? (
-              <p className="py-16 text-center text-sm text-muted-foreground">
-                {t("common.no_data")}
-              </p>
-            ) : (
-              <ResponsiveContainer width="100%" height={320}>
-                <LineChart data={ascending}>
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                  <XAxis
-                    dataKey="t"
-                    type="number"
-                    scale="time"
-                    domain={["dataMin", "dataMax"]}
-                    tickFormatter={(value) => format(new Date(value), "dd.MM. HH:mm")}
-                    fontSize={12}
-                  />
-                  <YAxis fontSize={12} width={36} domain={["dataMin - 5", "dataMax + 5"]} />
-                  <Tooltip content={<PulseTooltip unit={t("pulse.bpm")} />} isAnimationActive={false} />
-                  <Line
-                    type="monotone"
-                    dataKey="b"
-                    stroke={PULSE_COLOR}
-                    strokeWidth={2}
-                    dot={false}
-                    isAnimationActive={false}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            )}
-          </CardContent>
-        </Card>
+        <PulseChart samples={ascending} isLoading={isLoading} />
 
         <DataList
           title={t("pulse.readings")}
@@ -118,6 +83,66 @@ export default function PulsePage() {
         />
       </div>
     </PanelPage>
+  );
+}
+
+// Pannable, range-adjustable heart-rate graph. `samples` arrive oldest-first.
+function PulseChart({
+  samples,
+  isLoading,
+}: {
+  samples: PulseSample[];
+  isLoading: boolean;
+}) {
+  const { t } = useTranslation();
+  const latest = samples[samples.length - 1]?.t ?? Date.now();
+  const earliest = samples[0]?.t ?? latest;
+  const window = useTimeWindow(latest, earliest);
+  const windowData = useWindowedData(samples, (sample) => sample.t, window);
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between gap-4 flex-wrap">
+        <CardTitle>{t("pulse.chart_title")}</CardTitle>
+        <TimeRangePicker window={window} />
+      </CardHeader>
+      <CardContent className="flex flex-col gap-3">
+        <TimeWindowNav window={window} />
+        {isLoading ? (
+          <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
+        ) : windowData.length === 0 ? (
+          <p className="py-16 text-center text-sm text-muted-foreground">
+            {t("common.no_data")}
+          </p>
+        ) : (
+          <ResponsiveContainer width="100%" height={320}>
+            <LineChart data={windowData}>
+              <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+              <XAxis
+                dataKey="t"
+                type="number"
+                scale="time"
+                domain={[window.start, window.end]}
+                tickFormatter={(value) =>
+                  format(new Date(value), window.rangeMs > DAY ? "dd.MM." : "HH:mm")
+                }
+                fontSize={12}
+              />
+              <YAxis fontSize={12} width={36} domain={["dataMin - 5", "dataMax + 5"]} />
+              <Tooltip content={<PulseTooltip unit={t("pulse.bpm")} />} isAnimationActive={false} />
+              <Line
+                type="monotone"
+                dataKey="b"
+                stroke={PULSE_COLOR}
+                strokeWidth={2}
+                dot={false}
+                isAnimationActive={false}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 

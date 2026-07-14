@@ -4,8 +4,8 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft } from "lucide-react";
 import PanelPage from "@/layouts/panel";
+import { CardSkeleton } from "@/components/card-skeleton";
 import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
 import sportService, { type Routine } from "@/api/services/sport-service";
 import { newId, RoutineForm, useRoutineWrites } from "../routines/shared";
 
@@ -28,7 +28,21 @@ export default function RoutineEditorPage() {
   const loadingExisting = id != null && routines.isLoading;
 
   return (
-    <PanelPage title={existing ? t("routines.edit") : t("routines.add")}>
+    <PanelPage
+      title={existing ? t("routines.edit") : t("routines.add")}
+      parents={[
+        { title: t("nav.health") },
+        { title: t("routines.title"), href: "/health/routines" },
+        ...(existing
+          ? [
+              {
+                title: existing.name || t("routines.untitled"),
+                href: `/health/routines/${existing.id}`,
+              },
+            ]
+          : []),
+      ]}
+    >
       <div className="py-6 flex flex-col gap-6">
         <Button asChild variant="ghost" size="sm" className="self-start">
           <Link to={backTo}>
@@ -38,9 +52,7 @@ export default function RoutineEditorPage() {
         </Button>
 
         {loadingExisting ? (
-          <div className="flex justify-center py-16">
-            <Spinner />
-          </div>
+          <CardSkeleton />
         ) : id != null && !existing ? (
           <p className="py-16 text-center text-sm text-muted-foreground">
             {t("common.no_data")}

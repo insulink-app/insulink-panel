@@ -4,8 +4,8 @@ import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { Moon } from "lucide-react";
 import PanelPage from "@/layouts/panel";
+import { CardSkeleton } from "@/components/card-skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Spinner } from "@/components/ui/spinner";
 import healthService, {
   type HealthDay,
   type SleepSegment,
@@ -46,12 +46,10 @@ export default function SleepPage() {
   const selected = nights.find((night) => night.d === selectedKey) ?? nights[0];
 
   return (
-    <PanelPage title={t("sleep.title")}>
+    <PanelPage title={t("sleep.title")} parents={[{ title: t("nav.health") }]}>
       <div className="py-6 flex flex-col gap-6">
         {isLoading ? (
-          <div className="flex justify-center py-16">
-            <Spinner />
-          </div>
+          <CardSkeleton />
         ) : !selected ? (
           <p className="py-16 text-center text-sm text-muted-foreground">
             {t("common.no_data")}

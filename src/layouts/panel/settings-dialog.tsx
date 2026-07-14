@@ -27,7 +27,6 @@ import { cn } from "@/lib/utils";
 import pkg from "@/../package.json";
 import userService from "@/api/services/user-service";
 import { useUserActions, useUserInformation } from "@/store/user-store";
-import { dialogSections, SectionPanel } from "@/pages/panel/settings/sections";
 
 const APPEARANCE = "appearance";
 const LANGUAGE = "language";
@@ -43,31 +42,21 @@ export function SettingsDialog({
   initialCategory?: string;
 }) {
   const { t } = useTranslation();
-  const sections = dialogSections();
-  const [active, setActive] = useState(initialCategory ?? sections[0].id);
+  const [active, setActive] = useState(initialCategory ?? ACCOUNT);
   // Adopt the requested category each time the dialog is (re)opened.
   const [wasOpen, setWasOpen] = useState(false);
   if (open && !wasOpen) {
     setWasOpen(true);
-    setActive(initialCategory ?? sections[0].id);
+    setActive(initialCategory ?? ACCOUNT);
   }
   if (!open && wasOpen) {
     setWasOpen(false);
   }
 
-  const section = sections.find((entry) => entry.id === active);
-
-  // Resolve a category id to its display title.
-  const titleFor = (id: string) =>
-    id === ACCOUNT || id === APPEARANCE || id === LANGUAGE
-      ? t(`settings.${id}`)
-      : t(`settings.section_${id}`);
-
   const navItems = [
-    ...sections.map((entry) => ({ id: entry.id, icon: entry.icon })),
+    { id: ACCOUNT, icon: UserRound },
     { id: APPEARANCE, icon: SunMoon },
     { id: LANGUAGE, icon: Languages },
-    { id: ACCOUNT, icon: UserRound },
   ];
 
   return (
@@ -79,7 +68,7 @@ export function SettingsDialog({
               <SidebarItem
                 key={item.id}
                 icon={item.icon}
-                title={titleFor(item.id)}
+                title={t(`settings.${item.id}`)}
                 isActive={active === item.id}
                 onClick={() => setActive(item.id)}
               />
@@ -91,18 +80,16 @@ export function SettingsDialog({
 
           <div className="flex-1 overflow-auto p-6">
             <DialogHeader className="border-b-2 border-secondary">
-              <DialogTitle className="pb-2">{titleFor(active)}</DialogTitle>
+              <DialogTitle className="pb-2">{t(`settings.${active}`)}</DialogTitle>
             </DialogHeader>
             <div className="mt-4">
-              {active === ACCOUNT ? (
-                <AccountPanel />
-              ) : active === APPEARANCE ? (
+              {active === APPEARANCE ? (
                 <AppearancePanel />
               ) : active === LANGUAGE ? (
                 <LanguagePanel />
-              ) : section ? (
-                <SectionPanel section={section} />
-              ) : null}
+              ) : (
+                <AccountPanel />
+              )}
             </div>
           </div>
         </div>

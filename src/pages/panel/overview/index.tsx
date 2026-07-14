@@ -22,6 +22,7 @@ import {
 } from "recharts";
 import PanelPage from "@/layouts/panel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import glucoseService from "@/api/services/glucose-service";
 import sensorService from "@/api/services/sensor-service";
 import settingsService from "@/api/services/settings-service";
@@ -86,18 +87,28 @@ function MiniStat({
   title,
   value,
   hint,
+  loading,
 }: {
   title: string;
   value: string;
   hint?: string;
+  loading?: boolean;
 }) {
   return (
     <div className="flex flex-col gap-1 rounded-xl bg-secondary/60 p-4">
       <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
         {title}
       </span>
-      <span className="text-2xl font-bold">{value}</span>
-      {hint && <span className="text-xs text-muted-foreground">{hint}</span>}
+      {loading ? (
+        <Skeleton className="my-1 h-6 w-20" />
+      ) : (
+        <span className="text-2xl font-bold">{value}</span>
+      )}
+      {loading ? (
+        <Skeleton className="h-3 w-14" />
+      ) : (
+        hint && <span className="text-xs text-muted-foreground">{hint}</span>
+      )}
     </div>
   );
 }
@@ -109,7 +120,7 @@ export default function OverviewPage() {
     "in-range": t("overview.status_in_range"),
     high: t("overview.status_high"),
   };
-  const { data: settings } = useQuery({
+  const { data: settings, isLoading: settingsLoading } = useQuery({
     queryKey: ["settings"],
     queryFn: settingsService.find,
   });
@@ -117,7 +128,7 @@ export default function OverviewPage() {
     queryKey: ["glucose-history"],
     queryFn: glucoseService.history,
   });
-  const { data: sensor } = useQuery({
+  const { data: sensor, isLoading: sensorLoading } = useQuery({
     queryKey: ["sensor-current"],
     queryFn: sensorService.current,
   });
@@ -196,38 +207,48 @@ export default function OverviewPage() {
               <span className="text-sm font-medium text-muted-foreground">
                 {t("overview.current_glucose")}
               </span>
-              <div className="flex items-center gap-3">
-                <span
-                  className="text-6xl font-bold leading-none"
-                  style={latest ? { color: latestColor } : undefined}
-                >
-                  {latest ? toDisplay(latest.value, unit) : "–"}
-                </span>
-                {trendPerMin !== undefined && (
-                  <TrendArrow perMin={trendPerMin} color={latestColor} />
-                )}
-                <span className="text-lg text-muted-foreground">
-                  {unitLabel(unit)}
-                </span>
-              </div>
-              {latest && (
-                <span
-                  className="mt-1 w-fit rounded-full px-3 py-1 text-xs font-semibold"
-                  style={{
-                    color: latestColor,
-                    backgroundColor: `color-mix(in srgb, ${latestColor} 18%, transparent)`,
-                  }}
-                >
-                  {statusLabel[latestStatus]}
-                </span>
+              {isLoading ? (
+                <>
+                  <Skeleton className="my-1 h-14 w-48" />
+                  <Skeleton className="mt-1 h-6 w-24 rounded-full" />
+                  <Skeleton className="mt-2 h-3 w-32" />
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center gap-3">
+                    <span
+                      className="text-6xl font-bold leading-none"
+                      style={latest ? { color: latestColor } : undefined}
+                    >
+                      {latest ? toDisplay(latest.value, unit) : "–"}
+                    </span>
+                    {trendPerMin !== undefined && (
+                      <TrendArrow perMin={trendPerMin} color={latestColor} />
+                    )}
+                    <span className="text-lg text-muted-foreground">
+                      {unitLabel(unit)}
+                    </span>
+                  </div>
+                  {latest && (
+                    <span
+                      className="mt-1 w-fit rounded-full px-3 py-1 text-xs font-semibold"
+                      style={{
+                        color: latestColor,
+                        backgroundColor: `color-mix(in srgb, ${latestColor} 18%, transparent)`,
+                      }}
+                    >
+                      {statusLabel[latestStatus]}
+                    </span>
+                  )}
+                  <span className="mt-1 text-xs text-muted-foreground">
+                    {latest
+                      ? t("overview.last", {
+                          time: format(new Date(latest.time), "dd.MM. HH:mm"),
+                        })
+                      : t("overview.no_readings")}
+                  </span>
+                </>
               )}
-              <span className="mt-1 text-xs text-muted-foreground">
-                {latest
-                  ? t("overview.last", {
-                      time: format(new Date(latest.time), "dd.MM. HH:mm"),
-                    })
-                  : t("overview.no_readings")}
-              </span>
             </div>
             <div className="md:col-span-2 grid grid-cols-2 gap-3">
               <div className="col-span-2 flex flex-col gap-2 rounded-xl bg-secondary/60 p-4">
@@ -235,34 +256,50 @@ export default function OverviewPage() {
                   <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                     {t("overview.time_in_range")}
                   </span>
-                  <span className="text-2xl font-bold">{tir} %</span>
-                </div>
-                <div className="flex h-3 overflow-hidden rounded-full bg-background">
-                  {(["low", "in-range", "high"] as const).map((k) =>
-                    counts[k] ? (
-                      <div
-                        key={k}
-                        style={{
-                          width: `${pct(counts[k])}%`,
-                          backgroundColor: statusColorVar[k],
-                        }}
-                      />
-                    ) : null,
+                  {isLoading ? (
+                    <Skeleton className="h-6 w-14" />
+                  ) : (
+                    <span className="text-2xl font-bold">{tir} %</span>
                   )}
                 </div>
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span style={{ color: statusColorVar.low }}>
-                    {t("overview.low")} {pct(counts.low)} %
-                  </span>
-                  <span style={{ color: statusColorVar.high }}>
-                    {t("overview.high")} {pct(counts.high)} %
-                  </span>
-                </div>
+                {isLoading ? (
+                  <Skeleton className="h-3 w-full rounded-full" />
+                ) : (
+                  <div className="flex h-3 overflow-hidden rounded-full bg-background">
+                    {(["low", "in-range", "high"] as const).map((k) =>
+                      counts[k] ? (
+                        <div
+                          key={k}
+                          style={{
+                            width: `${pct(counts[k])}%`,
+                            backgroundColor: statusColorVar[k],
+                          }}
+                        />
+                      ) : null,
+                    )}
+                  </div>
+                )}
+                {isLoading ? (
+                  <div className="flex justify-between">
+                    <Skeleton className="h-3 w-16" />
+                    <Skeleton className="h-3 w-16" />
+                  </div>
+                ) : (
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span style={{ color: statusColorVar.low }}>
+                      {t("overview.low")} {pct(counts.low)} %
+                    </span>
+                    <span style={{ color: statusColorVar.high }}>
+                      {t("overview.high")} {pct(counts.high)} %
+                    </span>
+                  </div>
+                )}
               </div>
               <MiniStat
                 title={t("overview.target_range")}
                 value={`${low}–${high}`}
                 hint="mg/dL"
+                loading={settingsLoading}
               />
               <MiniStat
                 title={t("overview.avg_today")}
@@ -276,16 +313,19 @@ export default function OverviewPage() {
                     : "–"
                 }
                 hint={unitLabel(unit)}
+                loading={isLoading}
               />
               <MiniStat
                 title={t("overview.sensor")}
                 value={sensorExpiry != null ? `${sensorExpiry} h` : "–"}
                 hint={sensor?.type ?? t("overview.no_active_sensor")}
+                loading={sensorLoading}
               />
               <MiniStat
                 title={t("overview.readings")}
                 value={String(entries.length)}
                 hint={t("overview.in_history")}
+                loading={isLoading}
               />
             </div>
           </CardContent>
@@ -297,9 +337,7 @@ export default function OverviewPage() {
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <p className="text-sm text-muted-foreground">
-                {t("common.loading")}
-              </p>
+              <Skeleton className="h-[320px] w-full" />
             ) : chartData.length === 0 ? (
               <p className="text-sm text-muted-foreground">
                 {t("common.no_data")}

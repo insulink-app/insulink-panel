@@ -69,7 +69,10 @@ export default function DevicesPage() {
   );
 
   return (
-    <PanelPage title={t("devices.title")}>
+    <PanelPage
+      title={view === "pump" ? t("nav.pump") : t("nav.sensor")}
+      parents={[{ title: t("nav.devices") }]}
+    >
       <div className="py-6">
         {view === "pump" ? (
           <Card>

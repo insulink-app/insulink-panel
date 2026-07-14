@@ -9,6 +9,13 @@ import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import sportService, {
   type Routine,
@@ -53,21 +60,6 @@ export function useRoutineWrites() {
   };
 }
 
-// Summary line for a routine item, e.g. "3 × 10 · 20 kg · 60s rest".
-export function summarizeItem(
-  item: RoutineItem,
-  t: (key: string, opts?: Record<string, unknown>) => string,
-) {
-  const parts = [`${item.sets} × ${item.target}`];
-  if (item.weight > 0) {
-    parts.push(`${item.weight} ${t("body.kg")}`);
-  }
-  if (item.rest > 0) {
-    parts.push(t("routines.rest_secs", { n: item.rest }));
-  }
-  return parts.join(" · ");
-}
-
 // Full-page routine editor form (create or edit). Uses the whole page rather
 // than a cramped dialog.
 export function RoutineForm({
@@ -108,60 +100,48 @@ export function RoutineForm({
     }));
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex max-w-md flex-col gap-2">
-        <Label>{t("routines.name")}</Label>
-        <Input
-          value={draft.name}
-          onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))}
-          placeholder={t("routines.name_placeholder")}
-        />
-      </div>
-
-      <div className="flex items-center justify-between">
-        <Label className="text-base">{t("routines.exercises")}</Label>
-        <Button variant="outline" onClick={addItem} disabled={exercises.length === 0}>
-          <Plus className="size-4" />
-          {t("routines.add_exercise")}
-        </Button>
-      </div>
-
-      {exercises.length === 0 && (
-        <p className="text-sm text-muted-foreground">{t("routines.no_exercises")}</p>
-      )}
+    <div className="flex flex-col gap-8">
+      {/* The name doubles as the page's headline — no boxed field around it. */}
+      <Input
+        value={draft.name}
+        aria-label={t("routines.name")}
+        onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))}
+        placeholder={t("routines.name_placeholder")}
+        className="h-auto border-0 bg-transparent p-0 text-3xl font-bold tracking-tight shadow-none focus-visible:ring-0 md:text-3xl dark:bg-transparent"
+      />
 
       <div className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <h3 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
+            {t("routines.exercises")}
+          </h3>
+          <Button variant="ghost" size="sm" onClick={addItem} disabled={exercises.length === 0}>
+            <Plus className="size-4" />
+            {t("routines.add_exercise")}
+          </Button>
+        </div>
+
+        {exercises.length === 0 ? (
+          <p className="rounded-xl bg-secondary/40 py-10 text-center text-sm text-muted-foreground">
+            {t("routines.no_exercises")}
+          </p>
+        ) : (
+          draft.items.length === 0 && (
+            <p className="rounded-xl bg-secondary/40 py-10 text-center text-sm text-muted-foreground">
+              {t("routines.no_items")}
+            </p>
+          )
+        )}
+
         {draft.items.map((item, index) => (
-          <div
+          <ItemRow
             key={item.id}
-            className="flex flex-col gap-3 rounded-lg border p-4 lg:flex-row lg:items-end"
-          >
-            <div className="flex flex-1 flex-col gap-1">
-              <Label className="text-xs">
-                {index + 1}. {t("routines.exercise")}
-              </Label>
-              <select
-                className="border rounded-md h-9 px-2 bg-transparent"
-                value={item.ex}
-                onChange={(event) => setItem(item.id, { ex: event.target.value })}
-              >
-                {exercises.map((exercise) => (
-                  <option key={exercise.id} value={exercise.id}>
-                    {exercise.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:w-[420px]">
-              <NumberField label={t("routines.sets")} value={item.sets} onChange={(value) => setItem(item.id, { sets: value })} />
-              <NumberField label={t("routines.target")} value={item.target} onChange={(value) => setItem(item.id, { target: value })} />
-              <NumberField label={t("routines.weight")} value={item.weight} step={0.5} onChange={(value) => setItem(item.id, { weight: value })} />
-              <NumberField label={t("routines.rest")} value={item.rest} step={5} onChange={(value) => setItem(item.id, { rest: value })} />
-            </div>
-            <Button variant="ghost" size="icon" onClick={() => removeItem(item.id)} className="lg:mb-0.5">
-              <Trash2 className="size-4 text-destructive" />
-            </Button>
-          </div>
+            item={item}
+            position={index + 1}
+            exercises={exercises}
+            onChange={(patch) => setItem(item.id, patch)}
+            onRemove={() => removeItem(item.id)}
+          />
         ))}
       </div>
 
@@ -178,6 +158,83 @@ export function RoutineForm({
   );
 }
 
+// One exercise line: a muted panel, with borderless fields sitting on the page
+// surface so only the values carry contrast.
+function ItemRow({
+  item,
+  position,
+  exercises,
+  onChange,
+  onRemove,
+}: {
+  item: RoutineItem;
+  position: number;
+  exercises: SportExercise[];
+  onChange: (patch: Partial<RoutineItem>) => void;
+  onRemove: () => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <div className="flex flex-col gap-4 rounded-xl bg-secondary/40 p-4 lg:flex-row lg:items-end">
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <Label className="text-[11px] font-normal text-muted-foreground">
+          {position}. {t("routines.exercise")}
+        </Label>
+        <Select value={item.ex} onValueChange={(value) => onChange({ ex: value })}>
+          <SelectTrigger
+            aria-label={t("routines.exercise")}
+            className="h-9 w-full border-0 bg-background font-medium shadow-none dark:bg-background dark:hover:bg-background"
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {exercises.map((exercise) => (
+              <SelectItem key={exercise.id} value={exercise.id}>
+                {exercise.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:w-[360px]">
+        <NumberField
+          label={t("routines.sets")}
+          value={item.sets}
+          onChange={(value) => onChange({ sets: value })}
+        />
+        <NumberField
+          label={t("routines.target")}
+          value={item.target}
+          onChange={(value) => onChange({ target: value })}
+        />
+        <NumberField
+          label={t("routines.weight")}
+          value={item.weight}
+          step={0.5}
+          onChange={(value) => onChange({ weight: value })}
+        />
+        <NumberField
+          label={t("routines.rest")}
+          value={item.rest}
+          step={5}
+          onChange={(value) => onChange({ rest: value })}
+        />
+      </div>
+
+      <Button
+        variant="ghost"
+        size="icon"
+        aria-label={t("common.delete")}
+        className="shrink-0 self-end"
+        onClick={onRemove}
+      >
+        <Trash2 className="size-4 text-destructive" />
+      </Button>
+    </div>
+  );
+}
+
 function NumberField({
   label,
   value,
@@ -190,14 +247,15 @@ function NumberField({
   onChange: (value: number) => void;
 }) {
   return (
-    <div className="flex flex-col gap-1">
-      <Label className="text-xs">{label}</Label>
+    <div className="flex min-w-0 flex-col gap-1">
+      <Label className="text-[11px] font-normal text-muted-foreground">{label}</Label>
       <Input
         type="number"
         min={0}
         step={step}
         value={value}
         onChange={(event) => onChange(Number(event.target.value) || 0)}
+        className="border-0 bg-background px-2 text-center font-medium tabular-nums shadow-none dark:bg-background"
       />
     </div>
   );

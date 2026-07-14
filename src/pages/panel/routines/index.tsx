@@ -1,21 +1,31 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ChevronRight, Dumbbell, ListChecks, Plus } from "lucide-react";
+import { Activity, ChevronRight, Dumbbell, ListChecks, Plus } from "lucide-react";
 import PanelPage from "@/layouts/panel";
+import { CardSkeleton } from "@/components/card-skeleton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Spinner } from "@/components/ui/spinner";
-import sportService from "@/api/services/sport-service";
+import sportService, { type Routine } from "@/api/services/sport-service";
 
 export default function RoutinesPage() {
   const { t } = useTranslation();
   const routines = useQuery({ queryKey: ["routines"], queryFn: sportService.routines });
+  // Polled so a workout started on the phone surfaces here without a reload.
+  const active = useQuery({
+    queryKey: ["active-workout"],
+    queryFn: sportService.activeWorkout,
+    refetchInterval: 15000,
+  });
   const list = routines.data?.routines ?? [];
+  const running = active.data?.workout;
+  const runningRoutine = list.find((entry) => entry.id === running?.routine);
 
   return (
-    <PanelPage title={t("routines.title")}>
+    <PanelPage title={t("routines.title")} parents={[{ title: t("nav.health") }]}>
       <div className="py-6 flex flex-col gap-4">
+        {runningRoutine && <RunningWorkoutCard routine={runningRoutine} />}
+
         <div className="flex justify-end gap-2">
           <Button asChild variant="outline">
             <Link to="/health/routines/exercises">
@@ -32,9 +42,7 @@ export default function RoutinesPage() {
         </div>
 
         {routines.isLoading ? (
-          <div className="flex justify-center py-16">
-            <Spinner />
-          </div>
+          <CardSkeleton />
         ) : list.length === 0 ? (
           <p className="py-16 text-center text-sm text-muted-foreground">
             {t("routines.empty")}
@@ -61,5 +69,29 @@ export default function RoutinesPage() {
         )}
       </div>
     </PanelPage>
+  );
+}
+
+// A workout is running on this account — most likely started in the app. Opening
+// the runner picks it up at the set it is on, rather than starting a new one.
+function RunningWorkoutCard({ routine }: { routine: Routine }) {
+  const { t } = useTranslation();
+  return (
+    <Link to={`/health/routines/${routine.id}/run`}>
+      <Card className="cursor-pointer border-primary/50 bg-primary/5 transition-colors hover:bg-primary/10">
+        <CardContent className="flex items-center gap-4 py-4">
+          <div className="flex size-10 items-center justify-center rounded-lg bg-primary/15">
+            <Activity className="size-5 text-primary" />
+          </div>
+          <div className="flex-1">
+            <div className="font-medium">{t("routines.running")}</div>
+            <div className="text-xs text-muted-foreground">
+              {routine.name || t("routines.untitled")}
+            </div>
+          </div>
+          <Button size="sm">{t("routines.continue")}</Button>
+        </CardContent>
+      </Card>
+    </Link>
   );
 }

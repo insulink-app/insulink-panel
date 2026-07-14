@@ -1,4 +1,5 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { useTheme } from "next-themes";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -11,9 +12,33 @@ const TILES = {
 
 type LatLng = { lat: number; lng: number };
 
-// A tiled map with the recorded GPS route drawn as a polyline and a dot on the
-// finish — mirrors the app's cardio map. `highlight` moves a marker along the
-// route (driven by hovering the vitals chart).
+// Round start/finish badges, mirroring the app's `_badgeMarker`: the same muted
+// slate for both, told apart by the icon rather than a loud red/green. The icons
+// are inlined as markup because Leaflet takes an HTML string, not a component.
+const BADGE_COLOR = "#37474F";
+const PLAY_ICON = '<polygon points="7 4 19 12 7 20 7 4" fill="currentColor" />';
+const FLAG_ICON =
+  '<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />' +
+  '<line x1="4" y1="22" x2="4" y2="15" />';
+
+function badgeIcon(icon: string, label: string) {
+  return L.divIcon({
+    className: "",
+    iconSize: [30, 30],
+    iconAnchor: [15, 15],
+    html:
+      `<div aria-label="${label}" style="width:30px;height:30px;border-radius:9999px;` +
+      `background:${BADGE_COLOR};border:2.5px solid #fff;color:#fff;` +
+      `display:flex;align-items:center;justify-content:center;box-sizing:border-box;">` +
+      `<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"` +
+      ` fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"` +
+      ` stroke-linejoin="round">${icon}</svg></div>`,
+  });
+}
+
+// A tiled map with the recorded GPS route drawn as a polyline and badges on the
+// start and finish — mirrors the app's cardio map. `highlight` moves a marker
+// along the route (driven by hovering the vitals chart).
 export function RouteMap({
   track,
   highlight,
@@ -26,10 +51,20 @@ export function RouteMap({
   const tileRef = useRef<L.TileLayer | null>(null);
   const highlightRef = useRef<L.CircleMarker | null>(null);
   const { resolvedTheme } = useTheme();
+  const { t } = useTranslation();
+  const startLabel = t("activity.route_start");
+  const finishLabel = t("activity.route_finish");
 
-  const points = track
-    .filter((point) => Number.isFinite(point.lat) && Number.isFinite(point.lng))
-    .map((point) => [point.lat, point.lng] as [number, number]);
+  // Memoised on `track`: `highlight` changes on every chart hover, and rebuilding
+  // (and previously re-serialising) the whole route each time is what made the
+  // marker lag behind the cursor.
+  const points = useMemo(
+    () =>
+      track
+        .filter((point) => Number.isFinite(point.lat) && Number.isFinite(point.lng))
+        .map((point) => [point.lat, point.lng] as [number, number]),
+    [track],
+  );
 
   useEffect(() => {
     if (!containerRef.current || points.length === 0) {
@@ -46,12 +81,14 @@ export function RouteMap({
     mapRef.current = map;
 
     const line = L.polyline(points, { color: primary, weight: 5 }).addTo(map);
-    L.circleMarker(points[points.length - 1], {
-      radius: 7,
-      color: primary,
-      fillColor: primary,
-      fillOpacity: 1,
-    }).addTo(map);
+    if (points.length >= 2) {
+      L.marker(points[0], { icon: badgeIcon(PLAY_ICON, startLabel) }).addTo(map);
+      L.marker(points[points.length - 1], {
+        icon: badgeIcon(FLAG_ICON, finishLabel),
+        // Above the start badge where a loop run ends where it began.
+        zIndexOffset: 1000,
+      }).addTo(map);
+    }
     map.fitBounds(line.getBounds(), { padding: [24, 24] });
 
     return () => {
@@ -60,9 +97,10 @@ export function RouteMap({
       tileRef.current = null;
       highlightRef.current = null;
     };
-    // Rebuild only when the route changes; theme swaps the tile layer below.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(points)]);
+    // Rebuild only when the route (or the badge labels) change; theme swaps the
+    // tile layer below. `points` is memoised on `track`, so its identity is a
+    // sound dep — no need to serialise the route to compare it.
+  }, [points, startLabel, finishLabel]);
 
   // Move (or clear) the hover marker without rebuilding the map.
   useEffect(() => {
@@ -85,6 +123,9 @@ export function RouteMap({
         weight: 2,
         fillColor: "#e0533d",
         fillOpacity: 1,
+        // Vectors live below the badge markers by default, which would swallow
+        // the dot at either end of the route. Same pane, added later, so on top.
+        pane: "markerPane",
       }).addTo(map);
     }
   }, [highlight]);

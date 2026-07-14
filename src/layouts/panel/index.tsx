@@ -1,16 +1,16 @@
 import { AppSidebar, SidebarInset, SidebarProvider } from "./sidebar";
-import { AppHeader } from "./header";
+import { AppHeader, type Crumb } from "./header";
 
 interface PanelPageProps {
   title?: string;
-  breadcrumb?: React.ReactNode;
+  parents?: Crumb[];
   layout?: boolean;
   children?: React.ReactNode;
 }
 
 export default function PanelPage({
   title,
-  breadcrumb,
+  parents,
   layout,
   children,
 }: PanelPageProps) {
@@ -18,7 +18,7 @@ export default function PanelPage({
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <AppHeader title={title} breadcrumb={breadcrumb} />
+        <AppHeader title={title} parents={parents} />
         <div
           className={
             layout == false

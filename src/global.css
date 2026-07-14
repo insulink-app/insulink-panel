@@ -1,5 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+/* Leaflet's own skin, imported here rather than from route-map.tsx: the map is
+   lazily loaded, so its CSS used to land after this file and outrank the
+   overrides at the bottom. */
+@import "leaflet/dist/leaflet.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -198,4 +202,28 @@
 .leaflet-container {
   outline: none !important;
   border: none !important;
+}
+
+/* Leaflet's zoom buttons ship a hardcoded white/black skin, which stays white
+   in dark mode. Repaint them with the card tokens. */
+.leaflet-bar {
+  border: 1px solid var(--border);
+  box-shadow: none;
+}
+
+.leaflet-bar a,
+.leaflet-bar a:hover {
+  background-color: var(--card);
+  color: var(--card-foreground);
+  border-bottom-color: var(--border);
+}
+
+.leaflet-bar a:hover {
+  background-color: var(--accent);
+}
+
+.leaflet-bar a.leaflet-disabled,
+.leaflet-bar a.leaflet-disabled:hover {
+  background-color: var(--muted);
+  color: var(--muted-foreground);
 }

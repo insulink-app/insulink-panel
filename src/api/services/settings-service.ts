@@ -66,6 +66,23 @@ const NUMERIC_KEYS = [
   "nutrition.protein_goal_g",
 ] as const;
 
+// Stored as strings too ("true"), so `settings.prediction_enabled === true` is
+// false for an enabled forecast until these are coerced. Writing real booleans
+// back is safe: the app's pull() stringifies every value it reads.
+const BOOLEAN_KEYS = [
+  "prediction_enabled",
+  "notifications",
+  "live_glucose_notification",
+  "connection_lost_alert",
+  "sensor_expiry_alert",
+  "sensor_halftime_alert",
+  "training_detected_alert",
+  "predictive_advisory_alert",
+  "alarm_sound",
+  "silent_mode",
+  "developer",
+] as const;
+
 const find = async (): Promise<UserSettings> => {
   const res = await client.get<{ success: boolean; settings?: string }>({
     url: "/user/settings/find/",
@@ -76,6 +93,9 @@ const find = async (): Promise<UserSettings> => {
       : {};
     for (const key of NUMERIC_KEYS) {
       if (settings[key] != null) settings[key] = Number(settings[key]);
+    }
+    for (const key of BOOLEAN_KEYS) {
+      if (settings[key] != null) settings[key] = String(settings[key]) === "true";
     }
     return settings;
   } catch {

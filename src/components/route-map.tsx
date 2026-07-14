@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "next-themes";
 import L from "leaflet";
-import "leaflet/dist/leaflet.css";
 
 // CartoDB light/dark basemaps — the same tiles the app uses (no API key).
 const TILES = {

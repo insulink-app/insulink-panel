@@ -324,6 +324,36 @@ function WorkoutBody({
   );
 }
 
+const TICK_STEPS_MS = [1, 2, 5, 10, 15, 30, 60, 120, 180, 360, 720].map(
+  (minutes) => minutes * 60000,
+);
+
+// Recharts derives its ticks from the data points, and the pulse samples every
+// few seconds — so the axis came out as a minute-by-minute smear. Lay the ticks
+// on round times across the window instead, at the coarsest step that still
+// leaves ~`target` of them.
+// ponytail: steps are aligned against epoch (UTC), so a step above an hour can
+// land off-hour in a half-hour timezone. Activity windows never get that long.
+function timeTicks(from: number, to: number, target = 6) {
+  const step =
+    TICK_STEPS_MS.find((candidate) => (to - from) / candidate <= target) ??
+    TICK_STEPS_MS[TICK_STEPS_MS.length - 1];
+  const ticks: number[] = [];
+  for (let tick = Math.ceil(from / step) * step; tick <= to; tick += step) {
+    ticks.push(tick);
+  }
+  return ticks;
+}
+
+type VitalsRow = {
+  t: number;
+  glucose?: number;
+  pulse?: number;
+  // The last reading of each series at this row's time — tooltip only, never drawn.
+  glucoseAt?: number;
+  pulseAt?: number;
+};
+
 // Glucose (mg/dL, left axis) and pulse (bpm, right axis) over the activity's
 // window. The two series carry different timestamps, so they're merged into one
 // sorted series and bridged with connectNulls.
@@ -356,9 +386,23 @@ const VitalsChart = memo(function VitalsChart({
     const merged = [
       ...glucose.filter((point) => inWindow(point.t)),
       ...pulse.filter((point) => inWindow(point.t)),
-    ] as { t: number; glucose?: number; pulse?: number }[];
-    return merged.sort((left, right) => left.t - right.t);
+    ] as VitalsRow[];
+    merged.sort((left, right) => left.t - right.t);
+    // A row only ever holds the value of the series it came from, so the hovered
+    // row would show just one of the two. Carry the last reading of each series
+    // forward into every row — under tooltip-only keys, so the drawn lines keep
+    // their own (sparser) points instead of gaining stair steps. Copies, because
+    // the rows are still the caller's memoised objects, not ours to write to.
+    let lastGlucose: number | undefined;
+    let lastPulse: number | undefined;
+    return merged.map((row) => {
+      lastGlucose = row.glucose ?? lastGlucose;
+      lastPulse = row.pulse ?? lastPulse;
+      return { ...row, glucoseAt: lastGlucose, pulseAt: lastPulse };
+    });
   }, [glucose, pulse, from, to]);
+
+  const ticks = useMemo(() => timeTicks(from, to), [from, to]);
 
   const hasGlucose = data.some((point) => point.glucose != null);
   const hasPulse = data.some((point) => point.pulse != null);
@@ -396,6 +440,7 @@ const VitalsChart = memo(function VitalsChart({
                 type="number"
                 scale="time"
                 domain={[from, to]}
+                ticks={ticks}
                 tickFormatter={(value) => format(new Date(value), "HH:mm")}
                 fontSize={12}
               />
@@ -430,14 +475,19 @@ function VitalsTooltip({
   pulseLabel,
 }: {
   active?: boolean;
-  payload?: { dataKey?: string; value?: number }[];
+  payload?: { payload?: VitalsRow }[];
   label?: number;
   glucoseLabel: string;
   pulseLabel: string;
 }) {
-  if (!active || !payload?.length) return null;
-  const glucose = payload.find((entry) => entry.dataKey === "glucose")?.value;
-  const pulse = payload.find((entry) => entry.dataKey === "pulse")?.value;
+  if (!active || !payload?.length) {
+    return null;
+  }
+  // The source row, not the per-series entries: those only carry the one value
+  // the hovered row was built from.
+  const row = payload[0]?.payload;
+  const glucose = row?.glucoseAt;
+  const pulse = row?.pulseAt;
   return (
     <div className="rounded-lg border border-border bg-popover px-3 py-2 shadow-md">
       <div className="text-xs text-muted-foreground">

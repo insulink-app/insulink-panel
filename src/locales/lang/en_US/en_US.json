@@ -358,6 +358,7 @@
     "no_route": "No route recorded for this training.",
     "route_start": "Start",
     "route_finish": "Finish",
+    "route_reset": "Reset view",
     "avg_pace": "Avg. pace",
     "splits": "Splits",
     "km_label": "Km {{n}}",

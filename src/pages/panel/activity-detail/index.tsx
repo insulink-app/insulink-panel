@@ -345,11 +345,44 @@ function timeTicks(from: number, to: number, target = 6) {
   return ticks;
 }
 
+// How far the tooltip will reach for a reading. Past this the nearest sample is
+// a guess rather than a measurement, so the tooltip says nothing instead.
+const MAX_TOOLTIP_GAP_MS = 5 * 60000;
+
+// A series' value at a given time, read off the line between the two samples
+// that straddle it — the same value the chart draws there. Nearest-sample was
+// not enough: the pulse is the sparser series, so the tooltip kept reporting a
+// reading minutes away from the cursor while the line showed the slope.
+// Times are asked in ascending order, so one forward cursor covers the pass.
+function seriesSampler(samples: { t: number; value: number }[]) {
+  let cursor = 0;
+  return (time: number) => {
+    while (cursor + 1 < samples.length && samples[cursor + 1].t <= time) {
+      cursor += 1;
+    }
+    const left = samples[cursor];
+    if (!left) {
+      return undefined;
+    }
+    const right = samples[cursor + 1];
+    if (left.t <= time && right && right.t - left.t <= MAX_TOOLTIP_GAP_MS) {
+      const ratio = (time - left.t) / (right.t - left.t);
+      return left.value + (right.value - left.value) * ratio;
+    }
+    // Outside a straddling pair (or across a gap too wide to read a slope from),
+    // the closest sample — but only while it is close enough to still mean
+    // something at this time.
+    const nearest =
+      right && Math.abs(right.t - time) < Math.abs(left.t - time) ? right : left;
+    return Math.abs(nearest.t - time) <= MAX_TOOLTIP_GAP_MS ? nearest.value : undefined;
+  };
+}
+
 type VitalsRow = {
   t: number;
   glucose?: number;
   pulse?: number;
-  // The last reading of each series at this row's time — tooltip only, never drawn.
+  // Each series' reading at this row's time — tooltip only, never drawn.
   glucoseAt?: number;
   pulseAt?: number;
 };
@@ -383,23 +416,26 @@ const VitalsChart = memo(function VitalsChart({
 
   const data = useMemo(() => {
     const inWindow = (time: number) => time >= from && time <= to;
-    const merged = [
-      ...glucose.filter((point) => inWindow(point.t)),
-      ...pulse.filter((point) => inWindow(point.t)),
-    ] as VitalsRow[];
-    merged.sort((left, right) => left.t - right.t);
+    const byTime = (left: { t: number }, right: { t: number }) => left.t - right.t;
+    const glucoseIn = glucose.filter((point) => inWindow(point.t)).sort(byTime);
+    const pulseIn = pulse.filter((point) => inWindow(point.t)).sort(byTime);
+    const merged = [...glucoseIn, ...pulseIn].sort(byTime) as VitalsRow[];
     // A row only ever holds the value of the series it came from, so the hovered
-    // row would show just one of the two. Carry the last reading of each series
-    // forward into every row — under tooltip-only keys, so the drawn lines keep
-    // their own (sparser) points instead of gaining stair steps. Copies, because
-    // the rows are still the caller's memoised objects, not ours to write to.
-    let lastGlucose: number | undefined;
-    let lastPulse: number | undefined;
-    return merged.map((row) => {
-      lastGlucose = row.glucose ?? lastGlucose;
-      lastPulse = row.pulse ?? lastPulse;
-      return { ...row, glucoseAt: lastGlucose, pulseAt: lastPulse };
-    });
+    // row would show just one of the two. Give every row both series' value at
+    // its time — under tooltip-only keys, so the drawn lines keep their own
+    // (sparser) points instead of gaining stair steps.
+    // Copies, because the rows are the caller's memoised objects, not ours.
+    const glucoseAt = seriesSampler(
+      glucoseIn.map((point) => ({ t: point.t, value: point.glucose })),
+    );
+    const pulseAt = seriesSampler(
+      pulseIn.map((point) => ({ t: point.t, value: point.pulse })),
+    );
+    return merged.map((row) => ({
+      ...row,
+      glucoseAt: glucoseAt(row.t),
+      pulseAt: pulseAt(row.t),
+    }));
   }, [glucose, pulse, from, to]);
 
   const ticks = useMemo(() => timeTicks(from, to), [from, to]);
@@ -495,12 +531,12 @@ function VitalsTooltip({
       </div>
       {glucose != null && (
         <div className="text-sm font-semibold" style={{ color: GLUCOSE_COLOR }}>
-          {glucoseLabel}: {glucose} mg/dL
+          {glucoseLabel}: {Math.round(glucose)} mg/dL
         </div>
       )}
       {pulse != null && (
         <div className="text-sm font-semibold" style={{ color: PULSE_COLOR }}>
-          {pulseLabel}: {pulse} bpm
+          {pulseLabel}: {Math.round(pulse)} bpm
         </div>
       )}
     </div>

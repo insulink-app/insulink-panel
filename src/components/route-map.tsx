@@ -1,7 +1,9 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "next-themes";
+import { Maximize } from "lucide-react";
 import L from "leaflet";
+import { Button } from "@/components/ui/button";
 
 // CartoDB light/dark basemaps — the same tiles the app uses (no API key).
 const TILES = {
@@ -15,6 +17,8 @@ type LatLng = { lat: number; lng: number };
 // slate for both, told apart by the icon rather than a loud red/green. The icons
 // are inlined as markup because Leaflet takes an HTML string, not a component.
 const BADGE_COLOR = "#37474F";
+// Breathing room so the start/finish badges don't sit on the map edge.
+const FIT_PADDING: [number, number] = [24, 24];
 const PLAY_ICON = '<polygon points="7 4 19 12 7 20 7 4" fill="currentColor" />';
 const FLAG_ICON =
   '<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />' +
@@ -65,6 +69,12 @@ export function RouteMap({
     [track],
   );
 
+  // Frames the whole route again after panning or zooming away — the same fit
+  // the map opens with.
+  const resetView = useCallback(() => {
+    mapRef.current?.fitBounds(L.latLngBounds(points), { padding: FIT_PADDING });
+  }, [points]);
+
   useEffect(() => {
     if (!containerRef.current || points.length === 0) {
       return;
@@ -88,7 +98,7 @@ export function RouteMap({
         zIndexOffset: 1000,
       }).addTo(map);
     }
-    map.fitBounds(line.getBounds(), { padding: [24, 24] });
+    map.fitBounds(line.getBounds(), { padding: FIT_PADDING });
 
     return () => {
       map.remove();
@@ -149,9 +159,25 @@ export function RouteMap({
   }
 
   return (
-    <div
-      ref={containerRef}
-      className="h-80 w-full overflow-hidden rounded-xl z-0"
-    />
+    <div className="relative">
+      <div
+        ref={containerRef}
+        className="h-80 w-full overflow-hidden rounded-xl z-0"
+      />
+      {/* A sibling of the map rather than an L.Control: clicks never reach the
+          map, and it stays a plain themed button. Leaflet's panes are boxed in
+          by the map container's own z-0 stacking context. */}
+      <Button
+        type="button"
+        variant="secondary"
+        size="icon"
+        onClick={resetView}
+        title={t("activity.route_reset")}
+        aria-label={t("activity.route_reset")}
+        className="absolute right-3 top-3 z-10 shadow-md"
+      >
+        <Maximize className="size-4" />
+      </Button>
+    </div>
   );
 }

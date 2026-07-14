@@ -358,6 +358,7 @@
     "no_route": "Für dieses Training wurde keine Route aufgezeichnet.",
     "route_start": "Start",
     "route_finish": "Ziel",
+    "route_reset": "Ansicht zurücksetzen",
     "avg_pace": "Ø Tempo",
     "splits": "Kilometer-Splits",
     "km_label": "Km {{n}}",

@@ -98,6 +98,8 @@
     "username_missing": "Username missing",
     "password": "Password",
     "password_missing": "Password missing",
+    "show_password": "Show password",
+    "hide_password": "Hide password",
     "remember": "Stay signed in",
     "submit": "Sign in",
     "invalid_credentials": "Wrong username or password.",

@@ -16,6 +16,7 @@ import {
   YAxis,
 } from "recharts";
 import PanelPage from "@/layouts/panel";
+import { ChartTooltipBox, ChartTooltipValue } from "@/components/chart-tooltip";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatTile } from "@/components/stat-tile";
@@ -304,13 +305,10 @@ function ChartTooltip({
     return null;
   }
   return (
-    <div className="rounded-lg border border-border bg-popover px-3 py-2 shadow-md">
-      <div className="text-xs text-muted-foreground">
-        {format(new Date(label as number), "dd.MM. HH:mm")}
-      </div>
-      <div className="text-sm font-semibold text-popover-foreground">
+    <ChartTooltipBox caption={format(new Date(label as number), "dd.MM. HH:mm")}>
+      <ChartTooltipValue>
         {toDisplay(Number(payload[0].value), unit)} {unitLabel(unit)}
-      </div>
-    </div>
+      </ChartTooltipValue>
+    </ChartTooltipBox>
   );
 }

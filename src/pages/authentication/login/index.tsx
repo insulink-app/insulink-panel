@@ -195,7 +195,7 @@ export default function LoginForm() {
                   id="remember-check"
                   type="checkbox"
                   checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
+                  onChange={(event) => setRememberMe(event.target.checked)}
                   className="h-4 w-4 mr-3 border border-gray-600 rounded-sm bg-transparent"
                 />
                 <label htmlFor="remember-check" className="select-none">

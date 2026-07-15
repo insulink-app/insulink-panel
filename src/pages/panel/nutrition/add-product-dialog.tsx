@@ -270,11 +270,11 @@ export default function ProductDialog({
               </SelectContent>
             </Select>
           </Field>
-          <NumberField label={t("nutrition.add.carbs")} value={draft.carbs} onChange={(v) => set("carbs", v)} />
-          <NumberField label={t("nutrition.add.fat")} value={draft.fat} onChange={(v) => set("fat", v)} />
-          <NumberField label={t("nutrition.add.protein")} value={draft.protein} onChange={(v) => set("protein", v)} />
-          <NumberField label={t("nutrition.add.kcal")} value={draft.kcal} onChange={(v) => set("kcal", v)} />
-          <NumberField label={t("nutrition.add.serving")} value={draft.serving} onChange={(v) => set("serving", v)} />
+          <NumberField label={t("nutrition.add.carbs")} value={draft.carbs} onChange={(value) => set("carbs", value)} />
+          <NumberField label={t("nutrition.add.fat")} value={draft.fat} onChange={(value) => set("fat", value)} />
+          <NumberField label={t("nutrition.add.protein")} value={draft.protein} onChange={(value) => set("protein", value)} />
+          <NumberField label={t("nutrition.add.kcal")} value={draft.kcal} onChange={(value) => set("kcal", value)} />
+          <NumberField label={t("nutrition.add.serving")} value={draft.serving} onChange={(value) => set("serving", value)} />
         </div>
 
         <DialogFooter>

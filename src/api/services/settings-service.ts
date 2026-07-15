@@ -21,6 +21,7 @@ export interface UserSettings {
   // `@/lib/basal`. Keep it stringified or the app's pull() writes "[object …]".
   basal_profiles?: string;
   prediction_enabled?: boolean;
+  prediction_band?: boolean;
   prediction_horizon?: number;
   notifications?: boolean;
   live_glucose_notification?: boolean;
@@ -74,6 +75,7 @@ const NUMERIC_KEYS = [
 // back is safe: the app's pull() stringifies every value it reads.
 const BOOLEAN_KEYS = [
   "prediction_enabled",
+  "prediction_band",
   "notifications",
   "live_glucose_notification",
   "connection_lost_alert",

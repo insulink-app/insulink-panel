@@ -8,6 +8,8 @@ scoped to the caller's own account via JWT.
 It speaks the same `/v1` REST API as the mobile app (bearer token,
 `{ success: bool }` envelope, refresh on `417`, logout on `403`).
 
+![The panel's overview page](./docs/overview.png)
+
 ## Features
 
 - **Overview** – current glucose value (colour-coded), time in range, sensor

@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
+import { ChartTooltipBox, ChartTooltipValue } from "@/components/chart-tooltip";
 import {
   Area,
   AreaChart,
@@ -50,19 +51,14 @@ function ChartTooltip({
     return null;
   }
   return (
-    <div className="rounded-lg border border-border bg-popover px-3 py-2 shadow-md">
-      <div className="text-xs text-muted-foreground">
-        {format(new Date(label as number), "dd.MM. HH:mm")}
-      </div>
-      <div className="text-sm font-semibold text-popover-foreground">
+    <ChartTooltipBox caption={format(new Date(label as number), "dd.MM. HH:mm")}>
+      <ChartTooltipValue>
         {toDisplay(Number(point.value), unit)} {unitLabel(unit)}
-      </div>
+      </ChartTooltipValue>
       {point.dataKey === "predicted" && (
-        <div className="text-xs text-muted-foreground">
-          {t("overview.prediction")}
-        </div>
+        <div className="text-xs text-muted-foreground">{t("overview.prediction")}</div>
       )}
-    </div>
+    </ChartTooltipBox>
   );
 }
 

@@ -16,6 +16,8 @@ import {
 import PanelPage from "@/layouts/panel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataList, type ListColumn } from "@/components/data-list";
+import { StatCard } from "@/components/stat-card";
+import { ChartTooltipBox, ChartTooltipValue } from "@/components/chart-tooltip";
 import { TimeRangePicker, TimeWindowNav } from "@/components/time-window";
 import { DAY, useTimeWindow, useWindowedData } from "@/lib/use-time-window";
 import { useGlucoseHex } from "@/lib/use-glucose-hex";
@@ -49,7 +51,9 @@ export default function PulsePage() {
   );
 
   const stats = useMemo(() => {
-    if (ascending.length === 0) return null;
+    if (ascending.length === 0) {
+      return null;
+    }
     const beats = ascending.map((sample) => sample.b);
     const avg = beats.reduce((sum, value) => sum + value, 0) / beats.length;
     // Resting proxy: mean of the lowest tenth of readings (a full-night RHR
@@ -75,10 +79,10 @@ export default function PulsePage() {
     <PanelPage title={t("pulse.title")} parents={[{ title: t("nav.health") }]}>
       <div className="py-6 flex flex-col gap-6">
         <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-          <Stat title={t("pulse.average")} value={bpm(stats?.avg, t)} />
-          <Stat title={t("pulse.resting")} value={bpm(stats?.resting, t)} />
-          <Stat title={t("pulse.minimum")} value={bpm(stats?.min, t)} />
-          <Stat title={t("pulse.maximum")} value={bpm(stats?.max, t)} />
+          <StatCard title={t("pulse.average")} value={formatBpm(stats?.avg, t)} />
+          <StatCard title={t("pulse.resting")} value={formatBpm(stats?.resting, t)} />
+          <StatCard title={t("pulse.minimum")} value={formatBpm(stats?.min, t)} />
+          <StatCard title={t("pulse.maximum")} value={formatBpm(stats?.max, t)} />
         </div>
 
         <PulseChart samples={ascending} isLoading={isLoading} />
@@ -195,35 +199,19 @@ function PulseTooltip({
   payload?: { value?: number; payload?: PulseSample }[];
   unit?: string;
 }) {
-  if (!active || !payload?.length) return null;
+  if (!active || !payload?.length) {
+    return null;
+  }
   const point = payload[0].payload;
   return (
-    <div className="rounded-lg border border-border bg-popover px-3 py-2 shadow-md">
-      <div className="text-xs text-muted-foreground">
-        {point ? format(new Date(point.t), "dd.MM. HH:mm") : ""}
-      </div>
-      <div className="text-sm font-semibold text-popover-foreground">
+    <ChartTooltipBox caption={point ? format(new Date(point.t), "dd.MM. HH:mm") : ""}>
+      <ChartTooltipValue>
         {payload[0].value} {unit}
-      </div>
-    </div>
+      </ChartTooltipValue>
+    </ChartTooltipBox>
   );
 }
 
-function bpm(value: number | undefined, t: (key: string) => string) {
+function formatBpm(value: number | undefined, t: (key: string) => string) {
   return value == null ? "–" : `${value} ${t("pulse.bpm")}`;
-}
-
-function Stat({ title, value }: { title: string; value: string }) {
-  return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          {title}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-      </CardContent>
-    </Card>
-  );
 }

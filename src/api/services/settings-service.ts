@@ -97,10 +97,14 @@ const find = async (): Promise<UserSettings> => {
       ? (JSON.parse(res.settings) as UserSettings)
       : {};
     for (const key of NUMERIC_KEYS) {
-      if (settings[key] != null) settings[key] = Number(settings[key]);
+      if (settings[key] != null) {
+        settings[key] = Number(settings[key]);
+      }
     }
     for (const key of BOOLEAN_KEYS) {
-      if (settings[key] != null) settings[key] = String(settings[key]) === "true";
+      if (settings[key] != null) {
+        settings[key] = String(settings[key]) === "true";
+      }
     }
     return settings;
   } catch {

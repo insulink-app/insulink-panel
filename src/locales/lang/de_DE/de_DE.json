@@ -136,6 +136,7 @@
     "minutes": "{{n}} Min."
   },
   "glucose": {
+    "mgdl": "mg/dL",
     "title": "Glukose",
     "status_low": "Niedrig",
     "status_in_range": "Im Ziel",

@@ -10,8 +10,12 @@ export function classify(
   low = DEFAULT_TARGET_LOW,
   high = DEFAULT_TARGET_HIGH,
 ): GlucoseStatus {
-  if (mgdl < low) return "low";
-  if (mgdl > high) return "high";
+  if (mgdl < low) {
+    return "low";
+  }
+  if (mgdl > high) {
+    return "high";
+  }
   return "in-range";
 }
 
@@ -44,10 +48,18 @@ export function classifyBand(
   low = DEFAULT_TARGET_LOW,
   high = DEFAULT_TARGET_HIGH,
 ): GlucoseBand {
-  if (mgdl < Math.min(VERY_LOW, low)) return "very-low";
-  if (mgdl < low) return "low";
-  if (mgdl > Math.max(VERY_HIGH, high)) return "very-high";
-  if (mgdl > high) return "high";
+  if (mgdl < Math.min(VERY_LOW, low)) {
+    return "very-low";
+  }
+  if (mgdl < low) {
+    return "low";
+  }
+  if (mgdl > Math.max(VERY_HIGH, high)) {
+    return "very-high";
+  }
+  if (mgdl > high) {
+    return "high";
+  }
   return "in-range";
 }
 
@@ -92,7 +104,9 @@ export const bandColorVar: Record<GlucoseBand, string> = {
 };
 
 export function toDisplay(mgdl: number, unit?: string): string {
-  if (unit === "mmol") return (mgdl / 18).toFixed(1);
+  if (unit === "mmol") {
+    return (mgdl / 18).toFixed(1);
+  }
   return String(Math.round(mgdl));
 }
 

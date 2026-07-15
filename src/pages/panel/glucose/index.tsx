@@ -16,6 +16,8 @@ import {
 import PanelPage from "@/layouts/panel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataList, type ListColumn } from "@/components/data-list";
+import { StatCard } from "@/components/stat-card";
+import { ChartTooltipBox, ChartTooltipValue } from "@/components/chart-tooltip";
 import { TimeRangePicker, TimeWindowNav } from "@/components/time-window";
 import { DAY, useTimeWindow, useWindowedData } from "@/lib/use-time-window";
 import glucoseService, {
@@ -55,12 +57,14 @@ export default function GlucosePage() {
   const high = settings?.glucose_target_high ?? DEFAULT_TARGET_HIGH;
 
   const entries = useMemo(
-    () => (data?.entries ?? []).slice().sort((a, b) => b.time - a.time),
+    () => (data?.entries ?? []).slice().sort((left, right) => right.time - left.time),
     [data],
   );
 
   const stats = useMemo(() => {
-    if (entries.length === 0) return null;
+    if (entries.length === 0) {
+      return null;
+    }
     const values = entries.map((entry) => entry.value);
     const avg = values.reduce((sum, value) => sum + value, 0) / values.length;
     const inRange = entries.filter(
@@ -104,10 +108,10 @@ export default function GlucosePage() {
     <PanelPage title={t("glucose.title")}>
       <div className="py-6 flex flex-col gap-6">
         <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-          <Stat title={t("glucose.average")} value={fmt(stats?.avg, unit)} />
-          <Stat title={t("glucose.minimum")} value={fmt(stats?.min, unit)} />
-          <Stat title={t("glucose.maximum")} value={fmt(stats?.max, unit)} />
-          <Stat title={t("glucose.in_range")} value={stats ? `${stats.tir} %` : "–"} />
+          <StatCard title={t("glucose.average")} value={formatReading(stats?.avg, unit)} />
+          <StatCard title={t("glucose.minimum")} value={formatReading(stats?.min, unit)} />
+          <StatCard title={t("glucose.maximum")} value={formatReading(stats?.max, unit)} />
+          <StatCard title={t("glucose.in_range")} value={stats ? `${stats.tir} %` : "–"} />
         </div>
         <GlucoseChart entries={entries} low={low} high={high} unit={unit} />
         <DataList
@@ -176,7 +180,7 @@ function GlucoseChart({
               />
               <YAxis domain={[yMin, yMax]} fontSize={12} width={36} />
               <Tooltip
-                content={<ChartTooltip unit={unit} />}
+                content={<GlucoseTooltip unit={unit} />}
                 cursor={{ stroke: "var(--border)" }}
                 isAnimationActive={false}
               />
@@ -217,7 +221,7 @@ function GlucoseChart({
   );
 }
 
-function ChartTooltip({
+function GlucoseTooltip({
   active,
   payload,
   label,
@@ -228,34 +232,18 @@ function ChartTooltip({
   label?: number;
   unit?: string;
 }) {
-  if (!active || !payload?.length) return null;
+  if (!active || !payload?.length) {
+    return null;
+  }
   return (
-    <div className="rounded-lg border border-border bg-popover px-3 py-2 shadow-md">
-      <div className="text-xs text-muted-foreground">
-        {format(new Date(label as number), "dd.MM. HH:mm")}
-      </div>
-      <div className="text-sm font-semibold text-popover-foreground">
+    <ChartTooltipBox caption={format(new Date(label as number), "dd.MM. HH:mm")}>
+      <ChartTooltipValue>
         {toDisplay(Number(payload[0].value), unit)} {unitLabel(unit)}
-      </div>
-    </div>
+      </ChartTooltipValue>
+    </ChartTooltipBox>
   );
 }
 
-function fmt(value: number | undefined, unit?: string) {
+function formatReading(value: number | undefined, unit?: string) {
   return value == null ? "–" : `${toDisplay(value, unit)} ${unitLabel(unit)}`;
-}
-
-function Stat({ title, value }: { title: string; value: string }) {
-  return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          {title}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-      </CardContent>
-    </Card>
-  );
 }

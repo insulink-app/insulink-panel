@@ -17,6 +17,8 @@ import PanelPage from "@/layouts/panel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataList, type ListColumn } from "@/components/data-list";
+import { StatCard } from "@/components/stat-card";
+import { ChartTooltipBox, ChartTooltipValue } from "@/components/chart-tooltip";
 import sportService, {
   type Measurement,
   type MeasurementType,
@@ -60,7 +62,9 @@ export default function BodyPage() {
   );
 
   const stats = useMemo(() => {
-    if (ascending.length === 0) return null;
+    if (ascending.length === 0) {
+      return null;
+    }
     const values = ascending.map((entry) => entry.value);
     const total = values.reduce((sum, value) => sum + value, 0);
     return {
@@ -95,14 +99,14 @@ export default function BodyPage() {
         </div>
 
         <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-          <Stat title={t("body.current")} value={valueOf(stats?.latest, metric.digits, unit)} />
-          <Stat title={t("body.average")} value={valueOf(stats?.average, metric.digits, unit)} />
+          <StatCard title={t("body.current")} value={formatMeasurement(stats?.latest, metric.digits, unit)} />
+          <StatCard title={t("body.average")} value={formatMeasurement(stats?.average, metric.digits, unit)} />
           {metric.daily ? (
-            <Stat title={t("body.total")} value={valueOf(stats?.total, metric.digits, unit)} />
+            <StatCard title={t("body.total")} value={formatMeasurement(stats?.total, metric.digits, unit)} />
           ) : (
-            <Stat title={t("body.maximum")} value={valueOf(stats?.max, metric.digits, unit)} />
+            <StatCard title={t("body.maximum")} value={formatMeasurement(stats?.max, metric.digits, unit)} />
           )}
-          <Stat title={t("body.entries")} value={String(ascending.length)} />
+          <StatCard title={t("body.entries")} value={String(ascending.length)} />
         </div>
 
         <Card>
@@ -163,17 +167,16 @@ function MetricTooltip({
   unit?: string;
   digits: number;
 }) {
-  if (!active || !payload?.length) return null;
+  if (!active || !payload?.length) {
+    return null;
+  }
   const point = payload[0].payload;
   return (
-    <div className="rounded-lg border border-border bg-popover px-3 py-2 shadow-md">
-      <div className="text-xs text-muted-foreground">
-        {point ? format(new Date(point.t), "dd.MM.yyyy") : ""}
-      </div>
-      <div className="text-sm font-semibold text-popover-foreground">
+    <ChartTooltipBox caption={point ? format(new Date(point.t), "dd.MM.yyyy") : ""}>
+      <ChartTooltipValue>
         {round(Number(payload[0].value), digits)} {unit}
-      </div>
-    </div>
+      </ChartTooltipValue>
+    </ChartTooltipBox>
   );
 }
 
@@ -184,21 +187,6 @@ function round(value: number, digits: number) {
   });
 }
 
-function valueOf(value: number | undefined, digits: number, unit: string) {
+function formatMeasurement(value: number | undefined, digits: number, unit: string) {
   return value == null ? "–" : `${round(value, digits)} ${unit}`;
-}
-
-function Stat({ title, value }: { title: string; value: string }) {
-  return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          {title}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-      </CardContent>
-    </Card>
-  );
 }

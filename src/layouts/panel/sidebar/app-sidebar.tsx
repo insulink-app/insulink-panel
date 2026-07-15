@@ -7,6 +7,7 @@ import {
   ChartLine,
   CupSoda,
   Cpu,
+  Download,
   Droplet,
   Dumbbell,
   HeartPulse,
@@ -90,6 +91,13 @@ export function AppNavigation(t: TFunction) {
         { title: t("nav.sensor"), url: "/devices/sensor", icon: Droplet },
         { title: t("nav.pump"), url: "/devices/pump", icon: Syringe },
       ],
+    },
+    {
+      title: t("nav.export"),
+      url: "/export/",
+      icon: Download,
+      isActive: false,
+      items: [],
     },
     {
       title: t("nav.settings"),

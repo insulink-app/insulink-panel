@@ -1,5 +1,6 @@
 import { memo, useEffect, useMemo, useRef, type RefObject } from "react";
 import { useTranslation } from "react-i18next";
+import { useTheme } from "next-themes";
 import { format } from "date-fns";
 import {
   CartesianGrid,
@@ -18,16 +19,17 @@ import { ChartTooltipBox, ChartTooltipValue } from "@/components/chart-tooltip";
 
 const GLUCOSE_COLOR = "#6366f1";
 const PULSE_COLOR = "#e0533d";
-// Pad the vitals window so the run-up and recovery around the activity show.
-const PAD_MS = 10 * 60 * 1000;
+const SPEED_COLOR = "#16a34a";
 
 type VitalsRow = {
   t: number;
   glucose?: number;
   pulse?: number;
+  speed?: number;
   // Each series' reading at this row's time — tooltip only, never drawn.
   glucoseAt?: number;
   pulseAt?: number;
+  speedAt?: number;
 };
 
 // Glucose (mg/dL, left axis) and pulse (bpm, right axis) over the activity's
@@ -39,16 +41,30 @@ export const VitalsChart = memo(function VitalsChart({
   window,
   glucose,
   pulse,
+  speed,
   onHover,
 }: {
   window: { start: number; end: number };
   glucose: { t: number; glucose: number }[];
   pulse: { t: number; pulse: number }[];
+  speed: { t: number; speed: number }[];
   onHover: (time: number | null) => void;
 }) {
   const { t } = useTranslation();
-  const from = window.start - PAD_MS;
-  const to = window.end + PAD_MS;
+  const { resolvedTheme } = useTheme();
+  // The hovered point reads as a neutral marker, not the series colour: white on
+  // dark, black on light, ringed by its opposite so it stays visible.
+  const activeDot = {
+    r: 4,
+    fill: resolvedTheme === "dark" ? "#ffffff" : "#000000",
+    stroke: resolvedTheme === "dark" ? "#000000" : "#ffffff",
+    strokeWidth: 1.5,
+  };
+  // The axis hugs the activity itself — no padding — so glucose, pulse and speed
+  // all fill the same span instead of pulse/speed looking cut off inside a wider,
+  // mostly-empty window.
+  const from = window.start;
+  const to = window.end;
   // The cursor pixel, not `activeLabel`: the label is the *nearest data point's*
   // timestamp, so reporting it makes the map marker hop from reading to reading.
   // The inverse scale turns the pixel back into an exact time, but it is only
@@ -57,11 +73,15 @@ export const VitalsChart = memo(function VitalsChart({
   // the whole chart on every mouse move.
   const inverseScaleRef = useRef<InverseScaleFunction | null>(null);
 
-  const data = useMemo(() => buildRows(glucose, pulse, from, to), [glucose, pulse, from, to]);
+  const data = useMemo(
+    () => buildRows(glucose, pulse, speed, from, to),
+    [glucose, pulse, speed, from, to],
+  );
   const ticks = useMemo(() => timeTicks(from, to), [from, to]);
 
   const hasGlucose = data.some((point) => point.glucose != null);
   const hasPulse = data.some((point) => point.pulse != null);
+  const hasSpeed = data.some((point) => point.speed != null);
 
   return (
     <Card>
@@ -70,10 +90,11 @@ export const VitalsChart = memo(function VitalsChart({
         <div className="flex gap-4 text-xs">
           {hasGlucose && <Legend color={GLUCOSE_COLOR} label={t("activity.glucose")} />}
           {hasPulse && <Legend color={PULSE_COLOR} label={t("activity.pulse")} />}
+          {hasSpeed && <Legend color={SPEED_COLOR} label={t("activity.speed")} />}
         </div>
       </CardHeader>
       <CardContent>
-        {!hasGlucose && !hasPulse ? (
+        {!hasGlucose && !hasPulse && !hasSpeed ? (
           <p className="py-12 text-center text-sm text-muted-foreground">{t("activity.no_vitals")}</p>
         ) : (
           <ResponsiveContainer width="100%" height={300}>
@@ -113,13 +134,18 @@ export const VitalsChart = memo(function VitalsChart({
                 domain={["dataMin - 5", "dataMax + 5"]}
                 stroke={PULSE_COLOR}
               />
+              {/* Speed scales to its own range but shows no axis — a third visible
+                  axis would crowd the plot. */}
+              <YAxis yAxisId="speed" hide domain={["dataMin - 1", "dataMax + 1"]} />
               <Tooltip
                 content={
                   <VitalsTooltip
                     glucoseLabel={t("activity.glucose")}
                     pulseLabel={t("activity.pulse")}
+                    speedLabel={t("activity.speed")}
                     glucoseUnit={t("glucose.mgdl")}
                     pulseUnit={t("pulse.bpm")}
+                    speedUnit={t("activity.kmh")}
                   />
                 }
                 isAnimationActive={false}
@@ -131,6 +157,7 @@ export const VitalsChart = memo(function VitalsChart({
                 stroke={GLUCOSE_COLOR}
                 strokeWidth={2}
                 dot={false}
+                activeDot={activeDot}
                 connectNulls
                 isAnimationActive={false}
               />
@@ -141,6 +168,18 @@ export const VitalsChart = memo(function VitalsChart({
                 stroke={PULSE_COLOR}
                 strokeWidth={2}
                 dot={false}
+                activeDot={activeDot}
+                connectNulls
+                isAnimationActive={false}
+              />
+              <Line
+                yAxisId="speed"
+                type="monotone"
+                dataKey="speed"
+                stroke={SPEED_COLOR}
+                strokeWidth={2}
+                dot={false}
+                activeDot={activeDot}
                 connectNulls
                 isAnimationActive={false}
               />
@@ -161,6 +200,7 @@ export const VitalsChart = memo(function VitalsChart({
 function buildRows(
   glucose: { t: number; glucose: number }[],
   pulse: { t: number; pulse: number }[],
+  speed: { t: number; speed: number }[],
   from: number,
   to: number,
 ): VitalsRow[] {
@@ -168,13 +208,16 @@ function buildRows(
   const byTime = (left: { t: number }, right: { t: number }) => left.t - right.t;
   const glucoseIn = glucose.filter((point) => inWindow(point.t)).sort(byTime);
   const pulseIn = pulse.filter((point) => inWindow(point.t)).sort(byTime);
-  const merged = [...glucoseIn, ...pulseIn].sort(byTime) as VitalsRow[];
+  const speedIn = speed.filter((point) => inWindow(point.t)).sort(byTime);
+  const merged = [...glucoseIn, ...pulseIn, ...speedIn].sort(byTime) as VitalsRow[];
   const glucoseAt = seriesSampler(glucoseIn.map((point) => ({ t: point.t, value: point.glucose })));
   const pulseAt = seriesSampler(pulseIn.map((point) => ({ t: point.t, value: point.pulse })));
+  const speedAt = seriesSampler(speedIn.map((point) => ({ t: point.t, value: point.speed })));
   return merged.map((row) => ({
     ...row,
     glucoseAt: glucoseAt(row.t),
     pulseAt: pulseAt(row.t),
+    speedAt: speedAt(row.t),
   }));
 }
 
@@ -245,16 +288,20 @@ function VitalsTooltip({
   label,
   glucoseLabel,
   pulseLabel,
+  speedLabel,
   glucoseUnit,
   pulseUnit,
+  speedUnit,
 }: {
   active?: boolean;
   payload?: { payload?: VitalsRow }[];
   label?: number;
   glucoseLabel: string;
   pulseLabel: string;
+  speedLabel: string;
   glucoseUnit: string;
   pulseUnit: string;
+  speedUnit: string;
 }) {
   if (!active || !payload?.length) {
     return null;
@@ -264,6 +311,7 @@ function VitalsTooltip({
   const row = payload[0]?.payload;
   const glucose = row?.glucoseAt;
   const pulse = row?.pulseAt;
+  const speed = row?.speedAt;
   return (
     <ChartTooltipBox caption={format(new Date(label as number), "dd.MM. HH:mm")}>
       {glucose != null && (
@@ -274,6 +322,11 @@ function VitalsTooltip({
       {pulse != null && (
         <ChartTooltipValue color={PULSE_COLOR}>
           {pulseLabel}: {Math.round(pulse)} {pulseUnit}
+        </ChartTooltipValue>
+      )}
+      {speed != null && (
+        <ChartTooltipValue color={SPEED_COLOR}>
+          {speedLabel}: {speed.toFixed(1)} {speedUnit}
         </ChartTooltipValue>
       )}
     </ChartTooltipBox>

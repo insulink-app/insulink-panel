@@ -8,7 +8,7 @@ import { ArrowLeft, Trash2 } from "lucide-react";
 import PanelPage from "@/layouts/panel";
 import { Button } from "@/components/ui/button";
 import { ConfirmDelete } from "@/components/confirm-delete";
-import { positionAt } from "@/lib/track";
+import { positionAt, speedSeries } from "@/lib/track";
 import sportService from "@/api/services/sport-service";
 import glucoseService from "@/api/services/glucose-service";
 import healthService from "@/api/services/health-service";
@@ -85,6 +85,9 @@ export default function ActivityDetailPage() {
     [training],
   );
   const highlight = useMemo(() => positionAt(orderedTrack, hoverTime), [orderedTrack, hoverTime]);
+  // Speed is derived from the GPS track, not stored — no series for a training
+  // without a route (e.g. a workout).
+  const speedTrack = useMemo(() => speedSeries(orderedTrack), [orderedTrack]);
 
   return (
     <PanelPage
@@ -131,6 +134,7 @@ export default function ActivityDetailPage() {
                 window={window}
                 glucose={glucoseSeries}
                 pulse={pulseSeries}
+                speed={speedTrack}
                 onHover={setHoverTime}
               />
             )}

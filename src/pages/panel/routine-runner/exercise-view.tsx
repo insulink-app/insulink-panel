@@ -37,7 +37,7 @@ export function ExerciseView(props: {
     }
   }, [props.exerciseIndex, props.setNumber, props.isTimed]);
   return (
-    <div className="flex flex-1 flex-col items-stretch justify-center gap-6 text-center">
+    <div className="flex flex-1 flex-col items-stretch justify-center gap-4 text-center">
       <JumpHeader
         label={`${t("routines.exercise")} ${props.exerciseIndex + 1}/${props.totalExercises}  ·  ${t("routines.set")} ${props.setNumber}/${props.totalSets}`}
         items={props.items}

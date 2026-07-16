@@ -24,7 +24,7 @@ export function RestView(props: {
 }) {
   const { t } = useTranslation();
   return (
-    <div className="flex flex-1 flex-col items-stretch justify-center gap-6 text-center">
+    <div className="flex flex-1 flex-col items-stretch justify-center gap-4 text-center">
       <span className="text-lg font-medium tracking-widest text-muted-foreground uppercase">
         {t("routines.resting")}
       </span>

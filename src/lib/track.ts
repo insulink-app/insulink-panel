@@ -32,3 +32,34 @@ export function positionAt(ordered: TrackPoint[], time: number | null) {
     lng: before.lng + (after.lng - before.lng) * fraction,
   };
 }
+
+const EARTH_RADIUS_M = 6371000;
+
+// Great-circle distance between two fixes in metres (haversine).
+function haversineMeters(before: TrackPoint, after: TrackPoint) {
+  const toRad = (degrees: number) => (degrees * Math.PI) / 180;
+  const deltaLat = toRad(after.lat - before.lat);
+  const deltaLng = toRad(after.lng - before.lng);
+  const chord =
+    Math.sin(deltaLat / 2) ** 2 +
+    Math.cos(toRad(before.lat)) * Math.cos(toRad(after.lat)) * Math.sin(deltaLng / 2) ** 2;
+  return 2 * EARTH_RADIUS_M * Math.asin(Math.sqrt(chord));
+}
+
+// Instantaneous speed (km/h) over each track segment, timestamped at the segment
+// midpoint. Derived from the GPS fixes — the track carries no stored speed.
+// Segments with no elapsed time (a duplicate-timestamp fix) are skipped.
+export function speedSeries(ordered: TrackPoint[]) {
+  const points: { t: number; speed: number }[] = [];
+  for (let index = 1; index < ordered.length; index += 1) {
+    const before = ordered[index - 1];
+    const after = ordered[index];
+    const seconds = (after.t - before.t) / 1000;
+    if (seconds <= 0) {
+      continue;
+    }
+    const speed = (haversineMeters(before, after) / seconds) * 3.6;
+    points.push({ t: Math.round((before.t + after.t) / 2), speed });
+  }
+  return points;
+}

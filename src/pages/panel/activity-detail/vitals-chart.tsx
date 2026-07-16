@@ -1,5 +1,6 @@
 import { memo, useEffect, useMemo, useRef, type RefObject } from "react";
 import { useTranslation } from "react-i18next";
+import { useTheme } from "next-themes";
 import { format } from "date-fns";
 import {
   CartesianGrid,
@@ -50,6 +51,15 @@ export const VitalsChart = memo(function VitalsChart({
   onHover: (time: number | null) => void;
 }) {
   const { t } = useTranslation();
+  const { resolvedTheme } = useTheme();
+  // The hovered point reads as a neutral marker, not the series colour: white on
+  // dark, black on light, ringed by its opposite so it stays visible.
+  const activeDot = {
+    r: 4,
+    fill: resolvedTheme === "dark" ? "#ffffff" : "#000000",
+    stroke: resolvedTheme === "dark" ? "#000000" : "#ffffff",
+    strokeWidth: 1.5,
+  };
   // The axis hugs the activity itself — no padding — so glucose, pulse and speed
   // all fill the same span instead of pulse/speed looking cut off inside a wider,
   // mostly-empty window.
@@ -147,6 +157,7 @@ export const VitalsChart = memo(function VitalsChart({
                 stroke={GLUCOSE_COLOR}
                 strokeWidth={2}
                 dot={false}
+                activeDot={activeDot}
                 connectNulls
                 isAnimationActive={false}
               />
@@ -157,6 +168,7 @@ export const VitalsChart = memo(function VitalsChart({
                 stroke={PULSE_COLOR}
                 strokeWidth={2}
                 dot={false}
+                activeDot={activeDot}
                 connectNulls
                 isAnimationActive={false}
               />
@@ -167,6 +179,7 @@ export const VitalsChart = memo(function VitalsChart({
                 stroke={SPEED_COLOR}
                 strokeWidth={2}
                 dot={false}
+                activeDot={activeDot}
                 connectNulls
                 isAnimationActive={false}
               />

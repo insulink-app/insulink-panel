@@ -122,22 +122,28 @@ export function RouteMap({
       highlightRef.current = null;
       return;
     }
+    // The hover marker reads as a neutral point, not a series colour: white on
+    // dark, black on light, ringed by its opposite so it stays visible.
+    const isDark = resolvedTheme === "dark";
+    const markerFill = isDark ? "#ffffff" : "#000000";
+    const markerStroke = isDark ? "#000000" : "#ffffff";
     const position: [number, number] = [highlight.lat, highlight.lng];
     if (highlightRef.current) {
       highlightRef.current.setLatLng(position);
+      highlightRef.current.setStyle({ color: markerStroke, fillColor: markerFill });
     } else {
       highlightRef.current = L.circleMarker(position, {
         radius: 8,
-        color: "#ffffff",
+        color: markerStroke,
         weight: 2,
-        fillColor: "#e0533d",
+        fillColor: markerFill,
         fillOpacity: 1,
         // Vectors live below the badge markers by default, which would swallow
         // the dot at either end of the route. Same pane, added later, so on top.
         pane: "markerPane",
       }).addTo(map);
     }
-  }, [highlight]);
+  }, [highlight, resolvedTheme]);
 
   // Swap the tile layer to match the active theme without rebuilding the map.
   useEffect(() => {

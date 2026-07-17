@@ -1,5 +1,5 @@
 import type { LoginRequest } from "@/api/services/user-service";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "@/components/icons";
 import { Spinner } from "@/components/ui/spinner";
 import {
   Card,

@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
-import { Bike, Dumbbell, Footprints, Zap } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { Bike, Dumbbell, Footprints, Zap } from "@/components/icons";
+import type { LucideIcon } from "@/components/icons";
 import type {
   CardioType,
   Measurement,

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Activity, ChevronRight, Dumbbell, ListChecks, Play, Plus } from "lucide-react";
+import { Activity, ChevronRight, Dumbbell, ListChecks, Play, Plus } from "@/components/icons";
 import PanelPage from "@/layouts/panel";
 import { CardSkeleton } from "@/components/card-skeleton";
 import { Button } from "@/components/ui/button";
@@ -49,11 +49,14 @@ export default function RoutinesPage() {
           </p>
         ) : (
           list.map((routine) => (
-            <Card key={routine.id} className="transition-colors hover:bg-secondary/50">
+            <Card key={routine.id} className="relative transition-colors hover:bg-secondary/50">
               <CardContent className="flex items-center gap-4 py-4">
+                {/* Stretched link: the ::after covers the whole card, so clicking
+                    anywhere on the box opens the routine. The Play button below
+                    sits above it via z-10 to stay a separate target. */}
                 <Link
                   to={`/health/routines/${routine.id}`}
-                  className="flex flex-1 items-center gap-4"
+                  className="flex flex-1 items-center gap-4 after:absolute after:inset-0"
                 >
                   <div className="flex size-10 items-center justify-center rounded-lg bg-secondary">
                     <Dumbbell className="size-5" />
@@ -69,7 +72,7 @@ export default function RoutinesPage() {
                   <Button
                     asChild
                     size="icon"
-                    className="size-11 shrink-0 rounded-full"
+                    className="relative z-10 size-11 shrink-0 rounded-full"
                     aria-label={t("routines.start")}
                   >
                     <Link to={`/health/routines/${routine.id}/run`}>

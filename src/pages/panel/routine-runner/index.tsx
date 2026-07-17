@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Pause, Play } from "lucide-react";
+import { Pause, Play } from "@/components/icons";
 import { CardSkeleton } from "@/components/card-skeleton";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -30,7 +30,7 @@ export default function RoutineRunnerPage() {
   // arriving late would start a second workout over the one already running.
   const active = useQuery({ queryKey: ["active-workout"], queryFn: sportService.activeWorkout });
 
-  const routine = routines.data?.routines?.find((entry) => entry.id === id);
+  const localRoutine = routines.data?.routines?.find((entry) => entry.id === id);
 
   if (routines.isLoading || exercises.isLoading || active.isLoading) {
     return (
@@ -39,6 +39,18 @@ export default function RoutineRunnerPage() {
       </RunnerShell>
     );
   }
+
+  // Resume a running workout for this routine. Prefer the driver's embedded copy
+  // of the routine (ordered items + name) over our own, so a workout started on
+  // the phone renders the exercise/set/target that device is on even when our
+  // copy differs or is missing entirely. Falls back to the local routine.
+  const running = active.data?.workout;
+  const resumeFrom = running?.routine === id ? running : undefined;
+  const routine: Routine | undefined =
+    resumeFrom?.items && resumeFrom.items.length > 0
+      ? { id: id!, name: resumeFrom.name ?? localRoutine?.name ?? "", items: resumeFrom.items }
+      : localRoutine;
+
   if (!routine || routine.items.length === 0) {
     return (
       <RunnerShell>
@@ -49,13 +61,12 @@ export default function RoutineRunnerPage() {
     );
   }
 
-  const running = active.data?.workout;
   return (
     <Runner
       routine={routine}
       exercises={exercises.data?.exercises ?? []}
       pastWorkouts={workouts.data?.workouts ?? []}
-      resumeFrom={running?.routine === routine.id ? running : undefined}
+      resumeFrom={resumeFrom}
     />
   );
 }

@@ -58,6 +58,13 @@ export type WorkoutPhase = "exercising" | "resting" | "done";
 
 export interface ActiveWorkout {
   routine: string; // routine id
+  // The driving device's own copy of the routine (ordered items + name), so a
+  // follower renders the exercise/set/target the DRIVER is on instead of
+  // resolving `ex`/`set` against its own copy — which shows the wrong
+  // exercise/set/time the moment the two copies differ. Absent on a legacy
+  // snapshot; the follower then falls back to its local routine.
+  name?: string;
+  items?: RoutineItem[];
   started: number;
   ex: number; // exercise index
   set: number; // set index

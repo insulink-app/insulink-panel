@@ -1,4 +1,4 @@
-import { BookA, ChevronRight } from "lucide-react";
+import { BookA, ChevronRight } from "@/components/icons";
 import {
   DropdownMenu,
   DropdownMenuContent,

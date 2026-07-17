@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
-import { Moon } from "lucide-react";
+import { Moon } from "@/components/icons";
 import PanelPage from "@/layouts/panel";
 import { CardSkeleton } from "@/components/card-skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

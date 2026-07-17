@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
-import { ChevronLeft, ChevronRight, SkipForward } from "lucide-react";
+import { ChevronLeft, ChevronRight, SkipForward } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { TIME_RANGES, type TimeWindow } from "@/lib/use-time-window";
 

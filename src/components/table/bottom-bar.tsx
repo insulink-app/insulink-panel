@@ -1,7 +1,7 @@
 import type { Table } from "@tanstack/react-table";
 import { useSidebar } from "@/components/ui/sidebar.tsx";
 import { useTranslation } from "react-i18next";
-import type { LucideIcon } from "lucide-react";
+import type { LucideIcon } from "@/components/icons";
 
 export interface DataTableBottomBarAction<T> {
   name: string;

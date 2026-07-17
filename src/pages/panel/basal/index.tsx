@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ChevronRight, Plus, Trash2 } from "lucide-react";
+import { ChevronRight, Plus, Trash2 } from "@/components/icons";
 import PanelPage from "@/layouts/panel";
 import { BasalChart } from "@/components/basal-chart";
 import { CardSkeleton } from "@/components/card-skeleton";

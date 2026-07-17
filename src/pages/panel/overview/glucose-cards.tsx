@@ -5,7 +5,7 @@ import {
   ArrowRight,
   ArrowUp,
   ArrowUpRight,
-} from "lucide-react";
+} from "@/components/icons";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { GlucoseEntry } from "@/api/services/glucose-service";

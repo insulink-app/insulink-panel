@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronsUpDown, UserRound } from "lucide-react";
+import { ChevronsUpDown, UserRound } from "@/components/icons";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {

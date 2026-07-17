@@ -65,11 +65,15 @@ assert.equal(resumed.pausedTotal, 5000);
 // A finished workout is cleared, so a snapshot never resumes as "done".
 assert.equal(coreFrom({ ...stale, phase: "done" }, routine).phase, "exercising");
 
-// Round trip: what we push back must describe the state we resumed.
-const snapshot = snapshotOf(resumed, routine.id);
+// Round trip: what we push back must describe the state we resumed, and must
+// carry our copy of the routine so a follower resolves the exercise/set/target
+// by the driver's items, not by indexing its own.
+const snapshot = snapshotOf(resumed, routine);
 assert.equal(snapshot.started, stale.started);
 assert.equal(snapshot.ex, resumed.exerciseIndex);
 assert.equal(snapshot.set, resumed.setIndex);
+assert.equal(snapshot.name, routine.name);
+assert.deepEqual(snapshot.items, routine.items);
 assert.deepEqual(coreFrom(snapshot, routine).sets, resumed.sets);
 
 console.log("routine-runner core: ok");

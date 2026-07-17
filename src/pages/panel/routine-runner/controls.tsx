@@ -1,7 +1,7 @@
 // The controls both phase views share.
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Minus, Plus } from "lucide-react";
+import { Minus, Plus } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,

@@ -24,7 +24,7 @@ export function useWorkoutSync({
   const abandonedRef = useRef(false);
 
   useFollowAccount({ core, routine, abandonedRef, navigate, t });
-  useMirrorToAccount({ core, routineId: routine.id, abandonedRef });
+  useMirrorToAccount({ core, routine, abandonedRef });
   useSaveOnFinish({ core, routine, pastWorkouts, navigate, queryClient, t });
 }
 
@@ -86,11 +86,11 @@ function useFollowAccount({
 // next action re-sends the full snapshot anyway.
 function useMirrorToAccount({
   core,
-  routineId,
+  routine,
   abandonedRef,
 }: {
   core: Core;
-  routineId: string;
+  routine: Routine;
   abandonedRef: AbandonedRef;
 }) {
   useEffect(() => {
@@ -104,10 +104,10 @@ function useMirrorToAccount({
       if (abandonedRef.current) {
         return;
       }
-      sportService.syncActiveWorkout(snapshotOf(core, routineId)).catch(() => undefined);
+      sportService.syncActiveWorkout(snapshotOf(core, routine)).catch(() => undefined);
     }, 1000);
     return () => window.clearTimeout(timer);
-  }, [core, routineId, abandonedRef]);
+  }, [core, routine, abandonedRef]);
 }
 
 // Persist the finished session (append to the full workout list, then sync),

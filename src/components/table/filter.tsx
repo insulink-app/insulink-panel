@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Filter } from "lucide-react";
+import { Filter } from "@/components/icons";
 import { useTranslation } from "react-i18next";
 
 export interface DataTableFilterOption {

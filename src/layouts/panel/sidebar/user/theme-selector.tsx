@@ -1,4 +1,4 @@
-import { ChevronRight, MonitorCog, Moon, Sun, SunMoon } from "lucide-react";
+import { ChevronRight, MonitorCog, Moon, Sun, SunMoon } from "@/components/icons";
 
 import { useTheme } from "next-themes";
 import {

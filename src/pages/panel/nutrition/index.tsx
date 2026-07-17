@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
-import { ChevronRight, CupSoda, Droplet, GlassWater, Milk, Plus } from "lucide-react";
+import { ChevronRight, CupSoda, Droplet, GlassWater, Milk, Plus } from "@/components/icons";
 import PanelPage from "@/layouts/panel";
 import { DataList, type ListColumn } from "@/components/data-list";
 import nutritionService, {

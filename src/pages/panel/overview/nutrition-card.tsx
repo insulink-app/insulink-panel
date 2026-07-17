@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
-import { Utensils } from "lucide-react";
+import { Utensils } from "@/components/icons";
 import type { Drink, Meal } from "@/api/services/nutrition-service";
 import { formatAmount } from "@/lib/nutrition";
 import { sumToday, todayRows } from "./today";

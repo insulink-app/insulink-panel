@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { MoreVertical, Pencil, Search, Trash2 } from "lucide-react";
+import { MoreVertical, Pencil, Search, Trash2 } from "@/components/icons";
 import { toast } from "sonner";
 import nutritionService, {
   type FoodProduct,

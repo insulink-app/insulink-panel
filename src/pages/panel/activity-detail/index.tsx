@@ -4,7 +4,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { ArrowLeft, Trash2 } from "lucide-react";
+import { ArrowLeft, Trash2 } from "@/components/icons";
 import PanelPage from "@/layouts/panel";
 import { Button } from "@/components/ui/button";
 import { ConfirmDelete } from "@/components/confirm-delete";

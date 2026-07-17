@@ -7,7 +7,7 @@ import {
   Columns3Icon,
   RefreshCcwIcon,
   SearchIcon,
-} from "lucide-react";
+} from "@/components/icons";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,

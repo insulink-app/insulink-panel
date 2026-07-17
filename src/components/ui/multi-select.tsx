@@ -5,7 +5,7 @@ import * as React from "react";
 import { useEffect } from "react";
 
 import { Command as CommandPrimitive, useCommandState } from "cmdk";
-import { XIcon } from "lucide-react";
+import { XIcon } from "@/components/icons";
 
 import {
   Command,

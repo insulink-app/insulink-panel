@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { ArrowRight, TimerReset } from "lucide-react";
+import { ArrowRight, TimerReset } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { Routine, SetLog, SportExercise } from "@/api/services/sport-service";

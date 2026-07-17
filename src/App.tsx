@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { IconContext } from "@phosphor-icons/react";
 import { Helmet } from "react-helmet";
 import { Toaster } from "@/components/ui/sonner";
 import { MotionLazy } from "./components/animate/motion-lazy";
@@ -36,7 +37,13 @@ function App({ children }: { children: React.ReactNode }) {
         </Helmet>
         <RouteLoading />
         <Toaster />
-        <MotionLazy>{children}</MotionLazy>
+        {/* Phosphor's "regular" weight reads thinner/smaller than the lucide
+            icons this app replaced; "bold" (~9.4% stroke) matches lucide's
+            weight so icons keep their presence at size-4. Call sites still set
+            size via className. */}
+        <IconContext.Provider value={{ weight: "bold" }}>
+          <MotionLazy>{children}</MotionLazy>
+        </IconContext.Provider>
       </ThemeProvider>
     </QueryClientProvider>
   );

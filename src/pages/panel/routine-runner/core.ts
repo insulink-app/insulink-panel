@@ -64,9 +64,13 @@ export function coreFrom(resume: ActiveWorkout | undefined, routine: Routine): C
   };
 }
 
-export function snapshotOf(core: Core, routineId: string): ActiveWorkout {
+export function snapshotOf(core: Core, routine: Routine): ActiveWorkout {
   return {
-    routine: routineId,
+    routine: routine.id,
+    // Carry the routine so a follower (the app) resolves the exercise/set/target
+    // by the driver's own copy, not by indexing its possibly-divergent one.
+    name: routine.name,
+    items: routine.items,
     started: core.startedAt,
     ex: core.exerciseIndex,
     set: core.setIndex,

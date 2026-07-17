@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "next-themes";
-import { Maximize } from "lucide-react";
+import { Maximize } from "@/components/icons";
 import L from "leaflet";
 import { Button } from "@/components/ui/button";
 

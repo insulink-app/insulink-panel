@@ -87,104 +87,123 @@
   --color-glucose-high: var(--glucose-high);
 }
 
-/* Palette mirrors the Insulink mobile app (indigo brand, #FAFAFA / #1B1B1B
-   surfaces, 14px corners) so web and app read as one product. */
+/* Palette takes the mobile app's slate-blue brand (`--primary`) and glucose
+   colours (see `insulink-app/lib/src/theme/app_theme.dart`), but the surfaces
+   are web-native: clean white cards on a soft page in light, a clearly-stepped
+   grey ladder in dark. `--accent` is a NEUTRAL grey — it is shadcn's generic
+   hover/selected tone (dropdowns, selects, ghost buttons), so a tinted accent
+   turns every hover blue. Brand colour lives on `--primary`, the ring and the
+   charts only. 14px corners. */
 :root {
   --radius: 0.875rem; /* app buttonRadius = 14px */
 
-  --background: #fafafa;
-  --foreground: #1b1b1b;
+  /* Mirrors the mobile app's light ladder (app_theme.dart): the page is the
+     BRIGHTEST thing, and surfaces that sit on it step DOWNWARD — cards are a
+     shade deeper than the page, raised layers (popovers) deeper still. Hover
+     DARKENS (neutral, not a brand tint), like the app. */
+  --background: #fafafa; /* _lightBg */
+  --foreground: #1b1f27;
 
-  --card: #ffffff;
-  --card-foreground: #1b1b1b;
+  --card: #e8e8e8; /* _lightSurface — deeper than the page */
+  --card-foreground: #1b1f27;
 
-  --popover: #ffffff;
-  --popover-foreground: #1b1b1b;
+  --popover: #d8dce3; /* _lightSurfaceRaised — most raised layer */
+  --popover-foreground: #1b1f27;
 
-  --primary: #3f51b5; /* Colors.indigo */
+  --primary: #45569f; /* app lightPrimary (fill) */
   --primary-foreground: #ffffff;
 
+  /* GlucoseColors.standard */
   --glucose-in-range: #2e9e5b;
   --glucose-low: #e0533d;
   --glucose-high: #e8a13a;
 
-  --secondary: #ececec;
-  --secondary-foreground: #1b1b1b;
+  --secondary: #dce0e7;
+  --secondary-foreground: #1b1f27;
 
-  --muted: #eeeeee;
-  --muted-foreground: #5c5c5c;
+  --muted: #dce0e7;
+  --muted-foreground: #5a6070; /* app _lightMuted */
 
-  --accent: #e8eaf6; /* indigo 50 */
-  --accent-foreground: #283593;
+  --accent: #d1d6de; /* neutral hover/selected — DARKENS the surface, like the app */
+  --accent-foreground: #1b1f27;
 
-  --destructive: #dc3a2b;
+  --destructive: #c42108; /* app _lightError */
 
-  --border: #e4e4e4;
-  --input: #ececec;
-  --ring: #3f51b5;
+  --border: #d5d9e1; /* app _lightBorder */
+  --input: #dce0e7;
+  --ring: #45569f;
 
-  --chart-1: #3f51b5;
-  --chart-2: #5c6bc0;
-  --chart-3: #26a69a;
-  --chart-4: #7e57c2;
-  --chart-5: #42a5f5;
+  /* brand family + glucose semantics, no stray teal/purple */
+  --chart-1: #45569f;
+  --chart-2: #5d73cc;
+  --chart-3: #93a6ff;
+  --chart-4: #2e9e5b;
+  --chart-5: #e8a13a;
 
-  --sidebar: #ffffff;
-  --sidebar-foreground: #3a3a3a;
-  --sidebar-primary: #3f51b5;
+  /* Sidebar takes the app's surface tone; the active/hover tab steps DOWN to a
+     deeper grey (not lighter), matching the app's "raised = darker" light
+     ladder. No brand blue — brand shows only on the focus ring. */
+  --sidebar: #e8e8e8;
+  --sidebar-foreground: #3a3f4a;
+  --sidebar-primary: #45569f;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #e8eaf6;
-  --sidebar-accent-foreground: #283593;
-  --sidebar-border: #eaeaea;
-  --sidebar-ring: #3f51b5;
+  --sidebar-accent: #d2d7df;
+  --sidebar-accent-foreground: #1b1f27;
+  --sidebar-border: #d5d9e1;
+  --sidebar-ring: #45569f;
 }
 
 .dark {
-  --background: #1b1b1b;
-  --foreground: #fafafa;
+  /* Clearly-stepped ladder so stacked surfaces (a bg-secondary box on a card on
+     the page) each read as their own layer. */
+  --background: #14171c;
+  --foreground: #e8ebf0;
 
-  --card: #1e1e1e;
-  --card-foreground: #fafafa;
+  --card: #1c2027;
+  --card-foreground: #e8ebf0;
 
-  --popover: #1e1e1e;
-  --popover-foreground: #fafafa;
+  --popover: #2b313b;
+  --popover-foreground: #e8ebf0;
 
-  --primary: #536dfe; /* Colors.indigoAccent */
+  --primary: #5d73cc; /* app darkPrimary (fill) */
   --primary-foreground: #ffffff;
 
+  /* GlucoseColors.headlineDark — vivid on dark */
   --glucose-in-range: #39ef82;
   --glucose-low: #ff453a;
   --glucose-high: #ffb23e;
 
-  --secondary: #2a2a2a;
-  --secondary-foreground: #fafafa;
+  /* A clear step above --card, so bg-secondary boxes (sleep tiles, rows) stay
+     visible even at reduced opacity. */
+  --secondary: #272d37;
+  --secondary-foreground: #e8ebf0;
 
-  --muted: #2a2a2a;
-  --muted-foreground: #a5a5a5;
+  --muted: #272d37;
+  --muted-foreground: #a6aebf; /* app _darkMuted */
 
-  --accent: #2c2f45; /* muted indigo tint */
-  --accent-foreground: #c5cae9;
+  --accent: #2a313c; /* neutral hover/selected — NOT a brand tint */
+  --accent-foreground: #e8ebf0;
 
-  --destructive: #ff453a;
+  --destructive: #e0533d; /* app _darkError */
 
-  --border: #333333;
-  --input: #2a2a2a;
-  --ring: #536dfe;
+  --border: #313842;
+  --input: #272d37;
+  --ring: #5d73cc;
 
-  --chart-1: #536dfe;
-  --chart-2: #7986cb;
-  --chart-3: #4db6ac;
-  --chart-4: #b388ff;
-  --chart-5: #64b5f6;
+  --chart-1: #5d73cc;
+  --chart-2: #9dacea;
+  --chart-3: #93a6ff;
+  --chart-4: #5dd98c;
+  --chart-5: #ffb23e;
 
-  --sidebar: #1e1e1e;
-  --sidebar-foreground: #d0d0d0;
-  --sidebar-primary: #536dfe;
+  --sidebar: #1c2027;
+  --sidebar-foreground: #c4cad6;
+  --sidebar-primary: #5d73cc;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #2c2f45;
-  --sidebar-accent-foreground: #c5cae9;
-  --sidebar-border: #2e2e2e;
-  --sidebar-ring: #536dfe;
+  --sidebar-accent: #2a313c;
+  --sidebar-accent-foreground: #e8ebf0;
+  --sidebar-border: #313842;
+  --sidebar-ring: #5d73cc;
 }
 
 @layer base {
@@ -195,6 +214,15 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Phosphor icons draw with more internal padding than the lucide icons they
+   replaced, so at a given box (e.g. `size-4`) the glyph reads ~15% smaller.
+   Scale the glyph up to match lucide's visual size across every page at once —
+   transform doesn't change the layout box, so nothing shifts. The attribute
+   selector targets only Phosphor's 256-grid SVGs. */
+svg[viewBox="0 0 256 256"] {
+  transform: scale(1.15);
 }
 
 /* Leaflet draws a focus outline on the map container; kill it. */

@@ -7,7 +7,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { ArrowDown, ArrowDownRight, ArrowRight, ArrowUp, ArrowUpRight, Droplet, Heart } from "lucide-react";
+import { ArrowDown, ArrowDownRight, ArrowRight, ArrowUp, ArrowUpRight, Droplet, Heart } from "@/components/icons";
 import glucoseService, { type GlucoseEntry } from "@/api/services/glucose-service";
 import healthService from "@/api/services/health-service";
 import settingsService from "@/api/services/settings-service";

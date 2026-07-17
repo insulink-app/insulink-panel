@@ -1,4 +1,4 @@
-import { ChevronRight, type LucideIcon } from "lucide-react";
+import { ChevronRight, type LucideIcon } from "@/components/icons";
 
 import {
   Collapsible,
@@ -62,23 +62,19 @@ export function SidebarNavigation({
                       <SidebarMenuSubItem key={subItem.title}>
                         <SidebarMenuSubButton
                           asChild={!subItem.disabled}
+                          isActive={pathname === subItem.url}
                           className={cn(
-                            pathname === subItem.url &&
-                              "bg-accent text-accent-foreground",
                             subItem.disabled &&
                               "opacity-50 pointer-events-none",
                           )}
                         >
                           {subItem.disabled ? (
+                            // Sub-items are text-only; only top-level items carry an icon.
                             <div className="flex items-center gap-2">
-                              {subItem.icon && (
-                                <subItem.icon className="size-4" />
-                              )}
                               <span>{subItem.title}</span>
                             </div>
                           ) : (
                             <Link to={subItem.url}>
-                              {subItem.icon && <subItem.icon />}
                               <span>{subItem.title}</span>
                               {subItem.notifications && (
                                 <Badge className="ml-auto h-5 min-w-5 rounded-full px-1 pt-1 font-mono tabular-nums">
@@ -99,11 +95,7 @@ export function SidebarNavigation({
               <SidebarMenuButton
                 asChild
                 tooltip={item.title}
-                className={
-                  pathname === item.url
-                    ? "bg-accent text-accent-foreground"
-                    : ""
-                }
+                isActive={pathname === item.url}
               >
                 <Link to={item.url!}>
                   {item.icon && <item.icon />}

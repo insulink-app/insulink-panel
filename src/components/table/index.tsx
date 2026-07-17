@@ -21,7 +21,7 @@ import DataTableBody from "./body.tsx";
 import DataTablePagination from "./pagination.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { useTranslation } from "react-i18next";
-import { Search } from "lucide-react";
+import { Search } from "@/components/icons";
 import {
   type DataTableFilterOption,
   DataTableFilters,

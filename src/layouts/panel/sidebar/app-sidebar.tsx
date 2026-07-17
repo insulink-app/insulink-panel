@@ -21,7 +21,7 @@ import {
   Moon,
   Settings,
   Flag,
-} from "lucide-react";
+} from "@/components/icons";
 
 import { SidebarNavigation } from "./navigation";
 import { SidebarUser } from "./user";

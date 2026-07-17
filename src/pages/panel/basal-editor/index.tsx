@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ChartLine, Minus, Plus } from "lucide-react";
+import { ChartLine, Minus, Plus } from "@/components/icons";
 import PanelPage from "@/layouts/panel";
 import { BasalChart } from "@/components/basal-chart";
 import { CardSkeleton } from "@/components/card-skeleton";

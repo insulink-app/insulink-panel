@@ -3,7 +3,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Droplet, Syringe, Ruler, Flag, Utensils, type LucideIcon } from "lucide-react";
+import { Droplet, Syringe, Ruler, Flag, Utensils, type LucideIcon } from "@/components/icons";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";

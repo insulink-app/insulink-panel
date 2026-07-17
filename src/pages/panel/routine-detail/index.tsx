@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Dumbbell, type LucideIcon, Pencil, Play, Timer, Trash2 } from "lucide-react";
+import { ArrowLeft, Dumbbell, type LucideIcon, Pencil, Play, Timer, Trash2 } from "@/components/icons";
 import PanelPage from "@/layouts/panel";
 import { CardSkeleton } from "@/components/card-skeleton";
 import { Button } from "@/components/ui/button";

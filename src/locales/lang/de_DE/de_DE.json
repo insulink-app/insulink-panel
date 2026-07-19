@@ -71,7 +71,9 @@
     "exercise_stats": "Statistiken",
     "sleep": "Schlaf",
     "body": "Körper",
-    "export": "Export"
+    "export": "Export",
+    "statistics": "Statistiken",
+    "events": "Ereignisse"
   },
   "common": {
     "loading": "Lädt…",
@@ -556,5 +558,56 @@
     "range_hint": "Leer lassen, um alles zu exportieren. Beide Tage sind eingeschlossen.",
     "range_invalid": "Das Startdatum liegt nach dem Enddatum.",
     "range_timeless": "Produkte, Routinen und Übungen haben kein Datum — sie werden immer vollständig exportiert."
+  },
+  "date": {
+    "weekday": {
+      "mon": "Mo",
+      "tue": "Di",
+      "wed": "Mi",
+      "thu": "Do",
+      "fri": "Fr",
+      "sat": "Sa",
+      "sun": "So"
+    }
+  },
+  "statistics": {
+    "title": "Statistiken",
+    "summary": "Glukose-Übersicht",
+    "average": "Durchschnitt",
+    "gmi": "GMI",
+    "gmi_hint": "Glukose-Management-Indikator – geschätzter HbA1c aus deinem Durchschnittswert.",
+    "cv": "Schwankung (VK)",
+    "cv_hint": "Variationskoeffizient. Unter 36 % gilt als stabil.",
+    "sd": "Std.-Abweichung",
+    "sd_hint": "Wie weit die Werte um den Durchschnitt streuen.",
+    "min": "Tiefster",
+    "max": "Höchster",
+    "calendar": "Tägliche Zeit im Zielbereich",
+    "in_range": "im Zielbereich",
+    "legend_good": "Sehr gut (≥70 %)",
+    "legend_ok": "OK (≥50 %)",
+    "legend_fair": "Mäßig (≥30 %)",
+    "legend_poor": "Schlecht (<30 %)"
+  },
+  "events": {
+    "title": "Ereignisse",
+    "log": "Ereignisprotokoll",
+    "empty": "Noch keine Ereignisse aufgezeichnet.",
+    "per_day": "Ereignisse pro Tag",
+    "col_type": "Ereignis",
+    "col_value": "Wert",
+    "col_time": "Zeit",
+    "category_low": "Tiefs",
+    "category_high": "Hochs",
+    "category_signal": "Signalverlust",
+    "category_sensor": "Sensorwechsel",
+    "category_other": "Sonstige",
+    "type_glucose_low": "Glukose niedrig",
+    "type_glucose_low_urgent": "Dringend niedrig",
+    "type_glucose_high": "Glukose hoch",
+    "type_glucose_high_urgent": "Dringend hoch",
+    "type_signal_loss": "Signalverlust",
+    "type_new_sensor": "Neuer Sensor",
+    "type_sensor_stopped": "Sensor gestoppt"
   }
 }

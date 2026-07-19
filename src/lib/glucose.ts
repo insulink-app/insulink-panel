@@ -103,6 +103,69 @@ export const bandColorVar: Record<GlucoseBand, string> = {
   "very-high": "color-mix(in srgb, var(--glucose-high) 55%, #530)",
 };
 
+// The AGP summary figures the app's "averages" tab shows, computed over a set of
+// mg/dL readings. GMI (estimated A1c) and CV are the two clinical headline
+// numbers; mean/sd/min/max round out the picture. `null` when there is no data.
+export interface GlucoseSummary {
+  mean: number;
+  gmi: number; // percent
+  cv: number; // percent
+  sd: number;
+  min: number;
+  max: number;
+  tir: number; // percent in target range
+}
+
+export function summaryStats(
+  values: number[],
+  low = DEFAULT_TARGET_LOW,
+  high = DEFAULT_TARGET_HIGH,
+): GlucoseSummary | null {
+  if (values.length === 0) {
+    return null;
+  }
+  const mean = values.reduce((sum, value) => sum + value, 0) / values.length;
+  const variance =
+    values.reduce((sum, value) => sum + (value - mean) ** 2, 0) / values.length;
+  const sd = Math.sqrt(variance);
+  const inRange = values.filter(
+    (value) => classify(value, low, high) === "in-range",
+  ).length;
+  return {
+    mean,
+    gmi: 3.31 + 0.02392 * mean, // standard CGM GMI formula
+    cv: mean === 0 ? 0 : (sd / mean) * 100,
+    sd,
+    min: Math.min(...values),
+    max: Math.max(...values),
+    tir: (inRange / values.length) * 100,
+  };
+}
+
+// day (local midnight, epoch ms) → fraction of readings in target range (0..1),
+// for the calendar heatmap. Mirrors the app's DailyTimeInRange.
+export function dailyTimeInRange(
+  entries: { value: number; time: number }[],
+  low = DEFAULT_TARGET_LOW,
+  high = DEFAULT_TARGET_HIGH,
+): Map<number, number> {
+  const total = new Map<number, number>();
+  const inRange = new Map<number, number>();
+  for (const entry of entries) {
+    const date = new Date(entry.time);
+    const day = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+    total.set(day, (total.get(day) ?? 0) + 1);
+    if (classify(entry.value, low, high) === "in-range") {
+      inRange.set(day, (inRange.get(day) ?? 0) + 1);
+    }
+  }
+  const result = new Map<number, number>();
+  for (const [day, count] of total) {
+    result.set(day, (inRange.get(day) ?? 0) / count);
+  }
+  return result;
+}
+
 export function toDisplay(mgdl: number, unit?: string): string {
   if (unit === "mmol") {
     return (mgdl / 18).toFixed(1);

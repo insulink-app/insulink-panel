@@ -17,6 +17,7 @@ export {
   ArrowUp,
   ArrowUpRight,
   ChartLine,
+  ChartPie,
   Cpu,
   Eye,
   Flag,
@@ -53,6 +54,7 @@ export {
   CaretUpDown as ChevronsUpDown,
   CaretUpDown as ChevronsUpDownIcon,
   CaretUp as ChevronUpIcon,
+  CalendarDots as CalendarClock, // no calendar-clock glyph; dots read as scheduled events
   CheckCircle as CircleCheckIcon,
   Circle as CircleIcon,
   Columns as Columns3Icon,

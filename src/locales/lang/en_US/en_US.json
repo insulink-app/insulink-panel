@@ -71,7 +71,9 @@
     "exercise_stats": "Statistics",
     "sleep": "Sleep",
     "body": "Body",
-    "export": "Export"
+    "export": "Export",
+    "statistics": "Statistics",
+    "events": "Events"
   },
   "common": {
     "loading": "Loading…",
@@ -556,5 +558,56 @@
     "range_hint": "Leave empty to export everything. Both days are included.",
     "range_invalid": "The start date is after the end date.",
     "range_timeless": "Products, routines and exercises carry no date — they are always exported in full."
+  },
+  "date": {
+    "weekday": {
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat",
+      "sun": "Sun"
+    }
+  },
+  "statistics": {
+    "title": "Statistics",
+    "summary": "Glucose summary",
+    "average": "Average",
+    "gmi": "GMI",
+    "gmi_hint": "Glucose Management Indicator — an estimated A1c from your average glucose.",
+    "cv": "Variability (CV)",
+    "cv_hint": "Coefficient of variation. Below 36% is considered stable.",
+    "sd": "Std. deviation",
+    "sd_hint": "How far readings spread around the average.",
+    "min": "Lowest",
+    "max": "Highest",
+    "calendar": "Daily time in range",
+    "in_range": "in range",
+    "legend_good": "Great (≥70%)",
+    "legend_ok": "OK (≥50%)",
+    "legend_fair": "Fair (≥30%)",
+    "legend_poor": "Poor (<30%)"
+  },
+  "events": {
+    "title": "Events",
+    "log": "Event log",
+    "empty": "No events recorded yet.",
+    "per_day": "Events per day",
+    "col_type": "Event",
+    "col_value": "Value",
+    "col_time": "Time",
+    "category_low": "Lows",
+    "category_high": "Highs",
+    "category_signal": "Signal loss",
+    "category_sensor": "Sensor changes",
+    "category_other": "Other",
+    "type_glucose_low": "Glucose low",
+    "type_glucose_low_urgent": "Urgent low",
+    "type_glucose_high": "Glucose high",
+    "type_glucose_high_urgent": "Urgent high",
+    "type_signal_loss": "Signal loss",
+    "type_new_sensor": "New sensor",
+    "type_sensor_stopped": "Sensor stopped"
   }
 }

@@ -11,6 +11,8 @@ import {
   DEFAULT_TARGET_HIGH,
   DEFAULT_TARGET_LOW,
   GLUCOSE_BANDS,
+  dailyTimeInRange,
+  summaryStats,
   toDisplay,
   unitLabel,
   VERY_HIGH,
@@ -70,5 +72,24 @@ assert.equal(bandRange("in-range"), "70–180 mg/dL");
 assert.equal(bandRange("very-high"), "> 250 mg/dL");
 assert.equal(bandRange("very-low"), "< 54 mg/dL");
 assert.equal(bandRange("in-range", 70, 180, "mmol"), "3.9–10.0 mmol/L");
+
+// Summary statistics over a known set: mean 100, so GMI = 3.31 + 2.392 = 5.702.
+assert.equal(summaryStats([]), null);
+const summary = summaryStats([80, 100, 120])!;
+assert.equal(summary.mean, 100);
+assert.equal(Math.round(summary.gmi * 100) / 100, 5.7);
+assert.equal(summary.min, 80);
+assert.equal(summary.max, 120);
+assert.equal(summary.tir, 100); // all three within 70–180
+assert.ok(Math.abs(summary.sd - Math.sqrt(800 / 3)) < 1e-9);
+// One reading out of two below target → 50% TIR.
+assert.equal(summaryStats([50, 120])!.tir, 50);
+
+// Daily TIR buckets by local day; one all-in-range day is 1.0.
+const oneDay = dailyTimeInRange([
+  { value: 120, time: new Date(2026, 0, 1, 8).getTime() },
+  { value: 60, time: new Date(2026, 0, 1, 9).getTime() },
+]);
+assert.equal(oneDay.get(new Date(2026, 0, 1).getTime()), 0.5);
 
 console.log("glucose: ok");

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { format } from "date-fns";
+import { endOfDay, format, startOfDay } from "date-fns";
 import {
   ArrowDown,
   ArrowUp,
@@ -21,7 +21,15 @@ import {
 import PanelPage from "@/layouts/panel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataList, type ListColumn } from "@/components/data-list";
-import { StatTile } from "@/components/stat-tile";
+import type { DateRange } from "react-day-picker";
+import { CalendarClock } from "@/components/icons";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { ChartTooltipBox, ChartTooltipValue } from "@/components/chart-tooltip";
 import { CHART_HEIGHT, CHART_MARGIN, X_AXIS_HEIGHT } from "@/lib/chart-geometry";
 import eventService, { type EventEntry } from "@/api/services/event-service";
@@ -59,11 +67,17 @@ export default function EventsPage() {
     queryFn: eventService.history,
   });
 
+  const [range, setRange] = useState<DateRange | undefined>();
+
   const unit = settings?.glucose_unit;
   const entries = useMemo<EventEntry[]>(() => {
     const source: EventEntry[] = data?.entries ?? [];
-    return source.slice().sort((left, right) => right.time - left.time);
-  }, [data]);
+    const fromMs = range?.from ? startOfDay(range.from).getTime() : -Infinity;
+    const toMs = range?.to ? endOfDay(range.to).getTime() : Infinity;
+    return source
+      .filter((entry) => entry.time >= fromMs && entry.time <= toMs)
+      .sort((left, right) => right.time - left.time);
+  }, [data, range]);
   const totals = useMemo(() => countByCategory(entries), [entries]);
   const perDay = useMemo(() => dailyEventCounts(entries), [entries]);
 
@@ -86,20 +100,19 @@ export default function EventsPage() {
         cell: (entry) => format(new Date(entry.time), "dd.MM.yyyy HH:mm"),
       },
     ],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [unit, t],
   );
 
   return (
     <PanelPage title={t("events.title")}>
       <div className="py-6 flex flex-col gap-6">
+        <RangeFilter range={range} setRange={setRange} />
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {totals.map((total) => (
-            <StatTile
+            <CategoryTile
               key={total.category}
-              label={t("events.category_" + total.category)}
-              value={String(total.count)}
-              color={`var(${CATEGORY_META[total.category].cssVar})`}
+              category={total.category}
+              count={total.count}
             />
           ))}
         </div>
@@ -114,6 +127,94 @@ export default function EventsPage() {
         />
       </div>
     </PanelPage>
+  );
+}
+
+// The date-range filter: a pill button showing the active span (or a prompt)
+// that opens a two-month range calendar, with a reset back to "all events".
+function RangeFilter({
+  range,
+  setRange,
+}: {
+  range: DateRange | undefined;
+  setRange: (range: DateRange | undefined) => void;
+}) {
+  const { t } = useTranslation();
+  const label =
+    range?.from && range?.to
+      ? `${format(range.from, "dd.MM.yyyy")} – ${format(range.to, "dd.MM.yyyy")}`
+      : range?.from
+        ? format(range.from, "dd.MM.yyyy")
+        : t("events.all_time");
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="outline" className="self-end rounded-full font-normal">
+          <CalendarClock className="size-4 text-muted-foreground" />
+          {label}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="start">
+        <Calendar
+          mode="range"
+          numberOfMonths={2}
+          defaultMonth={range?.from}
+          selected={range}
+          onSelect={setRange}
+          autoFocus
+        />
+        {range && (
+          <div className="border-t p-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full"
+              onClick={() => setRange(undefined)}
+            >
+              {t("events.all_time")}
+            </Button>
+          </div>
+        )}
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+// A summary tile per category: the category's icon in a tinted circle, its
+// count, and label. Mirrors the log's row styling so the page reads as one set.
+function CategoryTile({
+  category,
+  count,
+}: {
+  category: EventCategory;
+  count: number;
+}) {
+  const { t } = useTranslation();
+  const Icon = CATEGORY_ICON[category];
+  const color = `var(${CATEGORY_META[category].cssVar})`;
+  return (
+    <div
+      className="flex items-center gap-3 rounded-xl border p-4"
+      style={{
+        backgroundColor: `color-mix(in srgb, ${color} 8%, transparent)`,
+        borderColor: `color-mix(in srgb, ${color} 20%, transparent)`,
+      }}
+    >
+      <span
+        className="flex size-10 shrink-0 items-center justify-center rounded-full"
+        style={{ backgroundColor: `color-mix(in srgb, ${color} 16%, transparent)` }}
+      >
+        <Icon className="size-5" style={{ color }} />
+      </span>
+      <div className="flex flex-col">
+        <span className="text-2xl font-bold leading-tight" style={{ color }}>
+          {count}
+        </span>
+        <span className="text-xs font-medium text-muted-foreground">
+          {t("events.category_" + category)}
+        </span>
+      </div>
+    </div>
   );
 }
 

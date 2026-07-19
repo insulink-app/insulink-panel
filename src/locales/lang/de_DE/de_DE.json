@@ -72,7 +72,6 @@
     "sleep": "Schlaf",
     "body": "Körper",
     "export": "Export",
-    "statistics": "Statistiken",
     "events": "Ereignisse"
   },
   "common": {
@@ -570,29 +569,11 @@
       "sun": "So"
     }
   },
-  "statistics": {
-    "title": "Statistiken",
-    "summary": "Glukose-Übersicht",
-    "average": "Durchschnitt",
-    "gmi": "GMI",
-    "gmi_hint": "Glukose-Management-Indikator – geschätzter HbA1c aus deinem Durchschnittswert.",
-    "cv": "Schwankung (VK)",
-    "cv_hint": "Variationskoeffizient. Unter 36 % gilt als stabil.",
-    "sd": "Std.-Abweichung",
-    "sd_hint": "Wie weit die Werte um den Durchschnitt streuen.",
-    "min": "Tiefster",
-    "max": "Höchster",
-    "calendar": "Tägliche Zeit im Zielbereich",
-    "in_range": "im Zielbereich",
-    "legend_good": "Sehr gut (≥70 %)",
-    "legend_ok": "OK (≥50 %)",
-    "legend_fair": "Mäßig (≥30 %)",
-    "legend_poor": "Schlecht (<30 %)"
-  },
   "events": {
     "title": "Ereignisse",
     "log": "Ereignisprotokoll",
     "empty": "Noch keine Ereignisse aufgezeichnet.",
+    "all_time": "Alle Ereignisse",
     "per_day": "Ereignisse pro Tag",
     "col_type": "Ereignis",
     "col_value": "Wert",

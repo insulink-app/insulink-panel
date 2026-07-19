@@ -9,7 +9,6 @@ const getRoutes = (): RouteObject[] => {
   return [
     { path: "overview", element: Component("/pages/panel/overview") },
     { path: "glucose", element: Component("/pages/panel/glucose") },
-    { path: "statistics", element: Component("/pages/panel/statistics") },
     { path: "events", element: Component("/pages/panel/events") },
     { path: "nutrition", element: <Navigate to="/nutrition/meals" replace /> },
     { path: "nutrition/:view", element: Component("/pages/panel/nutrition") },

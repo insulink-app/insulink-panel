@@ -10,9 +10,12 @@ import { formatDuration, formatPace } from "./format";
 export function TrainingBody({
   training,
   highlight,
+  chart,
 }: {
   training: Training;
   highlight?: { lat: number; lng: number } | null;
+  // The glucose/pulse chart, rendered between the map and the km splits.
+  chart?: React.ReactNode;
 }) {
   const { t } = useTranslation();
   const seconds = Math.max(0, Math.round((training.end - training.start) / 1000));
@@ -39,6 +42,7 @@ export function TrainingBody({
           </CardContent>
         </Card>
       )}
+      {chart}
       <SplitsPanel splits={splits} />
     </div>
   );

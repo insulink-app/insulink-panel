@@ -417,6 +417,11 @@
     "delete_failed": "Aktivität konnte nicht gelöscht werden",
     "delete_confirm": "Diese Aktivität wirklich löschen? Das kann nicht rückgängig gemacht werden."
   },
+  "summary": {
+    "performance": "Leistung",
+    "first_time": "Erstes Training dieser Routine",
+    "exercises": "Übungen"
+  },
   "sleep": {
     "title": "Schlaf",
     "nights": "Nächte",

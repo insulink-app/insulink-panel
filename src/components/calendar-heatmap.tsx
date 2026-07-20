@@ -125,21 +125,3 @@ function mondayOf(date: Date): number {
   midnight.setDate(midnight.getDate() - backToMonday);
   return midnight.getTime();
 }
-
-// Shared TIR→colour scale (green ≥70%, amber ≥50%, orange ≥30%, else red),
-// matching the app. `undefined` is a data-less day in the span.
-export function tirColor(fraction: number | undefined): string {
-  if (fraction === undefined) {
-    return "color-mix(in srgb, var(--foreground) 6%, transparent)";
-  }
-  if (fraction >= 0.7) {
-    return "var(--glucose-in-range)";
-  }
-  if (fraction >= 0.5) {
-    return "var(--glucose-high)";
-  }
-  if (fraction >= 0.3) {
-    return "color-mix(in srgb, var(--glucose-high) 50%, var(--glucose-low))";
-  }
-  return "var(--glucose-low)";
-}

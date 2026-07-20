@@ -14,6 +14,7 @@ import glucoseService from "@/api/services/glucose-service";
 import healthService from "@/api/services/health-service";
 import { TrainingBody } from "./training-body";
 import { WorkoutBody } from "./workout-body";
+import { WorkoutSummaryCard } from "./workout-summary-card";
 import { VitalsChart } from "./vitals-chart";
 
 export default function ActivityDetailPage() {
@@ -88,6 +89,15 @@ export default function ActivityDetailPage() {
   // Speed is derived from the GPS track, not stored — no series for a training
   // without a route (e.g. a workout).
   const speedTrack = useMemo(() => speedSeries(orderedTrack), [orderedTrack]);
+  const vitals = window && (
+    <VitalsChart
+      window={window}
+      glucose={glucoseSeries}
+      pulse={pulseSeries}
+      speed={speedTrack}
+      onHover={setHoverTime}
+    />
+  );
 
   return (
     <PanelPage
@@ -126,18 +136,18 @@ export default function ActivityDetailPage() {
               </ConfirmDelete>
             </div>
 
-            {training && <TrainingBody training={training} highlight={highlight} />}
-            {workout && <WorkoutBody workout={workout} exerciseName={exerciseName} />}
-
-            {window && (
-              <VitalsChart
-                window={window}
-                glucose={glucoseSeries}
-                pulse={pulseSeries}
-                speed={speedTrack}
-                onHover={setHoverTime}
-              />
+            {workout && (
+              <WorkoutSummaryCard workout={workout} allWorkouts={workouts.data?.workouts ?? []} />
             )}
+
+            {/* Cardio: the chart sits between the map and the km splits (passed
+                into TrainingBody). Workout: it sits above the sets. */}
+            {training && (
+              <TrainingBody training={training} highlight={highlight} chart={vitals} />
+            )}
+
+            {workout && vitals}
+            {workout && <WorkoutBody workout={workout} exerciseName={exerciseName} />}
           </>
         )}
       </div>

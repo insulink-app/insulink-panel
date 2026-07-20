@@ -417,6 +417,11 @@
     "delete_failed": "Could not delete activity",
     "delete_confirm": "Delete this activity? This cannot be undone."
   },
+  "summary": {
+    "performance": "Performance",
+    "first_time": "First workout of this routine",
+    "exercises": "Exercises"
+  },
   "sleep": {
     "title": "Sleep",
     "nights": "Nights",

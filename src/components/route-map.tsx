@@ -88,6 +88,10 @@ export function RouteMap({
       attributionControl: false,
     });
     mapRef.current = map;
+    // A pane above the marker badges (markerPane is z-index 600) so the hover dot
+    // is never swallowed by the start/finish icons when it passes over them.
+    map.createPane("highlight");
+    map.getPane("highlight")!.style.zIndex = "620";
 
     const line = L.polyline(points, { color: primary, weight: 5 }).addTo(map);
     if (points.length >= 2) {
@@ -138,9 +142,9 @@ export function RouteMap({
         weight: 2,
         fillColor: markerFill,
         fillOpacity: 1,
-        // Vectors live below the badge markers by default, which would swallow
-        // the dot at either end of the route. Same pane, added later, so on top.
-        pane: "markerPane",
+        // Its own SVG renderer in the "highlight" pane (above markerPane), so the
+        // dot always sits on top of the start/finish badges, not just the route.
+        renderer: L.svg({ pane: "highlight" }),
       }).addTo(map);
     }
   }, [highlight, resolvedTheme]);

@@ -149,8 +149,16 @@ function useSaveOnFinish({
       started: core.startedAt,
       sets: core.sets,
     };
+    const nextWorkouts = [...pastWorkouts, session];
+    // Seed the cache with the finished session so the summary (detail) page we
+    // navigate to finds it immediately, before the sync round-trips. The sync's
+    // own invalidate below refetches the authoritative list afterwards.
+    queryClient.setQueryData<{ success: boolean; workouts?: Workout[] }>(["workouts"], (old) => ({
+      success: old?.success ?? true,
+      workouts: nextWorkouts,
+    }));
     sportService
-      .syncWorkouts([...pastWorkouts, session])
+      .syncWorkouts(nextWorkouts)
       .then((res) => {
         if (res.success) {
           toast.success(t("routines.workout_saved"));
@@ -160,6 +168,6 @@ function useSaveOnFinish({
         }
       })
       .catch(() => toast.error(t("routines.save_failed")));
-    navigate("/health/activity");
+    navigate(`/health/activity/workout/${session.id}`);
   }, [core.phase, core.sets, core.startedAt, navigate, pastWorkouts, queryClient, routine.id, t]);
 }

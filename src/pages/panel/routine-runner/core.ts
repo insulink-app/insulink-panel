@@ -55,10 +55,10 @@ export function coreFrom(resume: ActiveWorkout | undefined, routine: Routine): C
     setStartedAt: resume.setStarted,
     restEndsAt: resume.restEnds,
     restStartedAt: resume.restStarted,
-    // The snapshot carries the paused total, not a paused-since stamp, so a
-    // workout paused on the phone resumes running here — the same way the app
-    // resumes its own snapshot after a restart.
-    pausedAt: null,
+    // A workout paused on the phone stays paused here: the clocks read
+    // `pausedAt` as their "now", so without it this screen would keep counting
+    // while the other one sits still.
+    pausedAt: resume.pausedAt ?? null,
     pausedTotal: resume.paused,
     sets: resume.sets,
   };
@@ -79,6 +79,7 @@ export function snapshotOf(core: Core, routine: Routine): ActiveWorkout {
     restEnds: core.restEndsAt,
     restStarted: core.restStartedAt,
     paused: core.pausedTotal,
+    pausedAt: core.pausedAt,
     reps: core.currentReps,
     weight: core.currentWeight,
     sets: core.sets,

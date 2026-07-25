@@ -73,6 +73,10 @@ export interface ActiveWorkout {
   restEnds: number | null;
   restStarted: number | null;
   paused: number; // total paused ms
+  // Epoch ms the workout was paused at, null while it runs. Absolute like every
+  // other time in the snapshot, so a follower freezes its clocks at the same
+  // instant instead of counting on while the other screen sits paused.
+  pausedAt?: number | null;
   reps: number;
   weight: number;
   sets: SetLog[];
@@ -132,10 +136,14 @@ const activeWorkout = () =>
     url: "/sport/workout/active/find/",
   });
 
-const syncActiveWorkout = (workout: ActiveWorkout) =>
+// `updated` is the stamp of the account copy the sender last saw (0 when it is
+// starting a fresh workout). The account refuses a push that carries a stamp for
+// a workout that is no longer there — otherwise one still in flight when another
+// device finishes recreates it, and the session gets logged a second time.
+const syncActiveWorkout = (workout: ActiveWorkout, updated: number) =>
   client.post<{ success: boolean; updated?: number }>({
     url: "/sport/workout/active/sync/",
-    data: { workout },
+    data: { workout, updated },
   });
 
 const clearActiveWorkout = () =>

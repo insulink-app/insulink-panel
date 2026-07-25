@@ -90,7 +90,7 @@ function Runner({
 
   const runner = useRunnerCore({ routine, resumeFrom, exerciseById });
   const { core, clock } = runner;
-  useWorkoutSync({ core, routine, pastWorkouts });
+  useWorkoutSync({ core, adopt: runner.adopt, routine, pastWorkouts });
 
   const item = routine.items[core.exerciseIndex];
   const exercise = exerciseById(item.ex);

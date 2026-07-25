@@ -107,6 +107,11 @@ export function useRunnerCore({
 
   const finishEarly = () => setCore((state) => ({ ...state, phase: "done" }));
 
+  // Take the account's snapshot over: another device is the one moving this
+  // workout on. Seeded exactly like a resume, so nothing else has to know how a
+  // snapshot maps onto the state machine.
+  const adopt = (remote: ActiveWorkout) => setCore(coreFrom(remote, routine));
+
   const jumpTo = (index: number) =>
     setCore((state) => enterExercising({ ...state, exerciseIndex: index, setIndex: 0 }, Date.now()));
 
@@ -182,6 +187,7 @@ export function useRunnerCore({
     skipRest,
     extendRest,
     finishEarly,
+    adopt,
     jumpTo,
     recordReps,
     adjustWeight,

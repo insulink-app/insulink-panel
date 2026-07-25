@@ -76,4 +76,12 @@ assert.equal(snapshot.name, routine.name);
 assert.deepEqual(snapshot.items, routine.items);
 assert.deepEqual(coreFrom(snapshot, routine).sets, resumed.sets);
 
+// A pause travels with the snapshot in both directions: without it this screen
+// keeps counting while the phone sits paused, and adopting a snapshot silently
+// un-pauses the workout.
+const pausedRemote: ActiveWorkout = { ...snapshotOf(coreFrom(undefined, routine), routine), pausedAt: 5000 };
+assert.equal(coreFrom(pausedRemote, routine).pausedAt, 5000);
+assert.equal(snapshotOf({ ...coreFrom(undefined, routine), pausedAt: 5000 }, routine).pausedAt, 5000);
+assert.equal(coreFrom({ ...pausedRemote, pausedAt: null }, routine).pausedAt, null);
+
 console.log("routine-runner core: ok");

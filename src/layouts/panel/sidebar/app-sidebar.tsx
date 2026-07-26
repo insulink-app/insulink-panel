@@ -136,7 +136,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuItem>
               <SidebarMenuButton size="lg" asChild>
                 <Link to="/overview/">
-                  <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary p-1.5">
+                  <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary p-0.5">
                     <img
                       src="/logo-white.png"
                       alt="Insulink"

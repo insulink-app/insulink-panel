@@ -86,6 +86,27 @@ export function snapshotOf(core: Core, routine: Routine): ActiveWorkout {
   };
 }
 
+// Whether a snapshot the account handed us is news for this tab: written after
+// what it last saw (`updated` beats `known`), and holding something other than
+// what it already shows. The comparison goes through our own state because the
+// account re-serializes the snapshot in its own key order — and because one
+// equal to what we hold is our own push coming back, which must not restart the
+// session. Pure and exported so the decision can be checked without a browser:
+// it is the single step between the two screens, and a snapshot wrongly read as
+// "our own" is exactly how a pause made on the phone never arrives here.
+export function shouldAdopt(
+  remote: ActiveWorkout,
+  routine: Routine,
+  payload: string,
+  updated: number,
+  known: number,
+) {
+  if (updated <= known) {
+    return false;
+  }
+  return JSON.stringify(snapshotOf(coreFrom(remote, routine), routine)) !== payload;
+}
+
 export function clamp(value: number) {
   return Math.max(0, Math.min(999, value));
 }

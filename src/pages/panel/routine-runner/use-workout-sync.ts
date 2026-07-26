@@ -12,7 +12,7 @@ import sportService, {
   type Routine,
   type Workout,
 } from "@/api/services/sport-service";
-import { coreFrom, snapshotOf, type Core } from "./core";
+import { shouldAdopt, snapshotOf, type Core } from "./core";
 
 export function useWorkoutSync({
   core,
@@ -121,13 +121,10 @@ function useFollowAccount({
       if (updated <= knownUpdateRef.current) {
         return;
       }
-      knownUpdateRef.current = updated;
-      // Compared through our own state because the account re-serializes the
-      // snapshot in its own key order — and because one equal to what we hold is
-      // our own push coming back, which must not restart the session.
-      if (JSON.stringify(snapshotOf(coreFrom(remote, routine), routine)) !== payload) {
+      if (shouldAdopt(remote, routine, payload, updated, knownUpdateRef.current)) {
         adopt(remote);
       }
+      knownUpdateRef.current = updated;
       return;
     }
     if (!confirmedRef.current) {

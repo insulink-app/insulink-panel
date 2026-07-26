@@ -6,7 +6,7 @@
 // Also pins the resume clamping, which reads an undefined item when it slips.
 import assert from "node:assert/strict";
 import type { ActiveWorkout, Routine } from "@/api/services/sport-service";
-import { clampReps, coreFrom, describeSet, formatClock, snapshotOf } from "./core";
+import { clampReps, coreFrom, describeSet, formatClock, shouldAdopt, snapshotOf } from "./core";
 
 // A ticking clock, never a spelled-out duration.
 assert.equal(formatClock(0), "0:00");
@@ -83,5 +83,14 @@ const pausedRemote: ActiveWorkout = { ...snapshotOf(coreFrom(undefined, routine)
 assert.equal(coreFrom(pausedRemote, routine).pausedAt, 5000);
 assert.equal(snapshotOf({ ...coreFrom(undefined, routine), pausedAt: 5000 }, routine).pausedAt, 5000);
 assert.equal(coreFrom({ ...pausedRemote, pausedAt: null }, routine).pausedAt, null);
+
+// The adoption gate: what the other screen changed must arrive, what we pushed
+// ourselves must not restart the session, and an older answer must be ignored.
+const running = snapshotOf(coreFrom(undefined, routine), routine);
+const ownPayload = JSON.stringify(running);
+assert.equal(shouldAdopt(running, routine, ownPayload, 501, 500), false);
+assert.equal(shouldAdopt({ ...running, pausedAt: 5000 }, routine, ownPayload, 501, 500), true);
+assert.equal(shouldAdopt({ ...running, pausedAt: 5000 }, routine, ownPayload, 500, 500), false);
+assert.equal(shouldAdopt({ ...running, set: 1 }, routine, ownPayload, 501, 500), true);
 
 console.log("routine-runner core: ok");

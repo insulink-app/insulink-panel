@@ -1,0 +1,16 @@
+// Naming a logged workout across the panel.
+export const FREE_ROUTINE_ID = "free";
+
+// What a logged workout is called wherever it is listed: its routine's name, the
+// free-training label when it ran without one (a free workout is in no routine
+// list, by design), and the generic label when the routine it names is gone.
+export function workoutTitle(
+  routineId: string,
+  routineName: Map<string, string>,
+  t: (key: string) => string,
+) {
+  if (routineId === FREE_ROUTINE_ID) {
+    return t("routines.free");
+  }
+  return routineName.get(routineId) ?? t("activity.workout");
+}

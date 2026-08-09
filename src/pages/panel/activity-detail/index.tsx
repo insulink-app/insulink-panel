@@ -16,6 +16,7 @@ import { TrainingBody } from "./training-body";
 import { WorkoutBody } from "./workout-body";
 import { WorkoutSummaryCard } from "./workout-summary-card";
 import { VitalsChart } from "./vitals-chart";
+import { workoutTitle } from "@/lib/workout";
 
 export default function ActivityDetailPage() {
   const { t } = useTranslation();
@@ -67,7 +68,7 @@ export default function ActivityDetailPage() {
   const title = training
     ? t("activity.type_" + training.type)
     : workout
-      ? (routineName.get(workout.routine) ?? t("activity.workout"))
+      ? workoutTitle(workout.routine, routineName, t)
       : "";
   const at = training?.start ?? workout?.started;
 

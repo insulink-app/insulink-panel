@@ -1,8 +1,21 @@
 // The runner's session state and the pure helpers around it. Kept apart from
 // the views so the state machine (use-runner-core) can be read on its own.
-import type { ActiveWorkout, Routine, SetLog, Workout } from "@/api/services/sport-service";
+import type {
+  ActiveWorkout,
+  Routine,
+  SetLog,
+  SportExercise,
+  Workout,
+} from "@/api/services/sport-service";
+import { FREE_ROUTINE_ID } from "@/lib/workout";
 
 export type Phase = "exercising" | "resting" | "done";
+
+// A free workout has no routine page to go back to (it is not in the library),
+// so leaving one lands on the routine list instead.
+export function routineHome(routineId: string) {
+  return routineId === FREE_ROUTINE_ID ? "/health/routines" : `/health/routines/${routineId}`;
+}
 
 export type Core = {
   phase: Phase;
@@ -22,7 +35,9 @@ export type Core = {
 // Seeds the runner: from the account's running workout when the app (or another
 // tab) already started this routine, otherwise a fresh session. The pointers are
 // clamped because the routine may have been shortened since the workout began,
-// and an out-of-range pointer would read an undefined item.
+// and an out-of-range pointer would read an undefined item. A free workout
+// legitimately has no items at all until its first exercise is picked, so every
+// read of one is optional.
 export function coreFrom(resume: ActiveWorkout | undefined, routine: Routine): Core {
   const now = Date.now();
   if (!resume) {
@@ -31,8 +46,8 @@ export function coreFrom(resume: ActiveWorkout | undefined, routine: Routine): C
       phase: "exercising",
       exerciseIndex: 0,
       setIndex: 0,
-      currentReps: first.target,
-      currentWeight: first.weight,
+      currentReps: first?.target ?? 0,
+      currentWeight: first?.weight ?? 0,
       startedAt: now,
       setStartedAt: now,
       restEndsAt: null,
@@ -42,13 +57,13 @@ export function coreFrom(resume: ActiveWorkout | undefined, routine: Routine): C
       sets: [],
     };
   }
-  const exerciseIndex = Math.min(Math.max(resume.ex, 0), routine.items.length - 1);
+  const exerciseIndex = Math.min(Math.max(resume.ex, 0), Math.max(routine.items.length - 1, 0));
   const item = routine.items[exerciseIndex];
   return {
     // A finished workout is cleared, so a snapshot never resumes as "done".
     phase: resume.phase === "done" ? "exercising" : resume.phase,
     exerciseIndex,
-    setIndex: Math.min(Math.max(resume.set, 0), Math.max(item.sets - 1, 0)),
+    setIndex: Math.min(Math.max(resume.set, 0), Math.max((item?.sets ?? 1) - 1, 0)),
     currentReps: resume.reps,
     currentWeight: resume.weight,
     startedAt: resume.started,
@@ -105,6 +120,65 @@ export function shouldAdopt(
     return false;
   }
   return JSON.stringify(snapshotOf(coreFrom(remote, routine), routine)) !== payload;
+}
+
+// What the routine plans for: each set costs ~1 min of work (or its target
+// seconds for a timed exercise) plus its rest. Mirrors the app's
+// `plannedRoutineSeconds` — it stands in for the pace before the first set is
+// logged and has nothing to extrapolate from.
+export function plannedRoutineSeconds(
+  routine: Routine,
+  exerciseById: (id: string) => SportExercise | undefined,
+) {
+  return routine.items.reduce((seconds, item) => {
+    const perSet = exerciseById(item.ex)?.kind === "timed" ? item.target : 60;
+    return seconds + item.sets * (perSet + item.rest);
+  }, 0);
+}
+
+// How much longer the workout is expected to run (seconds), or null when there
+// is no plan to predict against: a free workout, or one already finished.
+// Extrapolates THIS session's own pace — elapsed time per logged set — so it
+// corrects itself as the workout goes and needs no model of rests or pauses.
+//
+// ponytail: one average across all sets, not one per exercise — a routine mixing
+// 30 s planks with 3 min squat sets predicts coarsely. Weight the remaining sets
+// by their planned cost if that ever matters.
+export function remainingSeconds(
+  core: Core,
+  routine: Routine,
+  exerciseById: (id: string) => SportExercise | undefined,
+  clock: number,
+) {
+  if (routine.id === FREE_ROUTINE_ID || core.phase === "done") {
+    return null;
+  }
+  const planned = routine.items.reduce((sum, item) => sum + item.sets, 0);
+  const left = planned - core.sets.length;
+  if (left <= 0) {
+    return 0;
+  }
+  if (core.sets.length === 0) {
+    return plannedRoutineSeconds(routine, exerciseById);
+  }
+  const elapsed = Math.max(0, (clock - core.startedAt - core.pausedTotal) / 1000);
+  return Math.round((elapsed / core.sets.length) * left);
+}
+
+// Whether a free workout has done everything it was told to and is waiting to be
+// told what comes next — the rest after its last set, where the runner asks for
+// the next exercise instead of offering to carry on.
+//
+// Derived, not stored: a free workout plans one set per exercise, so having
+// logged at least as many sets as it planned means the plan is spent. That keeps
+// it true for a follower reading the snapshot too. Mirrors the app's
+// `WorkoutRunner.awaitingNextExercise`.
+export function awaitsNextExercise(core: Core, routine: Routine) {
+  if (routine.id !== FREE_ROUTINE_ID || core.phase !== "resting") {
+    return false;
+  }
+  const planned = routine.items.reduce((sum, item) => sum + item.sets, 0);
+  return core.sets.length >= planned;
 }
 
 export function clamp(value: number) {

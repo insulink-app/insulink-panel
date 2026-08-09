@@ -6,7 +6,19 @@
 // Also pins the resume clamping, which reads an undefined item when it slips.
 import assert from "node:assert/strict";
 import type { ActiveWorkout, Routine } from "@/api/services/sport-service";
-import { clampReps, coreFrom, describeSet, formatClock, shouldAdopt, snapshotOf } from "./core";
+import { FREE_ROUTINE_ID } from "@/lib/workout";
+import {
+  awaitsNextExercise,
+  clampReps,
+  coreFrom,
+  describeSet,
+  formatClock,
+  remainingSeconds,
+  routineHome,
+  shouldAdopt,
+  snapshotOf,
+  type Core,
+} from "./core";
 
 // A ticking clock, never a spelled-out duration.
 assert.equal(formatClock(0), "0:00");
@@ -92,5 +104,61 @@ assert.equal(shouldAdopt(running, routine, ownPayload, 501, 500), false);
 assert.equal(shouldAdopt({ ...running, pausedAt: 5000 }, routine, ownPayload, 501, 500), true);
 assert.equal(shouldAdopt({ ...running, pausedAt: 5000 }, routine, ownPayload, 500, 500), false);
 assert.equal(shouldAdopt({ ...running, set: 1 }, routine, ownPayload, 501, 500), true);
+
+// A free workout is seeded before it has a single exercise — every read of an
+// item has to survive that, or opening one throws on an undefined item instead
+// of offering the picker.
+const emptyFree: Routine = { id: FREE_ROUTINE_ID, name: "Free", items: [] };
+const freshFree = coreFrom(undefined, emptyFree);
+assert.equal(freshFree.currentReps, 0);
+assert.equal(freshFree.exerciseIndex, 0);
+const resumedFree = coreFrom(snapshotOf(freshFree, emptyFree), emptyFree);
+assert.equal(resumedFree.exerciseIndex, 0);
+assert.equal(resumedFree.setIndex, 0);
+
+// Leaving a free workout lands on the routine list: it has no routine page.
+assert.equal(routineHome(FREE_ROUTINE_ID), "/health/routines");
+assert.equal(routineHome("r1"), "/health/routines/r1");
+
+// The predicted end extrapolates the session's own pace. Its edges are what can
+// go wrong quietly: nothing logged yet (the plan stands in), nothing left to do,
+// and a free workout, which has no plan to predict against at all.
+const reps = (id: string) => ({ id, name: id, kind: "reps" as const });
+const paced: Core = {
+  ...coreFrom(undefined, routine),
+  startedAt: 0,
+  sets: [
+    { ex: "e1", reps: 10, ts: 0 },
+    { ex: "e1", reps: 10, ts: 0 },
+  ],
+};
+// Three sets planned, two done in 4 min → one left at 2 min a set.
+assert.equal(remainingSeconds(paced, routine, reps, 240_000), 120);
+assert.equal(remainingSeconds({ ...paced, pausedTotal: 60_000 }, routine, reps, 240_000), 90);
+assert.equal(remainingSeconds(coreFrom(undefined, routine), routine, reps, 0), 3 * (60 + 60));
+assert.equal(remainingSeconds({ ...paced, phase: "done" }, routine, reps, 240_000), null);
+assert.equal(remainingSeconds(paced, emptyFree, reps, 240_000), null);
+
+// A free workout is one set per exercise: once its set is logged it is resting
+// with nothing queued, and the runner must ask what comes next instead of
+// offering to carry on with an exercise that is done.
+const freeItem = { id: "f1", ex: "e1", sets: 1, target: 10, weight: 0, rest: 120 };
+const oneExercise: Routine = { id: FREE_ROUTINE_ID, name: "Free", items: [freeItem] };
+const restingFree: Core = { ...coreFrom(undefined, oneExercise), phase: "resting" };
+assert.equal(awaitsNextExercise(restingFree, oneExercise), false);
+assert.equal(
+  awaitsNextExercise({ ...restingFree, sets: [{ ex: "e1", reps: 10, ts: 0 }] }, oneExercise),
+  true,
+);
+// Not while the set is being performed, and never for a real routine — that one
+// has a plan to carry on with.
+assert.equal(
+  awaitsNextExercise(
+    { ...restingFree, phase: "exercising", sets: [{ ex: "e1", reps: 10, ts: 0 }] },
+    oneExercise,
+  ),
+  false,
+);
+assert.equal(awaitsNextExercise({ ...restingFree, sets: paced.sets }, routine), false);
 
 console.log("routine-runner core: ok");

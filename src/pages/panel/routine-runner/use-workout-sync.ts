@@ -12,7 +12,7 @@ import sportService, {
   type Routine,
   type Workout,
 } from "@/api/services/sport-service";
-import { shouldAdopt, snapshotOf, type Core } from "./core";
+import { routineHome, shouldAdopt, snapshotOf, type Core } from "./core";
 
 export function useWorkoutSync({
   core,
@@ -134,7 +134,7 @@ function useFollowAccount({
     // it. Leave without saving — whoever ended it already logged the session.
     abandonedRef.current = true;
     toast.info(t("routines.ended_elsewhere"));
-    navigate(`/health/routines/${routine.id}`);
+    navigate(routineHome(routine.id));
   }, [
     active.data,
     adopt,

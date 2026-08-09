@@ -9,6 +9,7 @@ import type {
   Training,
   Workout,
 } from "@/api/services/sport-service";
+import { workoutTitle } from "@/lib/workout";
 import { sumToday, todayRows } from "./today";
 import { SectionCard, SectionMetric, SectionRow } from "./section-card";
 
@@ -145,7 +146,7 @@ function RecentActivityRow({
       <SectionRow
         to={`/health/activity/workout/${item.data.id}`}
         icon={<Dumbbell className="size-4" />}
-        title={routineName.get(item.data.routine) ?? t("activity.workout")}
+        title={workoutTitle(item.data.routine, routineName, t)}
         subtitle={format(new Date(item.at), "dd.MM. HH:mm")}
         value={t("activity.set_count", { n: item.data.sets.length })}
       />

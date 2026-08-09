@@ -480,7 +480,13 @@
     "finish": "Beenden",
     "resting": "Pause",
     "finish_title": "Workout beenden?",
-    "finish_confirm": "Das Workout wird gespeichert und du kehrst zu den Aktivitäten zurück."
+    "finish_confirm": "Das Workout wird gespeichert und du kehrst zu den Aktivitäten zurück.",
+    "free": "Freies Training",
+    "no_exercise_yet": "Noch keine Übung gewählt. Füge deine erste hinzu — sie gilt nur für dieses Training.",
+    "add_exercise_hint": "Die Übung gilt nur für dieses Training; die gespeicherte Routine bleibt unverändert.",
+    "eta": "Ende ~{{time}}",
+    "pick_next": "Was kommt als nächstes?",
+    "next_exercise": "Nächste Übung"
   },
   "exercises": {
     "title": "Übungen",

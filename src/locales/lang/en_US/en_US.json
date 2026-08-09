@@ -480,7 +480,13 @@
     "finish": "Finish",
     "resting": "Rest",
     "finish_title": "Finish workout?",
-    "finish_confirm": "The workout will be saved and you will return to the activities."
+    "finish_confirm": "The workout will be saved and you will return to the activities.",
+    "free": "Free workout",
+    "no_exercise_yet": "No exercise picked yet. Add your first — it counts for this workout only.",
+    "add_exercise_hint": "The exercise joins this workout only; the stored routine stays as it is.",
+    "eta": "ends ~{{time}}",
+    "pick_next": "What comes next?",
+    "next_exercise": "Next exercise"
   },
   "exercises": {
     "title": "Exercises",

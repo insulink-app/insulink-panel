@@ -13,6 +13,7 @@ import sportService, {
   type Training,
   type Workout,
 } from "@/api/services/sport-service";
+import { workoutTitle } from "@/lib/workout";
 
 const CARDIO_ICON: Record<CardioType, LucideIcon> = {
   walk: Footprints,
@@ -129,7 +130,7 @@ function ActivityRow({
   const isWorkout = item.kind === "workout";
   const Icon = isWorkout ? Dumbbell : CARDIO_ICON[(item.data as Training).type];
   const title = isWorkout
-    ? routineName.get((item.data as Workout).routine) ?? t("activity.workout")
+    ? workoutTitle((item.data as Workout).routine, routineName, t)
     : t("activity.type_" + (item.data as Training).type);
   const summary = isWorkout
     ? t("activity.set_count", { n: (item.data as Workout).sets.length })

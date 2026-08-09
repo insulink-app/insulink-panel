@@ -22,8 +22,10 @@ export function ExerciseView(props: {
   onWeight: (delta: number) => void;
   lastComparable?: SetLog;
   items: Routine["items"];
+  exercises: SportExercise[];
   exerciseById: (id: string) => SportExercise | undefined;
   onJump: (index: number) => void;
+  onAddExercise: (exerciseId: string) => void;
   onComplete: () => void;
   onFinish: () => void;
 }) {
@@ -41,8 +43,10 @@ export function ExerciseView(props: {
       <JumpHeader
         label={`${t("routines.exercise")} ${props.exerciseIndex + 1}/${props.totalExercises}  ·  ${t("routines.set")} ${props.setNumber}/${props.totalSets}`}
         items={props.items}
+        exercises={props.exercises}
         exerciseById={props.exerciseById}
         onJump={props.onJump}
+        onAdd={props.onAddExercise}
       />
       <div className="text-5xl font-bold tracking-tight">{props.name}</div>
       <div className="text-[clamp(5rem,19vw,9rem)] leading-none font-bold tracking-tight tabular-nums">

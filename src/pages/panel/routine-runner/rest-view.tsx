@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { Routine, SetLog, SportExercise } from "@/api/services/sport-service";
 import { formatClock } from "./core";
-import { FinishButton, JumpHeader, WeightRow } from "./controls";
+import { AddExerciseDialog, FinishButton, JumpHeader, WeightRow } from "./controls";
 
 export function RestView(props: {
   expired: boolean;
@@ -14,8 +14,13 @@ export function RestView(props: {
   setNumber: number;
   totalSets: number;
   items: Routine["items"];
+  exercises: SportExercise[];
   exerciseById: (id: string) => SportExercise | undefined;
   onJump: (index: number) => void;
+  onAddExercise: (exerciseId: string) => void;
+  // A free workout that has finished its picked exercise: nothing is queued, so
+  // this rest asks for the next exercise instead of offering to carry on.
+  awaitingNext: boolean;
   lastSet?: SetLog;
   onUpdateLast: (patch: { reps?: number; kg?: number }) => void;
   onExtend: () => void;
@@ -35,10 +40,16 @@ export function RestView(props: {
         {props.expired ? `+${formatClock(props.overtime)}` : formatClock(props.remaining)}
       </div>
       <JumpHeader
-        label={`${t("routines.next")} ${props.nextName}  ·  ${t("routines.set")} ${props.setNumber}/${props.totalSets}`}
+        label={
+          props.awaitingNext
+            ? t("routines.pick_next")
+            : `${t("routines.next")} ${props.nextName}  ·  ${t("routines.set")} ${props.setNumber}/${props.totalSets}`
+        }
         items={props.items}
+        exercises={props.exercises}
         exerciseById={props.exerciseById}
         onJump={props.onJump}
+        onAdd={props.onAddExercise}
       />
 
       {props.lastSet && props.lastSet.reps != null && (
@@ -65,10 +76,22 @@ export function RestView(props: {
           <TimerReset className="size-6" />
           {t("routines.extend")}
         </Button>
-        <Button className="h-[4.5rem] flex-1 text-lg" onClick={props.onContinue}>
-          <ArrowRight className="size-6" />
-          {t("routines.continue")}
-        </Button>
+        {props.awaitingNext ? (
+          <div className="flex-1">
+            <AddExerciseDialog
+              exercises={props.exercises}
+              onAdd={props.onAddExercise}
+              className="h-[4.5rem] w-full text-lg"
+              variant="default"
+              labelKey="routines.next_exercise"
+            />
+          </div>
+        ) : (
+          <Button className="h-[4.5rem] flex-1 text-lg" onClick={props.onContinue}>
+            <ArrowRight className="size-6" />
+            {t("routines.continue")}
+          </Button>
+        )}
       </div>
       <FinishButton onFinish={props.onFinish} />
     </div>

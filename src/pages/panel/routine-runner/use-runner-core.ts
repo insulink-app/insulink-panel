@@ -2,7 +2,14 @@
 // clock the stopwatch/countdown repaint from. No rendering, no network — the
 // views drive it and use-workout-sync mirrors what comes out.
 import { useEffect, useRef, useState } from "react";
-import type { ActiveWorkout, Routine, SetLog, SportExercise } from "@/api/services/sport-service";
+import type {
+  ActiveWorkout,
+  Routine,
+  RoutineItem,
+  SetLog,
+  SportExercise,
+} from "@/api/services/sport-service";
+import { FREE_ROUTINE_ID } from "@/lib/workout";
 import { clamp, clampReps, coreFrom, type Core } from "./core";
 
 export function useRunnerCore({
@@ -30,13 +37,13 @@ export function useRunnerCore({
 
   // Enter the exercising phase for whatever exercise/set the pointers hold,
   // stamping the rest just taken onto the last logged set.
-  const enterExercising = (state: Core, at: number): Core => {
+  const enterExercising = (state: Core, at: number, entered?: RoutineItem): Core => {
     let sets = state.sets;
     if (state.restStartedAt != null && sets.length > 0) {
       const restSecs = Math.floor((at - state.restStartedAt) / 1000);
       sets = sets.map((set, index) => (index === sets.length - 1 ? { ...set, rest: restSecs } : set));
     }
-    const item = itemAt(state.exerciseIndex);
+    const item = entered ?? itemAt(state.exerciseIndex);
     return {
       ...state,
       sets,
@@ -75,7 +82,10 @@ export function useRunnerCore({
       } else if (exerciseIndex + 1 < routine.items.length) {
         exerciseIndex += 1;
         setIndex = 0;
-      } else {
+        // A free workout has no plan to run out of: it rests on the same set
+        // instead of ending, so the user can add the next exercise, repeat this
+        // one, or finish it themselves.
+      } else if (routine.id !== FREE_ROUTINE_ID) {
         return { ...state, sets, phase: "done" };
       }
 
@@ -111,6 +121,14 @@ export function useRunnerCore({
   // workout on. Seeded exactly like a resume, so nothing else has to know how a
   // snapshot maps onto the state machine.
   const adopt = (remote: ActiveWorkout) => setCore(coreFrom(remote, routine));
+
+  // Start an exercise added a moment ago: the routine prop still lacks it (the
+  // merge happens on the next render), so the item comes along rather than being
+  // looked up by index — which would read `undefined` and throw.
+  const startAdded = (index: number, item: RoutineItem) =>
+    setCore((state) =>
+      enterExercising({ ...state, exerciseIndex: index, setIndex: 0 }, Date.now(), item),
+    );
 
   const jumpTo = (index: number) =>
     setCore((state) => enterExercising({ ...state, exerciseIndex: index, setIndex: 0 }, Date.now()));
@@ -189,6 +207,7 @@ export function useRunnerCore({
     finishEarly,
     adopt,
     jumpTo,
+    startAdded,
     recordReps,
     adjustWeight,
     updateLastSet,

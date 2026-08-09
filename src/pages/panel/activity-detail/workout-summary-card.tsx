@@ -3,12 +3,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Flag } from "@/components/icons";
 import type { Workout } from "@/api/services/sport-service";
 import { formatDuration } from "./format";
-import { previousWorkout, summarize } from "./workout-summary";
+import { effortRatioVsPrevious, previousWorkout, summarize } from "./workout-summary";
 
-// End-of-workout headline: one overall training value — the change in effort
-// (reps + held seconds) versus the previous session of the same routine — as a
-// big progress ring, with the concrete figures (exercises, sets, duration) small
-// beneath it. Mirrors the app's WorkoutSummaryCard.
+// End-of-workout headline: one overall training value — each exercise's change
+// versus the previous session of the same routine, averaged so every exercise
+// counts the same — as a big progress ring, with the concrete figures
+// (exercises, sets, duration) small beneath it. Mirrors the app's
+// WorkoutSummaryCard.
 export function WorkoutSummaryCard({
   workout,
   allWorkouts,
@@ -19,8 +20,7 @@ export function WorkoutSummaryCard({
   const { t } = useTranslation();
   const current = summarize(workout);
   const previous = previousWorkout(allWorkouts, workout);
-  const base = previous ? summarize(previous).effort : 0;
-  const ratio = base > 0 ? current.effort / base : null;
+  const ratio = previous ? effortRatioVsPrevious(workout, previous) : null;
   const percent = ratio != null ? Math.round((ratio - 1) * 100) : null;
 
   const color =

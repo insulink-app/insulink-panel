@@ -68,6 +68,9 @@ the API base. **CORS:** the panel origin must be in the backend `config.ini`
   can't call the reactive `t`, so build them **inside** the component; the one
   non-hook exception is `sensor-service.ts`, which imports the shared `t` from
   `@/locales/i18n`.
+- **No dash as punctuation in a user-facing string** — no `—`, no `–`, no ` - `.
+  Use a comma, a colon or a full stop instead; a hyphen inside a word is fine
+  (`CGM-Daten`). `npx tsx src/locales/punctuation.check.ts` fails on one.
 - **Never key state/routing off a translated string** — switching language
   would change it and break the match. Use a stable, language-independent `id`
   and resolve the display label with `t()` (see `settings-dialog.tsx`: each

@@ -278,7 +278,14 @@
     "last_reading": "Letzter Messwert",
     "coverage": "Abdeckung",
     "coverage_hint": "Anteil der erwarteten 5-Minuten-Messwerte, die ankamen",
-    "no_readings": "Für diesen Sensor sind keine Glukosewerte erfasst."
+    "no_readings": "Für diesen Sensor sind keine Glukosewerte erfasst.",
+    "pods": "Pods",
+    "col_pump": "Pumpe",
+    "col_lot": "Lot / Seriennr.",
+    "col_reservoir": "Reservoir",
+    "reservoir_units": "{{units}} E",
+    "reservoir_unknown": "unbekannt",
+    "in_grace_short": "Kulanzzeit"
   },
   "account": {
     "title": "Account",

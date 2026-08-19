@@ -242,7 +242,7 @@
     "title": "Devices",
     "sensors": "Sensors",
     "pump": "Pump",
-    "no_pump_data": "No data available for insulin pumps yet.",
+    "no_pump_data": "No insulin pump data recorded yet.",
     "col_sensor": "Sensor",
     "col_registered": "Registered",
     "col_started": "Started",
@@ -278,7 +278,14 @@
     "last_reading": "Last reading",
     "coverage": "Coverage",
     "coverage_hint": "Share of the expected 5-minute readings that arrived",
-    "no_readings": "No glucose readings recorded for this sensor."
+    "no_readings": "No glucose readings recorded for this sensor.",
+    "pods": "Pods",
+    "col_pump": "Pump",
+    "col_lot": "Lot / serial",
+    "col_reservoir": "Reservoir",
+    "reservoir_units": "{{units}} U",
+    "reservoir_unknown": "unknown",
+    "in_grace_short": "Grace period"
   },
   "account": {
     "title": "Account",

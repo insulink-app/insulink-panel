@@ -4,8 +4,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import PanelPage from "@/layouts/panel";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataList, type ListColumn } from "@/components/data-list";
+import PumpList from "./pump-list";
 import sensorService, {
   type SensorHistoryEntry,
   sensorType,
@@ -93,16 +93,7 @@ export default function DevicesPage() {
     >
       <div className="py-6">
         {view === "pump" ? (
-          <Card>
-            <CardHeader>
-              <CardTitle>{t("devices.pump")}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                {t("devices.no_pump_data")}
-              </p>
-            </CardContent>
-          </Card>
+          <PumpList />
         ) : (
           <DataList
             title={t("devices.sensors")}

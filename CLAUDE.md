@@ -81,6 +81,12 @@ the API base. **CORS:** the panel origin must be in the backend `config.ini`
 - Glucose logic: `src/lib/glucose.ts` — `classify`, `statusColorVar`,
   `toDisplay`, `unitLabel`. Values are **mg/dL** everywhere; mmol/L is
   display-only (÷18).
+- Device runtime maths: `src/lib/sensor.ts` and `src/lib/pump.ts`, each with a
+  `*.check.ts` self-check (`npx tsx src/lib/pump.check.ts`). Both exist because
+  `registered_at` is when the app POSTed, not when the device started — the real
+  start lives in the blob. `pump.ts` deliberately does NOT declare
+  `long_term_key` in its blob type: it authorises delivering insulin, so nothing
+  here should be able to render it.
 - Theme: `src/global.css` mirrors the app (indigo brand, `#FAFAFA`/`#1B1B1B`
   surfaces, 14px radius) plus `--glucose-in-range/low/high` vars. Brand assets
   in `public/` (`icon.png`, `logo-black.png`, `logo-white.png` — swap

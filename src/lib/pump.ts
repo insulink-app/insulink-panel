@@ -88,14 +88,23 @@ function successorStarts(
 }
 
 /**
- * Still on the body: not past its expiry, and not already succeeded by a pod that
- * started later. The second half matters — a pod taken off early keeps a future
- * `expires_at`, so expiry alone would show two as active.
+ * Still on the body: not discarded, not past its expiry, and not already
+ * succeeded by a pod that started later.
+ *
+ * The succession half matters because a pod taken off early keeps a future
+ * `expires_at`, so expiry alone would show two as active. `discarded_at` covers
+ * what succession cannot: a pod that faulted, was deactivated or was thrown
+ * away, with no replacement put on yet. Both of those leave a future expiry and
+ * no successor, so without this the panel goes on calling a dead pod active
+ * while the app has already stopped offering it.
  */
 export function podActive(
   pod: PumpHistoryEntry,
   allPods: PumpHistoryEntry[],
 ): boolean {
+  if (pod.discarded_at) {
+    return false;
+  }
   return (
     successorStarts(pod, allPods).length === 0 && pod.expires_at > Date.now()
   );
@@ -112,7 +121,11 @@ export function podEndedAt(
   if (podActive(pod, allPods)) {
     return null;
   }
-  return Math.min(pod.expires_at, ...successorStarts(pod, allPods));
+  // A discarded pod ended when the user said so, unless something ended it
+  // earlier. Falling back to `expires_at` would credit it with hours it spent in
+  // the bin.
+  const discarded = pod.discarded_at ?? Number.POSITIVE_INFINITY;
+  return Math.min(pod.expires_at, discarded, ...successorStarts(pod, allPods));
 }
 
 /** How long the pod was really worn. */

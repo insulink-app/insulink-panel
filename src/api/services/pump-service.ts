@@ -22,6 +22,11 @@ export interface PumpHistoryEntry {
   data: string;
   registered_at: number; // epoch ms
   expires_at: number; // epoch ms
+  // When the user said this pod is gone, or null while it is still theirs to
+  // pick up. The app sets it when a pod is deactivated, forgotten or abandoned
+  // mid-activation. The row stays, because it is the pump history; what stops is
+  // the app offering the pod back and this list calling it active.
+  discarded_at?: number | null;
 }
 
 export type PumpHistoryResponse = {

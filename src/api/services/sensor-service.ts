@@ -20,6 +20,11 @@ export interface SensorHistoryEntry {
   data: string;
   registered_at: number; // epoch ms
   expires_at: number; // epoch ms
+  // When the user said this sensor is gone, or null while it is still theirs to
+  // pick up. The app sets it when a sensor is forgotten or its restore offer is
+  // dismissed. The row stays, because it is the sensor history; what stops is
+  // the app offering it back and this list calling it active.
+  discarded_at?: number | null;
 }
 
 export type SensorHistoryResponse = {

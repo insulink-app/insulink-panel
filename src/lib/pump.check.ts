@@ -144,3 +144,32 @@ const pod = (
 assert.equal(podLotLabel(pod(now)), "135556289 / 681767");
 
 console.log("pump.check.ts: all assertions passed");
+
+// A pod the user said is gone is not active, however much of its expiry is left.
+// Succession cannot answer this: a pod that faulted or was deactivated with no
+// replacement yet has a future `expires_at` and no successor, so without
+// `discarded_at` the panel went on calling a dead pod active while the app had
+// already stopped offering it.
+{
+  const now = Date.now();
+  const discarded = {
+    id: "discarded",
+    data: JSON.stringify({ activated_at: now - 2 * HOUR }),
+    registered_at: now - 2 * HOUR,
+    expires_at: now + POD_SESSION,
+    discarded_at: now - HOUR,
+  };
+  assert.equal(podActive(discarded, [discarded]), false);
+
+  // And it ended when the user said so, not when it would have expired: crediting
+  // it to `expires_at` would count hours it spent in the bin as worn.
+  assert.equal(podEndedAt(discarded, [discarded]), now - HOUR);
+
+  // An undiscarded pod in the same position is still active, so the flag is what
+  // decided it and not something else about the fixture.
+  const { discarded_at: _ignored, ...running } = discarded;
+  assert.equal(podActive(running, [running]), true);
+}
+
+console.log("pump.check.ts: discard assertions passed");
+

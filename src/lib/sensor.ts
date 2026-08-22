@@ -69,14 +69,23 @@ function successorStarts(
 }
 
 /**
- * Still on the body: not past its expiry, and not already succeeded by a sensor
- * that started later. The second half matters — a sensor swapped out early
- * keeps a future `expires_at`, so expiry alone would show two as active.
+ * Still on the body: not discarded, not past its expiry, and not already
+ * succeeded by a sensor that started later.
+ *
+ * The succession half matters because a sensor swapped out early keeps a future
+ * `expires_at`, so expiry alone would show two as active. `discarded_at` covers
+ * what succession cannot: a sensor pulled off or failed, with no replacement put
+ * on yet. That leaves a future expiry and no successor, so without this the
+ * panel goes on calling a dead sensor active while the app has already stopped
+ * offering it.
  */
 export function sensorActive(
   sensor: SensorHistoryEntry,
   allSensors: SensorHistoryEntry[],
 ): boolean {
+  if (sensor.discarded_at) {
+    return false;
+  }
   return (
     successorStarts(sensor, allSensors).length === 0 &&
     sensor.expires_at > Date.now()
@@ -94,7 +103,15 @@ export function sensorEndedAt(
   if (sensorActive(sensor, allSensors)) {
     return null;
   }
-  return Math.min(sensor.expires_at, ...successorStarts(sensor, allSensors));
+  // A discarded sensor ended when the user said so, unless something ended it
+  // earlier. Falling back to `expires_at` would credit it with hours it spent in
+  // the bin.
+  const discarded = sensor.discarded_at ?? Number.POSITIVE_INFINITY;
+  return Math.min(
+    sensor.expires_at,
+    discarded,
+    ...successorStarts(sensor, allSensors),
+  );
 }
 
 /**

@@ -88,3 +88,31 @@ assert.equal(sensorStart(legacy), legacy.registered_at);
 assert.equal(sensorWornMs(legacy, [legacy]), 10 * DAY);
 
 console.log("sensor check ok");
+
+// A sensor the user said is gone is not active, however much of its expiry is
+// left. Succession cannot answer this: a sensor pulled off with no replacement
+// yet has a future `expires_at` and no successor, so without `discarded_at` the
+// panel went on calling a dead sensor active while the app had already stopped
+// offering it.
+{
+  const now = Date.now();
+  const discarded = {
+    id: "discarded",
+    data: JSON.stringify({ session_start: now - 2 * HOUR }),
+    registered_at: now - 2 * HOUR,
+    expires_at: now + G7_SESSION,
+    discarded_at: now - HOUR,
+  };
+  assert.equal(sensorActive(discarded, [discarded]), false);
+
+  // And it ended when the user said so, not when it would have expired.
+  assert.equal(sensorEndedAt(discarded, [discarded]), now - HOUR);
+
+  // An undiscarded sensor in the same position is still active, so the flag is
+  // what decided it and not something else about the fixture.
+  const { discarded_at: _ignored, ...running } = discarded;
+  assert.equal(sensorActive(running, [running]), true);
+}
+
+console.log("sensor.check.ts: discard assertions passed");
+

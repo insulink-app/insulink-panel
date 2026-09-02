@@ -20,6 +20,7 @@ export default defineConfig([
       globals: globals.browser,
     },
     rules: {
+      '@typescript-eslint/no-unused-vars': ['error', { ignoreRestSiblings: true, argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
       'react-hooks/purity': 'off',
       'react-hooks/incompatible-library': 'off',
     },

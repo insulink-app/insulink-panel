@@ -493,7 +493,9 @@
     "add_exercise_hint": "The exercise joins this workout only; the stored routine stays as it is.",
     "eta": "ends ~{{time}}",
     "pick_next": "What comes next?",
-    "next_exercise": "Next exercise"
+    "next_exercise": "Next exercise",
+    "weight_up": "Increase weight",
+    "weight_down": "Decrease weight"
   },
   "exercises": {
     "title": "Exercises",

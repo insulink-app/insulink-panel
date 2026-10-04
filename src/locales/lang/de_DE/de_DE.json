@@ -493,7 +493,9 @@
     "add_exercise_hint": "Die Übung gilt nur für dieses Training; die gespeicherte Routine bleibt unverändert.",
     "eta": "Ende ~{{time}}",
     "pick_next": "Was kommt als nächstes?",
-    "next_exercise": "Nächste Übung"
+    "next_exercise": "Nächste Übung",
+    "weight_up": "Gewicht erhöhen",
+    "weight_down": "Gewicht verringern"
   },
   "exercises": {
     "title": "Übungen",

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { m } from "motion/react";
 import type { ReactNode } from "react";
 import { Helmet } from "react-helmet";
-import { NavLink } from "react-router";
+import { NavLink } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 interface ErrorLayoutProps {

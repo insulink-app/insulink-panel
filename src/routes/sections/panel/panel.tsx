@@ -1,4 +1,4 @@
-import { Navigate, Outlet, type RouteObject } from "react-router";
+import { Navigate, Outlet, type RouteObject } from "react-router-dom";
 import { Component } from "./component";
 import LoginAuthGuard from "@/routes/components/login-auth-guard.tsx";
 import SimpleLayout from "@/layouts/simple";

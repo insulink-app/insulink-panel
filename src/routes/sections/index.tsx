@@ -1,4 +1,4 @@
-import { Navigate, type RouteObject } from "react-router";
+import { Navigate, type RouteObject } from "react-router-dom";
 import { authenticationRoutes } from "./authentication";
 import { panelRoutes } from "./panel/panel.tsx";
 import { mainRoutes } from "./main";

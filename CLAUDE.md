@@ -28,7 +28,13 @@ Sonner toasts. Path alias `@/` → `src/`.
 ```bash
 npm run dev     # http://localhost:5173
 npm run build   # tsc -b && vite build
+npm run test:e2e  # Playwright smoke tests (e2e/), API mocked via page.route
 ```
+
+E2E: `e2e/fake-sport-api.ts` serves an in-memory sport account (syncs replace,
+finds return it, `state` can be changed to play the phone) and records every
+write, so tests assert on what went over the wire. Runner tests freeze time with
+`page.clock` (`e2e/runner-page.ts`); sync tests run on a real clock for the 2 s poll.
 
 `VITE_API_BASE_URL` (`.env`, default `https://insulink.lukasbreuer.de/v1/`) is
 the API base. **CORS:** the panel origin must be in the backend `config.ini`
@@ -119,6 +125,16 @@ Glucose `time` is minute-aligned epoch ms (see the app's `glucose_sync.dart`);
 it just carries no sub-minute precision, so don't multiply it by 1000.
 
 Each service file notes its unit — check before formatting with `date-fns`.
+
+## The route map
+
+`src/components/route-map.tsx` draws a training route on **Esri's Gray Canvas**
+basemaps (no API key): two tile layers, map then place names, light or dark by
+theme, capped at `maxNativeZoom: 16` because Esri serves a "Map data not yet
+available" placeholder past it. In dark mode only the BASE layer is dimmed
+(`brightness(0.55)`), so the place names keep their brightness. It mirrors the app's `cardio_map.dart` on
+purpose, so change both together. Why this provider and not a keyed one (and
+what CARTO's tiles look like now): the app's `docs/MAP.md`.
 
 ## Adding a page
 

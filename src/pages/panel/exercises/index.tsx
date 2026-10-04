@@ -88,14 +88,24 @@ export default function ExercisesPage() {
                     {t("exercises.kind_" + exercise.kind)}
                   </div>
                 </div>
-                <Button size="sm" variant="ghost" onClick={() => setEditing(exercise)}>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  aria-label={t("common.edit")}
+                  onClick={() => setEditing(exercise)}
+                >
                   <Pencil className="size-4" />
                 </Button>
                 <ConfirmDelete
                   onConfirm={() => remove(exercise)}
                   description={t("exercises.delete_confirm", { name: exercise.name })}
                 >
-                  <Button size="sm" variant="ghost" disabled={mutation.isPending}>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    aria-label={t("common.delete")}
+                    disabled={mutation.isPending}
+                  >
                     <Trash2 className="size-4 text-destructive" />
                   </Button>
                 </ConfirmDelete>

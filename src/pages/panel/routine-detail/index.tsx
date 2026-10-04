@@ -65,7 +65,7 @@ export default function RoutineDetailPage() {
                   onConfirm={() => remove(routine, () => navigate("/health/routines"))}
                   description={t("routines.delete_confirm", { name: routine.name || t("routines.untitled") })}
                 >
-                  <Button variant="outline" disabled={saving}>
+                  <Button variant="outline" aria-label={t("common.delete")} disabled={saving}>
                     <Trash2 className="size-4 text-destructive" />
                   </Button>
                 </ConfirmDelete>

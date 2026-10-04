@@ -5,11 +5,29 @@ import { Maximize } from "@/components/icons";
 import L from "leaflet";
 import { Button } from "@/components/ui/button";
 
-// CartoDB light/dark basemaps — the same tiles the app uses (no API key).
+// Esri's Gray Canvas basemaps, the same tiles the app uses (no API key): a quiet
+// grey map with a real dark counterpart. CartoDB's Positron/Dark Matter were
+// used until CARTO started stamping "API KEY REQUIRED" across every tile.
+// A style is two layers here — the map, then the place names over it.
+const ESRI = "https://services.arcgisonline.com/ArcGIS/rest/services/Canvas";
 const TILES = {
-  light: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
-  dark: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+  light: {
+    base: `${ESRI}/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}`,
+    labels: `${ESRI}/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}`,
+  },
+  dark: {
+    base: `${ESRI}/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}`,
+    labels: `${ESRI}/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}`,
+  },
 };
+// The deepest zoom Esri draws. Past it the service answers with a placeholder
+// tile reading "Map data not yet available", so Leaflet must scale the z16 tile
+// up instead of asking for one that does not exist.
+const MAX_NATIVE_ZOOM = 16;
+// Esri's dark canvas is a mid grey that glows against the panel's much darker
+// page. Dimming only the BASE layer is what the two-layer split buys us: the
+// place names on top keep their brightness. Mirrors the app's `_darkDim`.
+const DARK_DIM = "brightness(0.55)";
 
 type LatLng = { lat: number; lng: number };
 
@@ -51,7 +69,7 @@ export function RouteMap({
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
-  const tileRef = useRef<L.TileLayer | null>(null);
+  const tileRef = useRef<L.LayerGroup | null>(null);
   const highlightRef = useRef<L.CircleMarker | null>(null);
   const { resolvedTheme } = useTheme();
   const { t } = useTranslation();
@@ -158,10 +176,16 @@ export function RouteMap({
     if (tileRef.current) {
       tileRef.current.remove();
     }
-    tileRef.current = L.tileLayer(
-      resolvedTheme === "dark" ? TILES.dark : TILES.light,
-      { subdomains: ["a", "b", "c", "d"], detectRetina: true },
-    ).addTo(map);
+    const isDark = resolvedTheme === "dark";
+    const style = isDark ? TILES.dark : TILES.light;
+    const options = { maxNativeZoom: MAX_NATIVE_ZOOM };
+    const base = L.tileLayer(style.base, options);
+    // One group so both layers are removed together on the next theme swap.
+    tileRef.current = L.layerGroup([
+      base,
+      L.tileLayer(style.labels, options),
+    ]).addTo(map);
+    base.getContainer()!.style.filter = isDark ? DARK_DIM : "";
   }, [resolvedTheme, points.length]);
 
   if (points.length === 0) {

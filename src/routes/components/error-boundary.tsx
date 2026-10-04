@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import { isRouteErrorResponse, useRouteError } from "react-router";
+import { isRouteErrorResponse, useRouteError } from "react-router-dom";
 
 export default function ErrorBoundary() {
   const error = useRouteError();

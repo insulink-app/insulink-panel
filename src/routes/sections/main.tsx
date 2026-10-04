@@ -1,7 +1,7 @@
 import { LineLoading } from "@/components/loading";
 import SimpleLayout from "@/layouts/simple";
 import { lazy, Suspense } from "react";
-import { Outlet, type RouteObject } from "react-router";
+import { Outlet, type RouteObject } from "react-router-dom";
 
 const Page403 = lazy(() => import("@/pages/error/Page403"));
 const Page404 = lazy(() => import("@/pages/error/Page404"));

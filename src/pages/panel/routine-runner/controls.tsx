@@ -54,6 +54,7 @@ export function WeightRow({ weight, onDelta }: { weight: number; onDelta: (delta
         variant="outline"
         size="icon"
         className="size-12 rounded-full"
+        aria-label={t("routines.weight_down")}
         onClick={() => onDelta(-2.5)}
       >
         <Minus className="size-5" />
@@ -65,6 +66,7 @@ export function WeightRow({ weight, onDelta }: { weight: number; onDelta: (delta
         variant="outline"
         size="icon"
         className="size-12 rounded-full"
+        aria-label={t("routines.weight_up")}
         onClick={() => onDelta(2.5)}
       >
         <Plus className="size-5" />

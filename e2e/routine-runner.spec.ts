@@ -2,8 +2,9 @@ import { expect, test } from "@playwright/test";
 import {
   START,
   advance,
-  expectSeconds,
   completeSet,
+  currentCard,
+  expectSeconds,
   expectWorkoutPage,
   finishWorkout,
   openRunner,
@@ -18,7 +19,7 @@ test("a full routine logs every set with reps, weight, time and rest", async ({ 
   const { writes, state } = await openRunner(page, PUSH_DAY.id, SEED);
 
   await expect(position(page, "1/2", "1/2")).toBeVisible();
-  await expect(page.getByText(BENCH.name, { exact: true })).toBeVisible();
+  await expect(currentCard(page)).toContainText(BENCH.name);
   const reps = page.getByRole("spinbutton");
   await expect(reps).toHaveValue("8");
   await expect(page.getByText("40.0 kg")).toBeVisible();
@@ -126,19 +127,27 @@ test("an exercise added mid-workout joins the session, not the routine", async (
   expect(writes.routines).toHaveLength(0);
 });
 
-test("the last session's matching set is shown for comparison", async ({ page }) => {
-  const past = {
+test("the comparison reads this routine's last run, already during the rest", async ({ page }) => {
+  const sameRoutine = {
     id: "past",
     routine: PUSH_DAY.id,
-    started: START.getTime() - 86_400_000,
+    started: START.getTime() - 2 * 86_400_000,
     sets: [
       { ex: BENCH.id, reps: 6, kg: 35, ts: 0 },
       { ex: BENCH.id, reps: 5, kg: 37.5, ts: 0 },
     ],
   };
-  await openRunner(page, PUSH_DAY.id, { ...SEED, workouts: [past] });
+  const otherRoutine = {
+    id: "other",
+    routine: "leg-day",
+    started: START.getTime() - 86_400_000,
+    sets: [{ ex: BENCH.id, reps: 20, kg: 20, ts: 0 }],
+  };
+  await openRunner(page, PUSH_DAY.id, { ...SEED, workouts: [sameRoutine, otherRoutine] });
   await expect(page.getByText("Last time: 6 × 35 kg")).toBeVisible();
   await completeSet(page);
+  await expect(page.getByText("Rest", { exact: true })).toBeVisible();
+  await expect(page.getByText("Last time: 5 × 37.5 kg")).toBeVisible();
   await page.getByRole("button", { name: "Continue" }).click();
   await expect(page.getByText("Last time: 5 × 37.5 kg")).toBeVisible();
 });

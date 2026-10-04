@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import type { SportState } from "./fake-sport-api";
-import { completeSet, openLiveRunner, position } from "./runner-page";
+import { completeSet, currentCard, openLiveRunner, position } from "./runner-page";
 import { BENCH, LIBRARY, PLANK, PUSH_DAY, runningSnapshot } from "./sport-fixtures";
 
 const SEED = { exercises: LIBRARY, routines: [PUSH_DAY] };
@@ -48,7 +48,7 @@ test("a workout from the phone resumes from the phone's copy of the routine", as
   });
 
   await expect(position(page, "1/2", "2/2")).toBeVisible();
-  await expect(page.getByText(BENCH.name, { exact: true })).toBeVisible();
+  await expect(currentCard(page)).toContainText(BENCH.name);
   await expect(page.getByRole("link", { name: PUSH_DAY.name, exact: true })).toBeVisible();
   await expect.poll(() => writes.active.at(-1)?.started, POLL_TIMEOUT).toBe(snapshot.started);
   expect(writes.active.at(-1)?.sets).toEqual(snapshot.sets);
@@ -58,7 +58,7 @@ test("a legacy snapshot without items falls back to the local routine", async ({
   const legacy = runningSnapshot({ ex: 1, set: 0, items: undefined, name: undefined });
   await openLiveRunner(page, PUSH_DAY.id, { ...SEED, active: legacy, updated: 1 });
   await expect(position(page, "2/2", "1/1")).toBeVisible();
-  await expect(page.getByText(PLANK.name, { exact: true })).toBeVisible();
+  await expect(currentCard(page)).toContainText(PLANK.name);
 });
 
 test("a snapshot already in the logbook starts fresh instead of logging twice", async ({ page }) => {

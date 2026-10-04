@@ -11,6 +11,8 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 interface SensorBlob {
   sensor_start?: number;
   resolved_key?: string;
+  // The four-digit code on a Dexcom G7 applicator; absent for a Libre 3.
+  pairing_code?: string;
 }
 
 export function sensorBlob(sensor: SensorHistoryEntry): SensorBlob {

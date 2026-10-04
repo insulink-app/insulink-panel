@@ -285,7 +285,8 @@
     "col_reservoir": "Reservoir",
     "reservoir_units": "{{units}} E",
     "reservoir_unknown": "unbekannt",
-    "in_grace_short": "Kulanzzeit"
+    "in_grace_short": "Kulanzzeit",
+    "col_code": "Sensorcode"
   },
   "account": {
     "title": "Account",
@@ -476,7 +477,7 @@
     "reps": "Wiederholungen",
     "set": "Satz",
     "next": "Als nächstes:",
-    "total": "Gesamt:",
+    "total": "Gesamt",
     "pause": "Pausieren",
     "resume": "Fortsetzen",
     "previous_set": "Vorheriger Satz",
@@ -495,7 +496,24 @@
     "pick_next": "Was kommt als nächstes?",
     "next_exercise": "Nächste Übung",
     "weight_up": "Gewicht erhöhen",
-    "weight_down": "Gewicht verringern"
+    "weight_down": "Gewicht verringern",
+    "swap_exercise": "Übung tauschen",
+    "swap_exercise_hint": "Die neue Übung ersetzt diese nur in diesem Training, die gespeicherte Routine bleibt, wie sie ist.",
+    "rail": {
+      "title": "Dein Training",
+      "now": "Jetzt: Satz {{set}} von {{sets}}",
+      "after_rest": "Nach der Pause: Satz {{set}} von {{sets}}",
+      "done": "{{done}} von {{sets}} Sätzen erledigt",
+      "sets_one": "{{count}} Satz",
+      "sets_other": "{{count}} Sätze",
+      "reps": "{{n}} Wdh.",
+      "seconds": "{{n}} s",
+      "skip": "Auslassen",
+      "swap": "Tauschen"
+    },
+    "sets_progress": "{{done}} von {{planned}} Sätzen",
+    "reps_up": "Mehr Wiederholungen",
+    "reps_down": "Weniger Wiederholungen"
   },
   "exercises": {
     "title": "Übungen",

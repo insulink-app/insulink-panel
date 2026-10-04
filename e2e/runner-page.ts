@@ -17,7 +17,7 @@ export async function openRunner(page: Page, routineId: string, seed: Partial<Sp
   await expect(page).toHaveURL(/\/overview\/$/);
   await page.clock.pauseAt(START);
   await page.goto(`/health/routines/${routineId}/run`);
-  await tickUntilVisible(page, "Total:");
+  await tickUntilVisible(page, "Total");
   return api;
 }
 
@@ -46,7 +46,7 @@ export function expectSeconds(spanMs: number, seconds: number) {
 export async function openLiveRunner(page: Page, routineId: string, seed: Partial<SportState>) {
   const api = await fakeSportApi(page, seed);
   await signInAndOpen(page, `/health/routines/${routineId}/run`);
-  await expect(page.getByText("Total:", { exact: true })).toBeVisible();
+  await expect(page.getByText("Total", { exact: true })).toBeVisible();
   return api;
 }
 
@@ -55,9 +55,19 @@ export function position(page: Page, exercise: string, set: string) {
   return page.getByText(new RegExp(`Exercise ${exercise}\\s+·\\s+Set ${set}`));
 }
 
-/** The big session clock under "Total:". */
+/** The running order at the right edge. */
+export function runningOrder(page: Page) {
+  return page.getByRole("complementary", { name: "Your workout" });
+}
+
+/** The exercise on now in the running order. */
+export function currentCard(page: Page) {
+  return runningOrder(page).locator('li[aria-current="step"]');
+}
+
+/** The session clock under "Total". */
 export function totalClock(page: Page) {
-  return page.getByText("Total:").locator("xpath=following-sibling::span[1]");
+  return page.getByText("Total", { exact: true }).locator("xpath=following-sibling::span[1]");
 }
 
 export async function advance(page: Page, seconds: number) {

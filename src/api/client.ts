@@ -65,12 +65,18 @@ axiosInstance.interceptors.response.use(
   },
 );
 
+// A 417 whose request still carried an older token than the one now stored was
+// answered after another request already refreshed: it is retried with the
+// current token instead of rotating the refresh token a second time.
 async function refresh(
   originalRequest: AuthenticationRequestConfig,
   error: AxiosError,
 ) {
   originalRequest._retry = true;
-  const { refresh_token } = userStore.getState().token;
+  const { authentication_token: currentToken, refresh_token } = userStore.getState().token;
+  if (currentToken && sentToken(originalRequest) !== currentToken) {
+    return retryRequestWithToken(originalRequest, currentToken);
+  }
   if (!refresh_token) {
     userStore.getState().actions.clearUserToken();
     return Promise.reject(error);
@@ -85,6 +91,10 @@ async function refresh(
     userStore.getState().actions.clearUserToken();
     return Promise.reject(err);
   }
+}
+
+function sentToken(request: AuthenticationRequestConfig) {
+  return String(request.headers?.Authorization ?? "").replace("Bearer ", "");
 }
 
 function enqueueFailedRequest(originalRequest: AuthenticationRequestConfig) {

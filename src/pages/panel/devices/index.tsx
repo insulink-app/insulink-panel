@@ -13,6 +13,7 @@ import sensorService, {
 import {
   formatSpan,
   sensorActive,
+  sensorBlob,
   sensorEndedAt,
   sensorStart,
   sensorWornMs,
@@ -43,6 +44,10 @@ export default function DevicesPage() {
       {
         header: t("devices.col_sensor"),
         cell: (sensor) => sensorType(sensor.data),
+      },
+      {
+        header: t("devices.col_code"),
+        cell: (sensor) => sensorBlob(sensor).pairing_code || "—",
       },
       {
         header: t("devices.col_started"),

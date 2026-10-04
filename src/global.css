@@ -214,6 +214,37 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Tailwind v4 dropped the pointer from buttons; everything clickable gets it
+     back here, once, instead of a `cursor-pointer` on every call site. */
+  button,
+  a[href],
+  summary,
+  select,
+  label[for],
+  input[type="checkbox"],
+  input[type="radio"],
+  input[type="file"],
+  [role="button"],
+  [role="tab"],
+  [role="option"],
+  [role="menuitem"],
+  [role="menuitemcheckbox"],
+  [role="menuitemradio"],
+  [role="switch"],
+  [role="checkbox"],
+  [role="radio"],
+  [role="combobox"],
+  [role="slider"] {
+    cursor: pointer;
+  }
+
+  :disabled,
+  [role="button"][aria-disabled="true"],
+  [role="option"][data-disabled],
+  [role^="menuitem"][data-disabled] {
+    cursor: not-allowed;
+  }
 }
 
 /* Phosphor icons draw with more internal padding than the lucide icons they

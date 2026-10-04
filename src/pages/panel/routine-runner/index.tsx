@@ -1,29 +1,33 @@
 import { useQuery } from "@tanstack/react-query";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
-import { Pause, Play } from "@/components/icons";
 import { CardSkeleton } from "@/components/card-skeleton";
-import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import sportService, {
   type ActiveWorkout,
   type Routine,
-  type RoutineItem,
   type SportExercise,
   type Workout,
 } from "@/api/services/sport-service";
 import { FREE_ROUTINE_ID } from "@/lib/workout";
 import { newId } from "../routines/shared";
-import { AddExerciseDialog, FinishButton } from "./controls";
-import { awaitsNextExercise, findLastSet, formatClock, remainingSeconds } from "./core";
+import { AddExerciseDialog } from "./controls";
+import { SessionBar } from "./session-bar";
+import { awaitsNextExercise, findLastSet, remainingSeconds } from "./core";
 import { RunnerShell } from "./runner-shell";
 import { ExerciseView } from "./exercise-view";
 import { RestView } from "./rest-view";
 import { VitalsTiles } from "./vitals-tiles";
+import { ExerciseRail } from "./exercise-rail";
+import { useSessionRoutine } from "./use-session-routine";
 import { useRunnerCore } from "./use-runner-core";
 import { useWorkoutSync } from "./use-workout-sync";
+
+// One calm surface per column: enough to group what belongs together without
+// boxing every element in a card of its own.
+const PANEL = "rounded-3xl border border-border/60 bg-card/50";
 
 export default function RoutineRunnerPage() {
   const { t } = useTranslation();
@@ -43,7 +47,9 @@ export default function RoutineRunnerPage() {
   if (routines.isLoading || exercises.isLoading || active.isLoading || workouts.isLoading) {
     return (
       <RunnerShell>
-        <CardSkeleton />
+        <div className="mx-auto w-full max-w-5xl">
+          <CardSkeleton />
+        </div>
       </RunnerShell>
     );
   }
@@ -102,21 +108,8 @@ function Runner({
     [exercises],
   );
 
-  // Exercises picked while the workout runs: they belong to THIS session, so the
-  // stored routine keeps its own items. They ride along until the account's copy
-  // carries them itself — the snapshot pushed below comes back embedding the
-  // items, and one already there is dropped here rather than added twice.
-  const [added, setAdded] = useState<RoutineItem[]>([]);
-  const routine = useMemo<Routine>(
-    () => ({
-      ...stored,
-      items: [
-        ...stored.items,
-        ...added.filter((item) => !stored.items.some((entry) => entry.id === item.id)),
-      ],
-    }),
-    [stored, added],
-  );
+  const session = useSessionRoutine(stored);
+  const { routine } = session;
   const runner = useRunnerCore({ routine, resumeFrom, exerciseById });
   const { core, clock } = runner;
   useWorkoutSync({ core, adopt: runner.adopt, routine, pastWorkouts });
@@ -137,22 +130,38 @@ function Runner({
       weight: 0,
       rest: free ? 120 : 60,
     };
-    setAdded((current) => [...current, item]);
+    session.add(item);
     if (routine.items.length === 0 || awaitingNext) {
       runner.startAdded(routine.items.length, item);
     }
   };
 
+  // Skip and swap act on the current exercise, or while resting on the one
+  // coming up. Neither applies while a free workout waits for its next pick:
+  // there the pointers still sit on the exercise just finished.
+  const canSkip = !awaitingNext && core.exerciseIndex + 1 < routine.items.length;
+  const canSwap = !awaitingNext && routine.items[core.exerciseIndex] != null;
+  const skipExercise = () => runner.jumpTo(core.exerciseIndex + 1);
+  const swapExercise = (exerciseId: string) => {
+    const replaced = routine.items[core.exerciseIndex];
+    const item = { ...replaced, id: newId(), ex: exerciseId };
+    session.swap(replaced.id, item);
+    runner.swapIn(item);
+  };
+
   const item = routine.items[core.exerciseIndex];
   const exercise = item ? exerciseById(item.ex) : undefined;
   const plannedSets = routine.items.reduce((sum, entry) => sum + entry.sets, 0);
-  const progress = plannedSets === 0 ? 0 : Math.min(1, core.sets.length / plannedSets);
 
   const setElapsed = Math.max(0, Math.floor((clock - core.setStartedAt) / 1000));
   const restRemaining =
     core.restEndsAt != null ? Math.max(0, Math.round((core.restEndsAt - clock) / 1000)) : 0;
   const restOvertime =
     core.restEndsAt != null ? Math.max(0, Math.round((clock - core.restEndsAt) / 1000)) : 0;
+  const restTotal =
+    core.restEndsAt != null && core.restStartedAt != null
+      ? Math.round((core.restEndsAt - core.restStartedAt) / 1000)
+      : 0;
   const sessionElapsed = Math.max(0, Math.floor((clock - core.startedAt - core.pausedTotal) / 1000));
   // Read against the wall clock, not `clock`: a paused workout's predicted end
   // keeps moving out, which is exactly what pausing does to it.
@@ -160,8 +169,11 @@ function Runner({
   const expectedEnd = remaining == null ? null : new Date(Date.now() + remaining * 1000);
 
   const lastComparable = useMemo(
-    () => (item ? findLastSet(pastWorkouts, item.ex, core.setIndex) : undefined),
-    [pastWorkouts, item, core.setIndex],
+    () =>
+      item && !awaitingNext
+        ? findLastSet(pastWorkouts, routine.id, item.ex, core.setIndex)
+        : undefined,
+    [pastWorkouts, routine.id, item, core.setIndex, awaitingNext],
   );
 
   const lastSet = core.sets[core.sets.length - 1];
@@ -171,96 +183,101 @@ function Runner({
       routineId={routine.id === FREE_ROUTINE_ID ? undefined : routine.id}
       routineName={routine.name || t("routines.untitled")}
     >
-      <div className="flex flex-col gap-4">
-        {/* The elapsed time is the anchor, so it sits centred. The pause button
-            is parked at the edge rather than laid out beside it — in a row the
-            time would drift off-centre as digits are added. */}
-        <div className="relative flex flex-col items-center gap-1">
-          <span className="text-sm font-medium tracking-widest text-muted-foreground uppercase">
-            {t("routines.total")}
-          </span>
-          <span className="text-6xl leading-none font-bold tracking-tight tabular-nums">
-            {formatClock(sessionElapsed)}
-          </span>
-          {expectedEnd && (
-            <span className="text-sm text-muted-foreground">
-              {t("routines.eta", { time: format(expectedEnd, "HH:mm") })}
-            </span>
-          )}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute top-1/2 right-0 size-12 -translate-y-1/2 rounded-full"
-            aria-label={core.pausedAt ? t("routines.resume") : t("routines.pause")}
-            onClick={() => (core.pausedAt ? runner.resume() : runner.pause())}
-          >
-            {core.pausedAt ? <Play className="size-7" /> : <Pause className="size-7" />}
-          </Button>
+      {/* Three columns from xl up: the outer two are equally wide, so the
+          workout stays exactly centred while the vitals sit at the left edge of
+          the screen and the running order at the right. Below xl they stack. */}
+      <div className="grid flex-1 gap-6 xl:grid-cols-[minmax(18rem,1fr)_minmax(0,64rem)_minmax(18rem,1fr)]">
+        <div className={`${PANEL} mx-auto w-full max-w-5xl p-5 xl:sticky xl:top-20 xl:col-start-1 xl:row-start-1 xl:mx-0 xl:w-72 xl:self-start xl:justify-self-start`}>
+          <VitalsTiles />
         </div>
-        <div className="h-1 overflow-hidden rounded-full bg-secondary">
-          <div
-            className="h-full rounded-full bg-primary transition-all"
-            style={{ width: `${progress * 100}%` }}
+        <div className={`${PANEL} mx-auto flex w-full max-w-5xl min-w-0 flex-col p-6 sm:p-8 xl:col-start-2 xl:row-start-1 xl:self-start`}>
+          <SessionBar
+            elapsed={sessionElapsed}
+            doneSets={core.sets.length}
+            plannedSets={plannedSets}
+            expectedEnd={expectedEnd && t("routines.eta", { time: format(expectedEnd, "HH:mm") })}
+            paused={core.pausedAt != null}
+            onPause={runner.pause}
+            onResume={runner.resume}
+            onFinish={runner.finishEarly}
           />
-        </div>
-        <VitalsTiles />
-      </div>
 
-      {core.phase === "done" ? (
-        <div className="flex flex-1 items-center justify-center">
-          <Spinner />
+          <div className="flex flex-col border-t pt-8 mt-5">
+            {core.phase === "done" ? (
+              <div className="flex items-center justify-center py-16">
+                <Spinner />
+              </div>
+            ) : !item ? (
+              <div className="flex flex-col items-center justify-center gap-4 py-16 text-center">
+                <p className="text-lg text-muted-foreground">{t("routines.no_exercise_yet")}</p>
+                <AddExerciseDialog exercises={exercises} onAdd={addExercise} className="w-auto" />
+              </div>
+            ) : core.phase === "resting" ? (
+              <RestView
+                expired={restRemaining === 0}
+                remaining={restRemaining}
+                overtime={restOvertime}
+                total={restTotal}
+                nextName={exercise?.name ?? "—"}
+                setNumber={core.setIndex + 1}
+                totalSets={item.sets}
+                items={routine.items}
+                exercises={exercises}
+                exerciseById={exerciseById}
+                onJump={runner.jumpTo}
+                onAddExercise={addExercise}
+                awaitingNext={awaitingNext}
+                lastComparable={lastComparable}
+                lastSet={lastSet}
+                onUpdateLast={runner.updateLastSet}
+                onExtend={() => runner.extendRest(60)}
+                onContinue={runner.skipRest}
+              />
+            ) : (
+              <ExerciseView
+                name={exercise?.name ?? "—"}
+                exerciseIndex={core.exerciseIndex}
+                totalExercises={routine.items.length}
+                setNumber={core.setIndex + 1}
+                totalSets={item.sets}
+                elapsed={setElapsed}
+                isTimed={exercise?.kind === "timed"}
+                isWeighted={exercise?.kind === "weighted"}
+                targetSecs={item.target}
+                reps={core.currentReps}
+                weight={core.currentWeight}
+                onReps={runner.recordReps}
+                onWeight={runner.adjustWeight}
+                lastComparable={lastComparable}
+                items={routine.items}
+                exercises={exercises}
+                exerciseById={exerciseById}
+                onJump={runner.jumpTo}
+                onAddExercise={addExercise}
+                onComplete={runner.completeSet}
+              />
+            )}
+          </div>
         </div>
-      ) : !item ? (
-        <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
-          <p className="text-lg text-muted-foreground">{t("routines.no_exercise_yet")}</p>
-          <AddExerciseDialog exercises={exercises} onAdd={addExercise} />
-          <FinishButton onFinish={runner.finishEarly} />
-        </div>
-      ) : core.phase === "resting" ? (
-        <RestView
-          expired={restRemaining === 0}
-          remaining={restRemaining}
-          overtime={restOvertime}
-          nextName={exercise?.name ?? "—"}
-          setNumber={core.setIndex + 1}
-          totalSets={item.sets}
-          items={routine.items}
-          exercises={exercises}
-          exerciseById={exerciseById}
-          onJump={runner.jumpTo}
-          onAddExercise={addExercise}
-          awaitingNext={awaitingNext}
-          lastSet={lastSet}
-          onUpdateLast={runner.updateLastSet}
-          onExtend={() => runner.extendRest(60)}
-          onContinue={runner.skipRest}
-          onFinish={runner.finishEarly}
-        />
-      ) : (
-        <ExerciseView
-          name={exercise?.name ?? "—"}
-          exerciseIndex={core.exerciseIndex}
-          totalExercises={routine.items.length}
-          setNumber={core.setIndex + 1}
-          totalSets={item.sets}
-          elapsed={setElapsed}
-          isTimed={exercise?.kind === "timed"}
-          isWeighted={exercise?.kind === "weighted"}
-          targetSecs={item.target}
-          reps={core.currentReps}
-          weight={core.currentWeight}
-          onReps={runner.recordReps}
-          onWeight={runner.adjustWeight}
-          lastComparable={lastComparable}
-          items={routine.items}
-          exercises={exercises}
-          exerciseById={exerciseById}
-          onJump={runner.jumpTo}
-          onAddExercise={addExercise}
-          onComplete={runner.completeSet}
-          onFinish={runner.finishEarly}
-        />
-      )}
+        {core.phase !== "done" && routine.items.length > 0 && (
+          <div className={`${PANEL} mx-auto w-full max-w-5xl p-4 xl:sticky xl:top-20 xl:col-start-3 xl:row-start-1 xl:mx-0 xl:w-72 xl:self-start xl:justify-self-end`}>
+            <ExerciseRail
+              items={routine.items}
+              exerciseIndex={core.exerciseIndex}
+              setIndex={core.setIndex}
+              resting={core.phase === "resting"}
+              sets={core.sets}
+              exercises={exercises}
+              exerciseById={exerciseById}
+              canSkip={canSkip}
+              canSwap={canSwap}
+              onSkip={skipExercise}
+              onSwap={swapExercise}
+              onJump={runner.jumpTo}
+            />
+          </div>
+        )}
+      </div>
     </RunnerShell>
   );
 }

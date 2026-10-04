@@ -285,7 +285,8 @@
     "col_reservoir": "Reservoir",
     "reservoir_units": "{{units}} U",
     "reservoir_unknown": "unknown",
-    "in_grace_short": "Grace period"
+    "in_grace_short": "Grace period",
+    "col_code": "Sensor code"
   },
   "account": {
     "title": "Account",
@@ -476,7 +477,7 @@
     "reps": "Reps",
     "set": "Set",
     "next": "Next:",
-    "total": "Total:",
+    "total": "Total",
     "pause": "Pause",
     "resume": "Resume",
     "previous_set": "Previous set",
@@ -495,7 +496,24 @@
     "pick_next": "What comes next?",
     "next_exercise": "Next exercise",
     "weight_up": "Increase weight",
-    "weight_down": "Decrease weight"
+    "weight_down": "Decrease weight",
+    "swap_exercise": "Swap exercise",
+    "swap_exercise_hint": "The new exercise takes this one's place for this workout only; the stored routine stays as it is.",
+    "rail": {
+      "title": "Your workout",
+      "now": "Now: set {{set}} of {{sets}}",
+      "after_rest": "After the rest: set {{set}} of {{sets}}",
+      "done": "{{done}} of {{sets}} sets done",
+      "sets_one": "{{count}} set",
+      "sets_other": "{{count}} sets",
+      "reps": "{{n}} reps",
+      "seconds": "{{n}} s",
+      "skip": "Skip",
+      "swap": "Swap"
+    },
+    "sets_progress": "{{done}} of {{planned}} sets",
+    "reps_up": "More reps",
+    "reps_down": "Fewer reps"
   },
   "exercises": {
     "title": "Exercises",

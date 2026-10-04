@@ -1,11 +1,5 @@
 import { useTranslation } from "react-i18next";
-import {
-  ArrowDown,
-  ArrowDownRight,
-  ArrowRight,
-  ArrowUp,
-  ArrowUpRight,
-} from "@/components/icons";
+import { GlucoseTrendArrow } from "@/components/glucose-trend-arrow";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { GlucoseEntry } from "@/api/services/glucose-service";
@@ -20,27 +14,7 @@ import {
   type GlucoseBand,
 } from "@/lib/glucose";
 import { useGlucoseHex } from "@/lib/use-glucose-hex";
-
-// Trend arrow buckets (mg/dL per minute), mirroring the app's 5 directions.
-// Colour comes from `currentColor` (set on the wrapper) so it can't fall foul
-// of how lucide maps the `color` prop.
-function TrendArrow({ perMin, color }: { perMin: number; color: string }) {
-  const Icon =
-    perMin >= 2
-      ? ArrowUp
-      : perMin >= 1
-        ? ArrowUpRight
-        : perMin > -1
-          ? ArrowRight
-          : perMin > -2
-            ? ArrowDownRight
-            : ArrowDown;
-  return (
-    <span style={{ color }}>
-      <Icon size={34} strokeWidth={2.5} />
-    </span>
-  );
-}
+import { trendPerMinute } from "@/lib/glucose-trend";
 
 // The rate carries a sign and one decimal — rounding it the way `toDisplay`
 // rounds a reading would flatten a 1.4 mg/dL per minute rise to "1".
@@ -48,38 +22,6 @@ function formatRate(perMin: number, unit?: string) {
   const rate = unit === "mmol" ? perMin / 18 : perMin;
   const digits = unit === "mmol" ? 2 : 1;
   return `${rate >= 0 ? "+" : "−"}${Math.abs(rate).toFixed(digits)}`;
-}
-
-// Slope against the reading closest to 15 min before the latest — the usual CGM
-// delta window. A shorter gap makes the rate noise-dominated: ±1 mg/dL of jitter
-// one minute apart already reads as ±1 mg/dL/min and slams the arrow to a
-// bucket edge. Nothing within 5–30 min back → no arrow rather than a wrong one.
-const TREND_TARGET_MINUTES = 15;
-
-function trendPerMinute(entries: GlucoseEntry[]) {
-  const latest = entries[entries.length - 1];
-  if (!latest || entries.length < 2) {
-    return undefined;
-  }
-  const candidates = entries.filter((entry) => {
-    const minutesApart = (latest.time - entry.time) / 60000;
-    return minutesApart >= 5 && minutesApart <= 30;
-  });
-  if (candidates.length === 0) {
-    return undefined;
-  }
-  const reference = candidates.reduce((closest, entry) => {
-    const distance = Math.abs(
-      (latest.time - entry.time) / 60000 - TREND_TARGET_MINUTES,
-    );
-    const closestDistance = Math.abs(
-      (latest.time - closest.time) / 60000 - TREND_TARGET_MINUTES,
-    );
-    return distance < closestDistance ? entry : closest;
-  });
-  return (
-    (latest.value - reference.value) / ((latest.time - reference.time) / 60000)
-  );
 }
 
 /**
@@ -131,7 +73,7 @@ export function CurrentReading({
         <div className="flex flex-col items-start">
           {perMinute !== undefined && (
             <span className="flex flex-col items-start">
-              <TrendArrow perMin={perMinute} color={color} />
+              <GlucoseTrendArrow perMin={perMinute} color={color} size={34} />
               <span className="text-[10px] font-medium tabular-nums text-muted-foreground">
                 {t("overview.per_min", { value: formatRate(perMinute, unit) })}
               </span>

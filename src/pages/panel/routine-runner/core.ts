@@ -192,10 +192,19 @@ export function clampReps(value: number) {
   return Math.round(clamp(value));
 }
 
-// The setIndex-th set of `exerciseId` from the most recent past session that has
-// one — the "last time" comparison.
-export function findLastSet(workouts: Workout[], exerciseId: string, setIndex: number) {
-  const sessions = workouts.slice().sort((left, right) => right.started - left.started);
+// The setIndex-th set of `exerciseId` from the most recent run of routine
+// `routineId` that has one: the "last time" comparison. Scoped to the routine on
+// purpose, because the same exercise in another routine sits elsewhere in the
+// plan and is no fair yardstick. Mirrors the app's `TrainingState.lastSetFor`.
+export function findLastSet(
+  workouts: Workout[],
+  routineId: string,
+  exerciseId: string,
+  setIndex: number,
+) {
+  const sessions = workouts
+    .filter((session) => session.routine === routineId)
+    .sort((left, right) => right.started - left.started);
   for (const session of sessions) {
     const matching = session.sets.filter((set) => set.ex === exerciseId);
     if (matching.length > setIndex) {

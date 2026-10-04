@@ -130,8 +130,30 @@ export function useRunnerCore({
       enterExercising({ ...state, exerciseIndex: index, setIndex: 0 }, Date.now(), item),
     );
 
+  // Put a swapped-in exercise where the current one was: it starts over at its
+  // first set. While resting only the pointer moves, so the rest runs on and the
+  // swapped exercise is what comes next. The item comes along for the same reason
+  // as in `startAdded`: the routine prop catches up one render later.
+  const swapIn = (item: RoutineItem) =>
+    setCore((state) =>
+      state.phase === "exercising"
+        ? enterExercising({ ...state, setIndex: 0 }, Date.now(), item)
+        : { ...state, setIndex: 0 },
+    );
+
+  // Jump to any exercise, back or ahead. Going back to one this session already
+  // logged prefills what was done there last, so a repeat starts from the real
+  // numbers instead of the plan's.
   const jumpTo = (index: number) =>
-    setCore((state) => enterExercising({ ...state, exerciseIndex: index, setIndex: 0 }, Date.now()));
+    setCore((state) => {
+      const entered = enterExercising({ ...state, exerciseIndex: index, setIndex: 0 }, Date.now());
+      const done = [...state.sets].reverse().find((set) => set.ex === itemAt(index).ex);
+      return {
+        ...entered,
+        currentReps: done?.reps ?? entered.currentReps,
+        currentWeight: done?.kg ?? entered.currentWeight,
+      };
+    });
 
   const recordReps = (reps: number) => setCore((state) => ({ ...state, currentReps: clampReps(reps) }));
 
@@ -208,6 +230,7 @@ export function useRunnerCore({
     adopt,
     jumpTo,
     startAdded,
+    swapIn,
     recordReps,
     adjustWeight,
     updateLastSet,

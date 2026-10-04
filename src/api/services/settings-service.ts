@@ -4,9 +4,9 @@ import client from "../client";
 // We only type the keys the panel edits; everything else is passed through
 // untouched so we never drop app-only settings.
 // Keys mirror the app's ProfileSettings.collect() (profile_settings.dart) so the
-// panel can edit the same account settings blob. Language/theme are excluded on
-// purpose — the app treats them as device-local view prefs (the panel has its
-// own selectors in the shell).
+// panel can edit the same account settings blob. The app also stores language
+// and theme there; the panel keeps its own selectors in the shell and leaves
+// those keys alone.
 export interface UserSettings {
   glucose_unit?: "mgdl" | "mmol";
   glucose_target_low?: number;

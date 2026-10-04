@@ -25,6 +25,17 @@ export const PUSH_DAY: Routine = {
   ],
 };
 
+/** Three exercises, so the rail has a before, a now and an after. */
+export const FULL_BODY: Routine = {
+  id: "full-body",
+  name: "Full body",
+  items: [
+    slot("fb-bench", BENCH.id, { sets: 2, target: 8, weight: 40, rest: 60 }),
+    slot("fb-pushup", PUSHUP.id, { sets: 2, target: 12, rest: 30 }),
+    slot("fb-plank", PLANK.id, { sets: 1, target: 30, rest: 0 }),
+  ],
+};
+
 export const LEG_DAY: Routine = {
   id: "leg-day",
   name: "Leg day",

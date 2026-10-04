@@ -1,11 +1,13 @@
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import type { Routine, SetLog, SportExercise } from "@/api/services/sport-service";
-import { describeSet, formatClock } from "./core";
-import { FinishButton, JumpHeader, WeightRow } from "./controls";
+import { formatClock } from "./core";
+import { JumpHeader, LastTimeChip, SetDots } from "./controls";
+import { RepsStepper, WeightStepper } from "./number-stepper";
 
+// The set being done: which one it is, its stopwatch, the reps (and weight) to
+// log, the number to beat from last time, and the one button that logs it.
 export function ExerciseView(props: {
   name: string;
   exerciseIndex: number;
@@ -27,7 +29,6 @@ export function ExerciseView(props: {
   onJump: (index: number) => void;
   onAddExercise: (exerciseId: string) => void;
   onComplete: () => void;
-  onFinish: () => void;
 }) {
   const { t } = useTranslation();
   // Refocus (and select) the reps field on every new set so Enter alone logs it.
@@ -39,7 +40,7 @@ export function ExerciseView(props: {
     }
   }, [props.exerciseIndex, props.setNumber, props.isTimed]);
   return (
-    <div className="flex flex-1 flex-col items-stretch justify-center gap-4 text-center">
+    <div className="flex flex-col items-center gap-5 text-center">
       <JumpHeader
         label={`${t("routines.exercise")} ${props.exerciseIndex + 1}/${props.totalExercises}  ·  ${t("routines.set")} ${props.setNumber}/${props.totalSets}`}
         items={props.items}
@@ -48,40 +49,45 @@ export function ExerciseView(props: {
         onJump={props.onJump}
         onAdd={props.onAddExercise}
       />
-      <div className="text-5xl font-bold tracking-tight">{props.name}</div>
-      <div className="text-[clamp(5rem,19vw,9rem)] leading-none font-bold tracking-tight tabular-nums">
+      <div className="flex flex-col items-center gap-3">
+        <h2 className="text-4xl font-bold tracking-tight break-words sm:text-5xl">{props.name}</h2>
+        <SetDots current={props.setNumber} total={props.totalSets} />
+      </div>
+      <div className="text-[clamp(4.5rem,14vw,8rem)] leading-none font-bold tracking-tight tabular-nums">
         {formatClock(props.elapsed)}
       </div>
+      {props.lastComparable && <LastTimeChip set={props.lastComparable} />}
 
       {props.isTimed ? (
-        <div className="text-lg text-muted-foreground">
+        <div className="rounded-full bg-secondary px-4 py-1.5 text-base font-medium text-muted-foreground">
           {t("routines.target_time", { n: props.targetSecs })}
         </div>
       ) : (
-        <div className="flex flex-col items-center gap-3">
-          <span className="text-lg text-muted-foreground">{t("routines.reps")}</span>
-          <Input
-            ref={repsInputRef}
-            type="number"
-            min={0}
-            value={props.reps}
-            onChange={(event) => props.onReps(Number(event.target.value) || 0)}
-            className="w-52 text-center text-6xl md:text-6xl font-bold h-24"
+        <div className={`grid w-full gap-3 ${props.isWeighted ? "sm:grid-cols-2" : "max-w-xs"}`}>
+          <RepsStepper
+            label={t("routines.reps")}
+            decreaseLabel={t("routines.reps_down")}
+            increaseLabel={t("routines.reps_up")}
+            reps={props.reps}
+            onReps={props.onReps}
+            inputRef={repsInputRef}
           />
-          {props.isWeighted && <WeightRow weight={props.weight} onDelta={props.onWeight} />}
+          {props.isWeighted && (
+            <WeightStepper
+              label={t("routines.weight")}
+              decreaseLabel={t("routines.weight_down")}
+              increaseLabel={t("routines.weight_up")}
+              unit={t("body.kg")}
+              weight={props.weight}
+              onDelta={props.onWeight}
+            />
+          )}
         </div>
       )}
 
-      {props.lastComparable && (
-        <div className="text-lg text-muted-foreground">
-          {t("routines.last_time", { value: describeSet(props.lastComparable, t) })}
-        </div>
-      )}
-
-      <Button className="mt-2 h-[4.5rem] text-xl" onClick={props.onComplete}>
+      <Button className="mt-2 h-16 w-full rounded-xl text-xl" onClick={props.onComplete}>
         {t("routines.complete_set")}
       </Button>
-      <FinishButton onFinish={props.onFinish} />
     </div>
   );
 }

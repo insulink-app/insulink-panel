@@ -16,6 +16,7 @@ export {
   ArrowRight,
   ArrowUp,
   ArrowUpRight,
+  ArrowsLeftRight,
   ChartLine,
   ChartPie,
   Cpu,

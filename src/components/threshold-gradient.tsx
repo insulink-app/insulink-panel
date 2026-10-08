@@ -20,10 +20,15 @@ export function ThresholdGradient({
   yMin,
   yMax,
   bands,
+  plotTop = PLOT_TOP,
+  plotBottom = PLOT_BOTTOM,
 }: {
   id: string;
   yMin: number;
   yMax: number;
+  /** The plot area's pixel edges, for a chart not built on chart-geometry. */
+  plotTop?: number;
+  plotBottom?: number;
   /** Highest band first. */
   bands: ThresholdBand[];
 }) {
@@ -37,9 +42,9 @@ export function ThresholdGradient({
       id={id}
       gradientUnits="userSpaceOnUse"
       x1={0}
-      y1={PLOT_TOP}
+      y1={plotTop}
       x2={0}
-      y2={PLOT_BOTTOM}
+      y2={plotBottom}
     >
       {bands.map((band, index) => {
         const previousEdge = bands[index - 1]?.until;

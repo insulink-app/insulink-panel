@@ -31,29 +31,38 @@ const DARK_DIM = "brightness(0.55)";
 
 type LatLng = { lat: number; lng: number };
 
-// Round start/finish badges, mirroring the app's `_badgeMarker`: the same muted
-// slate for both, told apart by the icon rather than a loud red/green. The icons
-// are inlined as markup because Leaflet takes an HTML string, not a component.
-const BADGE_COLOR = "#37474F";
-// Breathing room so the start/finish badges don't sit on the map edge.
+// The start is a small light dot ringed in the page colour; the finish is the
+// only real marker, a light circle with a dark flag. No coloured pins. Inlined
+// as markup because Leaflet takes an HTML string, not a component, which also
+// lets the theme tokens apply directly.
+// Breathing room so the start/finish markers don't sit on the map edge.
 const FIT_PADDING: [number, number] = [24, 24];
-const PLAY_ICON = '<polygon points="7 4 19 12 7 20 7 4" fill="currentColor" />';
 const FLAG_ICON =
-  '<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />' +
-  '<line x1="4" y1="22" x2="4" y2="15" />';
+  '<path d="M5 21V4M5 4h11l-2 4 2 4H5" />';
 
-function badgeIcon(icon: string, label: string) {
+function startIcon(label: string) {
+  return L.divIcon({
+    className: "",
+    iconSize: [14, 14],
+    iconAnchor: [7, 7],
+    html:
+      `<div aria-label="${label}" style="width:14px;height:14px;border-radius:9999px;` +
+      `background:var(--text);border:3px solid var(--ground);box-sizing:border-box;"></div>`,
+  });
+}
+
+function finishIcon(label: string) {
   return L.divIcon({
     className: "",
     iconSize: [30, 30],
     iconAnchor: [15, 15],
     html:
       `<div aria-label="${label}" style="width:30px;height:30px;border-radius:9999px;` +
-      `background:${BADGE_COLOR};border:2.5px solid #fff;color:#fff;` +
+      `background:var(--text);color:var(--ground);` +
       `display:flex;align-items:center;justify-content:center;box-sizing:border-box;">` +
-      `<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"` +
-      ` fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"` +
-      ` stroke-linejoin="round">${icon}</svg></div>`,
+      `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"` +
+      ` fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"` +
+      ` stroke-linejoin="round">${FLAG_ICON}</svg></div>`,
   });
 }
 
@@ -98,8 +107,8 @@ export function RouteMap({
       return;
     }
     const primary =
-      getComputedStyle(document.documentElement).getPropertyValue("--primary").trim() ||
-      "#4f46e5";
+      getComputedStyle(document.documentElement).getPropertyValue("--brand").trim() ||
+      "#9daeff";
 
     const map = L.map(containerRef.current, {
       zoomControl: true,
@@ -111,11 +120,11 @@ export function RouteMap({
     map.createPane("highlight");
     map.getPane("highlight")!.style.zIndex = "620";
 
-    const line = L.polyline(points, { color: primary, weight: 5 }).addTo(map);
+    const line = L.polyline(points, { color: primary, weight: 4, lineCap: "round", lineJoin: "round" }).addTo(map);
     if (points.length >= 2) {
-      L.marker(points[0], { icon: badgeIcon(PLAY_ICON, startLabel) }).addTo(map);
+      L.marker(points[0], { icon: startIcon(startLabel) }).addTo(map);
       L.marker(points[points.length - 1], {
-        icon: badgeIcon(FLAG_ICON, finishLabel),
+        icon: finishIcon(finishLabel),
         // Above the start badge where a loop run ends where it began.
         zIndexOffset: 1000,
       }).addTo(map);
@@ -196,7 +205,7 @@ export function RouteMap({
     <div className="relative">
       <div
         ref={containerRef}
-        className="h-80 w-full overflow-hidden rounded-xl z-0"
+        className="h-80 w-full overflow-hidden rounded-3xl border z-0"
       />
       {/* A sibling of the map rather than an L.Control: clicks never reach the
           map, and it stays a plain themed button. Leaflet's panes are boxed in
@@ -208,7 +217,7 @@ export function RouteMap({
         onClick={resetView}
         title={t("activity.route_reset")}
         aria-label={t("activity.route_reset")}
-        className="absolute right-3 top-3 z-10 shadow-md"
+        className="absolute right-3 top-3 z-10"
       >
         <Maximize className="size-4" />
       </Button>

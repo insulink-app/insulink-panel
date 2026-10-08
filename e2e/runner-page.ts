@@ -17,24 +17,24 @@ export async function openRunner(page: Page, routineId: string, seed: Partial<Sp
   await expect(page).toHaveURL(/\/overview\/$/);
   await page.clock.pauseAt(START);
   await page.goto(`/health/routines/${routineId}/run`);
-  await tickUntilVisible(page, "Total");
+  await tickUntilVisible(page);
   return api;
 }
 
 /**
  * TanStack Query hands results over through `setTimeout(0)`, which a paused
- * clock never fires, so the page is ticked in 10 ms steps until it shows
- * `text`. The session therefore starts a few ms after START, never later.
+ * clock never fires, so the page is ticked in 10 ms steps until the session
+ * clock shows. The session therefore starts a few ms after START, never later.
  */
-async function tickUntilVisible(page: Page, text: string) {
-  const marker = page.getByText(text, { exact: true });
+async function tickUntilVisible(page: Page) {
+  const marker = totalClock(page);
   for (let tick = 0; tick < 500; tick += 1) {
     if (await marker.isVisible()) {
       return;
     }
     await page.clock.runFor(10);
   }
-  throw new Error(`"${text}" never appeared`);
+  throw new Error("the session clock never appeared");
 }
 
 /** Asserts a span of epoch ms is `seconds` long, to the whole second. */
@@ -46,7 +46,7 @@ export function expectSeconds(spanMs: number, seconds: number) {
 export async function openLiveRunner(page: Page, routineId: string, seed: Partial<SportState>) {
   const api = await fakeSportApi(page, seed);
   await signInAndOpen(page, `/health/routines/${routineId}/run`);
-  await expect(page.getByText("Total", { exact: true })).toBeVisible();
+  await expect(totalClock(page)).toBeVisible();
   return api;
 }
 
@@ -65,9 +65,9 @@ export function currentCard(page: Page) {
   return runningOrder(page).locator('li[aria-current="step"]');
 }
 
-/** The session clock under "Total". */
+/** The session clock at the start of the timeline. */
 export function totalClock(page: Page) {
-  return page.getByText("Total", { exact: true }).locator("xpath=following-sibling::span[1]");
+  return page.getByRole("timer", { name: "Total" });
 }
 
 export async function advance(page: Page, seconds: number) {

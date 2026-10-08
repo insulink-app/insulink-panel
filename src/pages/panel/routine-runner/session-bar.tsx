@@ -1,66 +1,109 @@
-// The workout as a whole, in one quiet line above the current phase: time so
-// far, how many sets of the plan are behind us, when it should end, and the two
-// controls that act on the whole session (pause, finish).
+// The workout as a whole: the routine's name with how far it has come, the two
+// controls that act on the whole session (pause, finish), and a player-style
+// timeline: time so far, one segment per exercise sized by its sets, and when
+// it should end.
 import { useTranslation } from "react-i18next";
 import { Pause, Play } from "@/components/icons";
-import { Button } from "@/components/ui/button";
+import type { RoutineItem } from "@/api/services/sport-service";
 import { formatClock } from "./core";
 import { FinishButton } from "./controls";
 
-export function SessionBar(props: {
-  elapsed: number;
+export function SessionHeader(props: {
+  name: string;
+  exerciseNumber: number;
+  totalExercises: number;
   doneSets: number;
   plannedSets: number;
-  expectedEnd: string | null;
   paused: boolean;
   onPause: () => void;
   onResume: () => void;
   onFinish: () => void;
 }) {
   const { t } = useTranslation();
-  const progress = props.plannedSets === 0 ? 0 : Math.min(1, props.doneSets / props.plannedSets);
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex items-center gap-4">
-        <div className="flex flex-col">
-          <span className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
-            {t("routines.total")}
-          </span>
-          <span className="text-3xl leading-tight font-bold tabular-nums">
-            {formatClock(props.elapsed)}
-          </span>
-        </div>
-        <div className="ml-auto flex items-center gap-2">
-          {props.expectedEnd && (
-            <span className="mr-2 hidden text-sm text-muted-foreground sm:inline">
-              {props.expectedEnd}
-            </span>
-          )}
-          <Button
-            variant={props.paused ? "default" : "outline"}
-            size="icon"
-            className="size-10 rounded-full"
-            aria-label={props.paused ? t("routines.resume") : t("routines.pause")}
-            onClick={props.paused ? props.onResume : props.onPause}
-          >
-            {props.paused ? <Play className="size-5" weight="fill" /> : <Pause className="size-5" weight="fill" />}
-          </Button>
-          <FinishButton onFinish={props.onFinish} />
-        </div>
+    <div className="flex flex-wrap items-center gap-4">
+      <div className="min-w-0 flex-1">
+        <h1 className="text-[26px] leading-tight font-extrabold tracking-tight break-words">{props.name}</h1>
+        <span className="mt-1 block text-sm text-muted-foreground">
+          {t("routines.session_progress", {
+            exercise: props.exerciseNumber,
+            exercises: props.totalExercises,
+            done: props.doneSets,
+            planned: props.plannedSets,
+          })}
+        </span>
       </div>
-      <div className="flex items-center gap-3">
-        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-secondary">
-          <div
-            className="h-full rounded-full bg-primary transition-all"
-            style={{ width: `${progress * 100}%` }}
-          />
-        </div>
-        {props.plannedSets > 0 && (
-          <span className="text-xs font-medium text-muted-foreground tabular-nums">
-            {t("routines.sets_progress", { done: props.doneSets, planned: props.plannedSets })}
-          </span>
-        )}
-      </div>
+      <button
+        type="button"
+        aria-label={props.paused ? t("routines.resume") : t("routines.pause")}
+        onClick={props.paused ? props.onResume : props.onPause}
+        className={`grid size-11 place-items-center rounded-full transition-colors ${props.paused ? "bg-primary text-primary-foreground" : "bg-panel text-foreground hover:bg-raised"}`}
+      >
+        {props.paused ? <Play size={17} weight="fill" aria-hidden /> : <Pause size={17} weight="fill" aria-hidden />}
+      </button>
+      <FinishButton onFinish={props.onFinish} />
     </div>
+  );
+}
+
+export function SessionTimeline(props: {
+  elapsed: number;
+  items: RoutineItem[];
+  exerciseIndex: number;
+  /** How full the current exercise's segment is, 0..1 (see segmentFill). */
+  currentFill: number;
+  doneSets: number;
+  plannedSets: number;
+  expectedEnd: string | null;
+}) {
+  const { t } = useTranslation();
+  return (
+    <div className="mt-[22px] flex items-center gap-4">
+      <b role="timer" aria-label={t("routines.total")} className="text-base">
+        {formatClock(props.elapsed)}
+      </b>
+      <div
+        role="progressbar"
+        aria-label={t("routines.workout_progress")}
+        aria-valuemin={0}
+        aria-valuenow={props.doneSets}
+        aria-valuemax={props.plannedSets}
+        className="flex min-w-0 flex-1 gap-1"
+      >
+        {props.items.map((item, index) => (
+          <TimelineSegment
+            key={item.id}
+            sets={item.sets}
+            filled={
+              index < props.exerciseIndex
+                ? 1
+                : index === props.exerciseIndex
+                  ? props.currentFill
+                  : 0
+            }
+          />
+        ))}
+      </div>
+      {props.expectedEnd && (
+        <span className="text-sm whitespace-nowrap text-muted-foreground">
+          {t("routines.ends")} <b className="text-base text-foreground">{props.expectedEnd}</b>
+        </span>
+      )}
+    </div>
+  );
+}
+
+/**
+ * One exercise of the timeline, as wide as it has sets. The fill eases over
+ * the clock's one-second step, so it glides instead of jumping.
+ */
+function TimelineSegment({ sets, filled }: { sets: number; filled: number }) {
+  return (
+    <span className="block h-2 overflow-hidden rounded bg-divider" style={{ flexGrow: Math.max(1, sets), flexBasis: 0 }}>
+      <i
+        className="block h-full bg-primary transition-[width] duration-1000 ease-linear motion-reduce:transition-none"
+        style={{ width: `${Math.min(1, filled) * 100}%` }}
+      />
+    </span>
   );
 }

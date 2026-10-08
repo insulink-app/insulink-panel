@@ -15,6 +15,7 @@ import {
   formatClock,
   remainingSeconds,
   routineHome,
+  segmentFill,
   shouldAdopt,
   snapshotOf,
   type Core,
@@ -162,3 +163,15 @@ assert.equal(
 assert.equal(awaitsNextExercise({ ...restingFree, sets: paced.sets }, routine), false);
 
 console.log("routine-runner core: ok");
+
+// The timeline segment moves with the clock: halfway through the first set's
+// minute of work, then on through its rest, and holds a rest into a new exercise.
+const slot = { id: "s", ex: "a", sets: 2, target: 10, weight: 0, rest: 60 };
+const base = { setIndex: 0, setStartedAt: 0, restStartedAt: null, restEndsAt: null } as const;
+const exercising = { ...coreFrom(undefined, { id: "r", name: "", items: [slot] }), ...base, phase: "exercising" } as Core;
+assert.equal(segmentFill(exercising, slot, false, 30_000), 30 / 120 / 2);
+assert.equal(segmentFill(exercising, slot, false, 999_000), 60 / 120 / 2);
+const resting = { ...exercising, phase: "resting", setIndex: 1, restStartedAt: 0 } as Core;
+assert.equal(segmentFill(resting, slot, false, 30_000), (90 / 120) / 2);
+assert.equal(segmentFill({ ...resting, setIndex: 0 }, slot, false, 30_000), 0);
+console.log("segment fill: ok");

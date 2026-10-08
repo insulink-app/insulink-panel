@@ -22,9 +22,9 @@ test("a full routine logs every set with reps, weight, time and rest", async ({ 
   await expect(currentCard(page)).toContainText(BENCH.name);
   const reps = page.getByRole("spinbutton");
   await expect(reps).toHaveValue("8");
-  await expect(page.getByText("40.0 kg")).toBeVisible();
+  await expect(page.getByText("40,0 kg")).toBeVisible();
   await page.getByRole("button", { name: "Increase weight" }).click();
-  await expect(page.getByText("42.5 kg")).toBeVisible();
+  await expect(page.getByText("42,5 kg")).toBeVisible();
   await reps.fill("7");
   await advance(page, 45);
   await completeSet(page);
@@ -40,7 +40,7 @@ test("a full routine logs every set with reps, weight, time and rest", async ({ 
 
   await expect(position(page, "1/2", "2/2")).toBeVisible();
   await expect(page.getByRole("spinbutton")).toHaveValue("8");
-  await expect(page.getByText("40.0 kg")).toBeVisible();
+  await expect(page.getByText("40,0 kg")).toBeVisible();
   await page.keyboard.press("Enter");
   await expect(page.getByText(/Next: Plank/)).toBeVisible();
   await page.getByRole("button", { name: "Continue" }).click();
@@ -147,7 +147,7 @@ test("the comparison reads this routine's last run, already during the rest", as
   await expect(page.getByText("Last time: 6 × 35 kg")).toBeVisible();
   await completeSet(page);
   await expect(page.getByText("Rest", { exact: true })).toBeVisible();
-  await expect(page.getByText("Last time: 5 × 37.5 kg")).toBeVisible();
+  await expect(page.getByText("Last time: 5 × 37,5 kg")).toBeVisible();
   await page.getByRole("button", { name: "Continue" }).click();
-  await expect(page.getByText("Last time: 5 × 37.5 kg")).toBeVisible();
+  await expect(page.getByText("Last time: 5 × 37,5 kg")).toBeVisible();
 });

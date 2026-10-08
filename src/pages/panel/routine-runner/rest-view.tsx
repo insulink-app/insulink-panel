@@ -35,9 +35,7 @@ export function RestView(props: {
   const { t } = useTranslation();
   return (
     <div className="flex flex-col items-center gap-5 text-center">
-      <span className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
-        {t("routines.resting")}
-      </span>
+      <span className="text-sm font-bold text-brand-text">{t("routines.resting")}</span>
       <RestRing
         remaining={props.remaining}
         overtime={props.overtime}
@@ -58,22 +56,22 @@ export function RestView(props: {
       />
       {props.lastComparable && <LastTimeChip set={props.lastComparable} />}
       {props.lastSet && props.lastSet.reps != null && <PreviousSet {...props} />}
-      <div className="mt-2 grid w-full grid-cols-2 gap-3">
-        <Button variant="outline" className="h-16 rounded-xl text-lg" onClick={props.onExtend}>
-          <TimerReset className="size-6" />
+      <div className="mt-2 grid w-full max-w-[420px] grid-cols-2 gap-3">
+        <Button variant="outline" className="h-[58px] bg-panel text-base hover:bg-raised" onClick={props.onExtend}>
+          <TimerReset className="size-5" />
           {t("routines.extend")}
         </Button>
         {props.awaitingNext ? (
           <AddExerciseDialog
             exercises={props.exercises}
             onAdd={props.onAddExercise}
-            className="h-16 w-full rounded-xl text-lg"
+            className="h-[58px] w-full text-base font-extrabold"
             variant="default"
             labelKey="routines.next_exercise"
           />
         ) : (
-          <Button className="h-16 rounded-xl text-lg" onClick={props.onContinue}>
-            <ArrowRight className="size-6" />
+          <Button className="h-[58px] text-base font-extrabold" onClick={props.onContinue}>
+            <ArrowRight className="size-5" />
             {t("routines.continue")}
           </Button>
         )}
@@ -92,8 +90,8 @@ function PreviousSet(props: {
   const lastSet = props.lastSet!;
   return (
     <div className="flex w-full flex-col gap-2">
-      <span className="text-sm font-medium text-muted-foreground">{t("routines.previous_set")}</span>
-      <div className={`grid gap-3 ${lastSet.kg != null ? "sm:grid-cols-2" : "mx-auto w-full max-w-xs"}`}>
+      <span className="text-sm text-muted-foreground">{t("routines.previous_set")}</span>
+      <div className="flex flex-wrap justify-center gap-x-10 gap-y-6">
         <RepsStepper
           label={t("routines.reps")}
           decreaseLabel={t("routines.reps_down")}

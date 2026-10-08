@@ -2,9 +2,9 @@
 // the stored curve: the band delivers ~1 Hz, and reading it back at that rate
 // means one tiny value, not the whole (minute-resolution) history on every poll.
 // An absent `b` already means "not live" — the backend drops a stale reading —
-// so there is no staleness gate to get wrong here. Both read open on the
-// page, no box around them: the value in its status colour, and a line of the
-// recent course (see vital-history) beneath it.
+// so there is no staleness gate to get wrong here. Both read open in the
+// column, no box around them: the value, and a line of the recent course (see
+// vital-history) beneath it, glucose coloured by range and the pulse violet.
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -26,7 +26,6 @@ import {
   GLUCOSE_WINDOW_HOURS,
   PULSE_WINDOW_MINUTES,
   usePulseHistory,
-  type VitalPoint,
 } from "./vital-history";
 import { Sparkline } from "./vital-sparkline";
 
@@ -63,107 +62,89 @@ export function VitalsTiles() {
 
   const bpm = live?.b;
   const pulseSeries = usePulseHistory(bpm);
-  const pulseColor = bpm == null ? "var(--muted-foreground)" : hex[pulseZone(bpm)];
 
   return (
-    <div className="grid grid-cols-2 gap-6 xl:grid-cols-1">
+    <div className="grid grid-cols-1 gap-x-8 min-[640px]:max-[1299px]:grid-cols-2">
+      <h2 className="mb-1 text-base font-extrabold min-[640px]:max-[1299px]:col-span-2">{t("routines.vitals")}</h2>
       <VitalTile
-        icon={<Droplet className="size-5" weight="fill" />}
+        icon={<Droplet size={15} color={glucoseColor} aria-hidden />}
         label={t("nav.glucose")}
         value={latestGlucose ? toDisplay(latestGlucose.value, unit) : "–"}
         unit={unitLabel(unit)}
-        color={glucoseColor}
-        series={glucoseSeries}
-        windowMs={GLUCOSE_WINDOW_HOURS * 3_600_000}
-        limits={[low, high]}
         trend={perMinute}
-      />
+      >
+        <Sparkline
+          points={glucoseSeries}
+          windowMs={GLUCOSE_WINDOW_HOURS * 3_600_000}
+          limits={[low, high]}
+          color={glucoseColor}
+          bands={[
+            { color: hex.high, until: high },
+            { color: hex["in-range"], until: low },
+            { color: hex.low },
+          ]}
+          emptyLabel={t("common.no_data")}
+        />
+      </VitalTile>
       <VitalTile
         divided
-        icon={<Heart className="size-5" weight="fill" />}
+        icon={<Heart size={15} color="var(--pulse)" aria-hidden />}
         label={t("nav.pulse")}
         value={bpm ?? "–"}
         unit={t("pulse.bpm")}
-        color={pulseColor}
-        series={pulseSeries}
-        windowMs={PULSE_WINDOW_MINUTES * 60_000}
-        limits={[PULSE_ELEVATED, PULSE_HIGH]}
-      />
+      >
+        <Sparkline
+          points={pulseSeries}
+          windowMs={PULSE_WINDOW_MINUTES * 60_000}
+          limits={[PULSE_SCALE_LOW, PULSE_SCALE_HIGH]}
+          color="var(--pulse)"
+          emptyLabel={t("common.no_data")}
+        />
+      </VitalTile>
     </div>
   );
 }
 
-// ponytail: fixed resting-HR zones (normal / elevated / high). The app keeps its
-// own zones (hr_zone_elevated / hr_zone_high in the settings); read those here
-// if the two ever need to agree.
-const PULSE_ELEVATED = 100;
-const PULSE_HIGH = 140;
+// ponytail: a fixed resting range that keeps the pulse line's scale steady;
+// the line is violet whatever the value, so no zone needs to be known here.
+const PULSE_SCALE_LOW = 60;
+const PULSE_SCALE_HIGH = 100;
 
-function pulseZone(bpm: number): "in-range" | "high" | "low" {
-  if (bpm < PULSE_ELEVATED) {
-    return "in-range";
-  }
-  if (bpm < PULSE_HIGH) {
-    return "high";
-  }
-  return "low";
-}
-
-// One vital, open on the page: what it is, the value in its status colour with
-// unit and trend, and its recent course beneath. A hairline separates the two
-// when they stand in one column.
+// One vital, open in the column: what it is, the value with unit and trend,
+// and its recent course beneath. A hairline separates the two.
 function VitalTile({
   icon,
   label,
   value,
   unit,
-  color,
-  series,
-  windowMs,
-  limits,
   trend,
   divided = false,
+  children,
 }: {
   icon: React.ReactNode;
   label: string;
   value: React.ReactNode;
   unit: string;
-  color: string;
-  series: VitalPoint[];
-  windowMs: number;
-  limits: number[];
   trend?: number;
   divided?: boolean;
+  children: React.ReactNode;
 }) {
-  const { t } = useTranslation();
   const hasValue = value !== "–";
   return (
-    <section aria-label={label} className={`flex min-w-0 flex-col gap-1 ${divided ? "border-l pl-6 xl:border-t xl:border-l-0 xl:pt-6 xl:pl-0" : ""}`}>
-      <span className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-        <span style={{ color: hasValue ? color : undefined }}>{icon}</span>
+    <section
+      aria-label={label}
+      className={`flex min-w-0 flex-col py-[22px] ${divided ? "border-t border-divider min-[640px]:max-[1299px]:border-t-0" : ""}`}
+    >
+      <span className="flex items-center gap-1.5 text-[13px] text-muted-foreground">
+        {icon}
         {label}
       </span>
-      <div className="flex items-baseline gap-2">
-        <span
-          className="text-6xl leading-none font-bold tracking-tight tabular-nums"
-          style={{ color: hasValue ? color : "var(--muted-foreground)" }}
-        >
-          {value}
-        </span>
-        <span className="text-base font-medium text-muted-foreground">{unit}</span>
-        {trend !== undefined && hasValue && (
-          <span className="self-center">
-            <GlucoseTrendArrow perMin={trend} color={color} size={28} />
-          </span>
-        )}
-      </div>
-      <Sparkline
-        points={series}
-        windowMs={windowMs}
-        limits={limits}
-        color={color}
-        emptyLabel={t("common.no_data")}
-      />
+      <span className="mt-1.5 flex items-center gap-[5px]">
+        <b className="text-[40px] leading-none font-extrabold tracking-[-0.03em]">{value}</b>
+        {trend !== undefined && hasValue && <GlucoseTrendArrow perMin={trend} color="var(--text)" size={20} />}
+        <span className="text-sm text-muted-foreground">{unit}</span>
+      </span>
+      <div className="mt-3.5">{children}</div>
     </section>
   );
 }

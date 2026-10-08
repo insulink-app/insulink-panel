@@ -32,8 +32,8 @@ export function FinishButton({ onFinish }: { onFinish: () => void }) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="outline" className="h-10 rounded-full">
-          <Flag className="size-4" />
+        <Button variant="outline" className="h-11 bg-panel px-[18px] hover:bg-raised">
+          <Flag size={17} />
           {t("routines.finish")}
         </Button>
       </AlertDialogTrigger>
@@ -51,34 +51,14 @@ export function FinishButton({ onFinish }: { onFinish: () => void }) {
   );
 }
 
-// The matching set from this routine's last run, as a small chip: the number to
-// beat, kept quieter than the number being entered.
+// The matching set from this routine's last run: the number to beat, kept
+// quieter than the number being entered.
 export function LastTimeChip({ set }: { set: SetLog }) {
   const { t } = useTranslation();
   return (
-    <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
-      <TimerReset className="size-4" aria-hidden />
+    <div className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
+      <TimerReset size={15} aria-hidden />
       {t("routines.last_time", { value: describeSet(set, t) })}
-    </div>
-  );
-}
-
-// One dot per set of the exercise: the ones done filled, the one on now ringed.
-export function SetDots({ current, total }: { current: number; total: number }) {
-  return (
-    <div className="flex items-center gap-1.5" aria-hidden>
-      {Array.from({ length: total }, (_, index) => (
-        <span
-          key={index}
-          className={
-            index + 1 < current
-              ? "size-2.5 rounded-full bg-primary"
-              : index + 1 === current
-                ? "size-2.5 rounded-full bg-primary/25 ring-2 ring-primary"
-                : "size-2.5 rounded-full bg-foreground/15"
-          }
-        />
-      ))}
     </div>
   );
 }
@@ -106,13 +86,13 @@ export function JumpHeader({
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="inline-flex items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+        className="inline-flex items-center gap-1 rounded-md text-sm font-bold text-brand-text transition-opacity hover:opacity-80"
       >
         {label}
         <ChevronDown className="size-4" aria-hidden />
       </button>
       {open && (
-        <div className="absolute left-1/2 z-20 mt-2 w-72 max-w-[85vw] -translate-x-1/2 rounded-xl border bg-popover p-1.5 text-left shadow-lg">
+        <div className="absolute left-1/2 z-20 mt-2 w-72 max-w-[85vw] -translate-x-1/2 rounded-2xl border bg-popover p-1.5 text-left">
           {items.map((entry, index) => (
             <button
               key={entry.id}
@@ -121,7 +101,7 @@ export function JumpHeader({
                 onJump(index);
                 setOpen(false);
               }}
-              className="block w-full rounded-lg px-3 py-2 text-left text-sm font-medium break-words hover:bg-secondary"
+              className="block w-full rounded-xl px-3 py-2 text-left text-sm font-bold break-words hover:bg-secondary"
             >
               {index + 1}. {exerciseById(entry.ex)?.name ?? "—"}
             </button>
@@ -197,7 +177,7 @@ export function AddExerciseDialog({
                   onAdd(exercise.id);
                   setOpen(false);
                 }}
-                className="shrink-0 rounded-md px-3 py-2 text-left text-base break-words hover:bg-secondary"
+                className="shrink-0 rounded-xl px-3 py-2.5 text-left text-sm font-bold break-words hover:bg-secondary"
               >
                 {exercise.name}
               </button>

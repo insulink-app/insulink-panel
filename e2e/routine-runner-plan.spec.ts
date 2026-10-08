@@ -116,7 +116,7 @@ test("jumping back to an exercise already done prefills what was done there", as
 
   await step(page, BENCH.name).getByRole("button").click();
   await expect(page.getByRole("spinbutton")).toHaveValue("6");
-  await expect(page.getByText("42.5 kg")).toBeVisible();
+  await expect(page.getByText("42,5 kg")).toBeVisible();
 });
 
 test("only an exercise with every set logged gets the tick", async ({ page }) => {

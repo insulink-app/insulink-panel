@@ -1,3 +1,5 @@
+import { formatNumber } from "./format";
+
 // Glucose helpers. Values are mg/dL throughout (the app's storage unit);
 // display conversion to mmol/L is a pure /18 when the user prefers it.
 export const DEFAULT_TARGET_LOW = 70;
@@ -93,14 +95,13 @@ export function bandRange(
   return `${edges()} ${unitLabel(unit)}`;
 }
 
-// The extremes are the low/high hues pushed darker, so the five bands still
-// read as one scale in both themes.
+// The extremes are their own deeper tokens, so the five bands read as one scale.
 export const bandColorVar: Record<GlucoseBand, string> = {
-  "very-low": "color-mix(in srgb, var(--glucose-low) 55%, #300)",
+  "very-low": "var(--very-low)",
   low: "var(--glucose-low)",
   "in-range": "var(--glucose-in-range)",
   high: "var(--glucose-high)",
-  "very-high": "color-mix(in srgb, var(--glucose-high) 55%, #530)",
+  "very-high": "var(--very-high)",
 };
 
 // The AGP summary figures the app's "averages" tab shows, computed over a set of
@@ -168,7 +169,7 @@ export function dailyTimeInRange(
 
 export function toDisplay(mgdl: number, unit?: string): string {
   if (unit === "mmol") {
-    return (mgdl / 18).toFixed(1);
+    return formatNumber(mgdl / 18, 1);
   }
   return String(Math.round(mgdl));
 }

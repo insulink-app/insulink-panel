@@ -1,3 +1,5 @@
+import { formatNumber } from "./format";
+
 // Nutrition display helpers. Carbs/protein are grams, drinks millilitres.
 
 // The drink presets the app logs (see its nutrition_models.dart); anything else
@@ -8,9 +10,9 @@ const DRINK_KINDS = ["glass", "small_bottle", "sodastream", "large_bottle"];
 export const drinkKind = (kind?: string) =>
   kind && DRINK_KINDS.includes(kind) ? kind : "free";
 
-/** A number without a trailing ".0" (42, 4.5). */
+/** A number without a trailing ",0" (42, 4,5). */
 export const formatAmount = (value: number) =>
-  value % 1 === 0 ? String(value) : value.toFixed(1);
+  formatNumber(value, value % 1 === 0 ? 0 : 1);
 
 /** `formatAmount` with its unit appended; "–" when the value is missing. */
 export const withUnit = (value: number | undefined, unit: string) =>

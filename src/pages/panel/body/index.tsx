@@ -6,25 +6,38 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Cell,
   Line,
   LineChart,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
 import PanelPage from "@/layouts/panel";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { DataList, type ListColumn } from "@/components/data-list";
-import { StatCard } from "@/components/stat-card";
+import { PageHeader } from "@/components/page-header";
+import { CardHeading } from "@/components/card-heading";
+import { Segmented } from "@/components/segmented";
+import { StatStrip } from "@/components/stat-strip";
 import { ChartTooltipBox, ChartTooltipValue } from "@/components/chart-tooltip";
+import {
+  BAR_FILL,
+  BAR_FILL_CURRENT,
+  BAR_STYLE,
+  CHART_MARGIN_TIGHT,
+  GRID_STYLE,
+  LINE_STYLE,
+  X_AXIS_STYLE,
+  thresholdLabel,
+} from "@/components/chart-kit";
+import { formatNumber } from "@/lib/format";
 import sportService, {
   type Measurement,
   type MeasurementType,
 } from "@/api/services/sport-service";
-
-const COLOR = "var(--primary)";
 
 // Per-metric formatting. `daily` metrics get a bar chart (one bar per day),
 // weight gets a line (a continuous body measurement).
@@ -84,65 +97,79 @@ export default function BodyPage() {
 
   return (
     <PanelPage title={t("body.title")} parents={[{ title: t("nav.health") }]}>
-      <div className="py-6 flex flex-col gap-6">
-        <div className="flex flex-wrap gap-1">
-          {METRICS.map((entry) => (
-            <Button
-              key={entry.type}
-              size="sm"
-              variant={metricType === entry.type ? "secondary" : "ghost"}
-              onClick={() => setMetricType(entry.type)}
-            >
-              {t(entry.labelKey)}
-            </Button>
-          ))}
+      <PageHeader
+        title={t("body.title")}
+        actions={
+          <Segmented
+            label={t("body.title")}
+            value={metricType}
+            onChange={setMetricType}
+            className="bg-panel"
+            options={METRICS.map((entry) => ({ value: entry.type, label: t(entry.labelKey) }))}
+          />
+        }
+      />
+      <div className="flex flex-col gap-4">
+        <div className="mb-2 flex items-end gap-2">
+          <b className="text-[64px] leading-none font-extrabold tracking-[-0.04em]">
+            {stats ? round(stats.latest, metric.digits) : "–"}
+          </b>
+          <span className="pb-1.5 text-sm text-muted-foreground">{unit}</span>
         </div>
 
-        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-          <StatCard title={t("body.current")} value={formatMeasurement(stats?.latest, metric.digits, unit)} />
-          <StatCard title={t("body.average")} value={formatMeasurement(stats?.average, metric.digits, unit)} />
-          {metric.daily ? (
-            <StatCard title={t("body.total")} value={formatMeasurement(stats?.total, metric.digits, unit)} />
-          ) : (
-            <StatCard title={t("body.maximum")} value={formatMeasurement(stats?.max, metric.digits, unit)} />
-          )}
-          <StatCard title={t("body.entries")} value={String(ascending.length)} />
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>{t(metric.labelKey)}</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <Card className="gap-0 p-6">
+          <CardHeading title={t(metric.labelKey)} />
+          <div className="mt-4">
             {isLoading ? (
               <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
             ) : chartData.length === 0 ? (
-              <p className="py-16 text-center text-sm text-muted-foreground">
-                {t("common.no_data")}
-              </p>
+              <p className="py-16 text-center text-sm text-muted-foreground">{t("common.no_data")}</p>
             ) : (
-              <ResponsiveContainer width="100%" height={320}>
+              <ResponsiveContainer width="100%" height={300}>
                 {metric.daily ? (
-                  <BarChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                    <XAxis dataKey="t" type="number" scale="time" domain={["dataMin", "dataMax"]} tickFormatter={(value) => format(new Date(value), "dd.MM.")} fontSize={12} />
-                    <YAxis fontSize={12} width={44} />
-                    <Tooltip content={<MetricTooltip unit={unit} digits={metric.digits} />} isAnimationActive={false} cursor={{ fill: "var(--muted)", opacity: 0.3 }} />
-                    <Bar dataKey="value" fill={COLOR} radius={[4, 4, 0, 0]} isAnimationActive={false} />
+                  <BarChart data={chartData} margin={CHART_MARGIN_TIGHT}>
+                    <XAxis {...X_AXIS_STYLE} dataKey="t" tickFormatter={(value) => format(new Date(value), "dd.MM.")} minTickGap={24} />
+                    <YAxis hide />
+                    <Tooltip content={<MetricTooltip unit={unit} digits={metric.digits} />} isAnimationActive={false} cursor={{ fill: "var(--raised)" }} />
+                    <Bar {...BAR_STYLE} dataKey="value">
+                      {chartData.map((entry, index) => (
+                        <Cell key={entry.t} fill={index === chartData.length - 1 ? BAR_FILL_CURRENT : BAR_FILL} />
+                      ))}
+                    </Bar>
+                    {stats && (
+                      <ReferenceLine
+                        y={stats.average}
+                        stroke="var(--text-muted)"
+                        strokeDasharray="4 4"
+                        label={thresholdLabel(round(stats.average, metric.digits))}
+                      />
+                    )}
                   </BarChart>
                 ) : (
-                  <LineChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                    <XAxis dataKey="t" type="number" scale="time" domain={["dataMin", "dataMax"]} tickFormatter={(value) => format(new Date(value), "dd.MM.")} fontSize={12} />
-                    <YAxis fontSize={12} width={44} domain={["dataMin - 1", "dataMax + 1"]} />
-                    <Tooltip content={<MetricTooltip unit={unit} digits={metric.digits} />} isAnimationActive={false} />
-                    <Line type="monotone" dataKey="value" stroke={COLOR} strokeWidth={2} dot={false} isAnimationActive={false} />
+                  <LineChart data={chartData} margin={CHART_MARGIN_TIGHT}>
+                    <CartesianGrid {...GRID_STYLE} />
+                    <XAxis {...X_AXIS_STYLE} dataKey="t" type="number" domain={["dataMin", "dataMax"]} tickFormatter={(value) => format(new Date(value), "dd.MM.")} minTickGap={40} />
+                    <YAxis hide domain={["dataMin - 1", "dataMax + 1"]} />
+                    <Tooltip content={<MetricTooltip unit={unit} digits={metric.digits} />} isAnimationActive={false} cursor={{ stroke: "var(--divider)" }} />
+                    <Line {...LINE_STYLE} dataKey="value" stroke="var(--brand)" />
                   </LineChart>
                 )}
               </ResponsiveContainer>
             )}
-          </CardContent>
+          </div>
         </Card>
+
+        <StatStrip
+          loading={isLoading}
+          cells={[
+            { label: t("body.current"), value: stats ? round(stats.latest, metric.digits) : "–", unit },
+            { label: t("body.average"), value: stats ? round(stats.average, metric.digits) : "–", unit },
+            metric.daily
+              ? { label: t("body.total"), value: stats ? round(stats.total, metric.digits) : "–", unit }
+              : { label: t("body.maximum"), value: stats ? round(stats.max, metric.digits) : "–", unit },
+            { label: t("body.entries"), value: formatNumber(ascending.length) },
+          ]}
+        />
 
         <DataList
           title={t("body.readings")}
@@ -181,12 +208,5 @@ function MetricTooltip({
 }
 
 function round(value: number, digits: number) {
-  return value.toLocaleString(undefined, {
-    minimumFractionDigits: digits,
-    maximumFractionDigits: digits,
-  });
-}
-
-function formatMeasurement(value: number | undefined, digits: number, unit: string) {
-  return value == null ? "–" : `${round(value, digits)} ${unit}`;
+  return formatNumber(value, digits);
 }

@@ -1,7 +1,9 @@
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { StatTile } from "@/components/stat-tile";
+import { Card } from "@/components/ui/card";
+import { CardHeading } from "@/components/card-heading";
+import { StatStrip } from "@/components/stat-strip";
+import { formatNumber } from "@/lib/format";
 import { RouteMap } from "@/components/route-map";
 import type { Training } from "@/api/services/sport-service";
 import { kmSplits, type KmSplit } from "./splits";
@@ -27,20 +29,18 @@ export function TrainingBody({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatTile label={t("activity.duration")} value={formatDuration(seconds)} />
-        <StatTile label={t("activity.distance")} value={`${km.toFixed(2)} ${t("body.km")}`} />
-        <StatTile label={t("activity.avg_pace")} value={formatPace(paceSecPerKm, t)} />
-        <StatTile label={t("activity.track_points")} value={String(training.track?.length ?? 0)} />
-      </div>
+      <StatStrip
+        cells={[
+          { label: t("activity.duration"), value: formatDuration(seconds) },
+          { label: t("activity.distance"), value: formatNumber(km, 2), unit: t("body.km") },
+          { label: t("activity.avg_pace"), value: formatPace(paceSecPerKm, t) },
+          { label: t("activity.track_points"), value: formatNumber(training.track?.length ?? 0) },
+        ]}
+      />
       {training.track && training.track.length >= 2 ? (
         <RouteMap track={training.track} highlight={highlight} />
       ) : (
-        <Card>
-          <CardContent className="py-10 text-center text-sm text-muted-foreground">
-            {t("activity.no_route")}
-          </CardContent>
-        </Card>
+        <Card className="p-6 text-center text-sm text-muted-foreground">{t("activity.no_route")}</Card>
       )}
       {chart}
       <SplitsPanel splits={splits} />
@@ -63,30 +63,28 @@ function SplitsPanel({ splits }: { splits: KmSplit[] }) {
   const fractionOf = (pace: number) => (span === 0 ? 1 : 0.35 + 0.65 * (1 - (pace - fastest) / span));
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t("activity.splits")}</CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-3">
+    <Card className="gap-4 p-6">
+      <CardHeading title={t("activity.splits")} />
+      <div className="flex flex-col gap-3">
         {splits.map((split) => (
           <div key={split.index} className="flex items-center gap-3">
             <span className="w-16 shrink-0 text-xs text-muted-foreground">
               {split.km < 1
-                ? `${split.km.toFixed(2)} ${t("body.km")}`
+                ? `${formatNumber(split.km, 2)} ${t("body.km")}`
                 : t("activity.km_label", { n: split.index })}
             </span>
-            <div className="h-2 flex-1 overflow-hidden rounded-full bg-secondary">
+            <div className="h-2 flex-1 overflow-hidden rounded bg-divider">
               <div
-                className="h-full rounded-full bg-primary"
+                className="h-full bg-primary"
                 style={{ width: `${fractionOf(split.paceSecPerKm) * 100}%` }}
               />
             </div>
-            <span className="w-20 shrink-0 text-right text-sm font-semibold">
+            <span className="w-20 shrink-0 text-right text-sm font-bold">
               {formatPace(split.paceSecPerKm, t)}
             </span>
           </div>
         ))}
-      </CardContent>
+      </div>
     </Card>
   );
 }

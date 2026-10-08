@@ -2,12 +2,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Pencil, Plus, Trash2 } from "@/components/icons";
+import { Pencil, Plus, Running, Trash2 } from "@/components/icons";
+import { PageHeader } from "@/components/page-header";
 import PanelPage from "@/layouts/panel";
 import { CardSkeleton } from "@/components/card-skeleton";
 import { Button } from "@/components/ui/button";
 import { ConfirmDelete } from "@/components/confirm-delete";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
@@ -64,33 +65,40 @@ export default function ExercisesPage() {
 
   return (
     <PanelPage title={t("exercises.title")} parents={[{ title: t("nav.health") }]}>
-      <div className="py-6 flex flex-col gap-4">
-        <div className="flex items-center justify-end">
+      <PageHeader
+        title={t("exercises.title")}
+        actions={
           <Button onClick={() => setEditing({ id: newId(), name: "", kind: "reps" })}>
             <Plus className="size-4" />
             {t("exercises.add")}
           </Button>
-        </div>
-
+        }
+      />
+      <Card className="gap-0 px-6 py-3">
         {isLoading ? (
-          <CardSkeleton />
+          <div className="py-3">
+            <CardSkeleton />
+          </div>
         ) : list.length === 0 ? (
           <p className="py-16 text-center text-sm text-muted-foreground">
             {t("exercises.empty")}
           </p>
         ) : (
-          list.map((exercise) => (
-            <Card key={exercise.id}>
-              <CardContent className="flex items-center gap-4 py-3">
-                <div className="flex-1">
-                  <div className="font-medium">{exercise.name}</div>
-                  <div className="text-xs text-muted-foreground">
+          <div className="divide-y divide-divider">
+            {list.map((exercise) => (
+              <div key={exercise.id} className="flex items-center gap-3 py-3">
+                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-brand/12 text-brand">
+                  <Running size={17} />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <b className="block truncate text-sm">{exercise.name}</b>
+                  <span className="block text-xs text-muted-foreground">
                     {t("exercises.kind_" + exercise.kind)}
-                  </div>
+                  </span>
                 </div>
                 <Button
-                  size="sm"
-                  variant="ghost"
+                  size="icon"
+                  variant="secondary"
                   aria-label={t("common.edit")}
                   onClick={() => setEditing(exercise)}
                 >
@@ -101,19 +109,19 @@ export default function ExercisesPage() {
                   description={t("exercises.delete_confirm", { name: exercise.name })}
                 >
                   <Button
-                    size="sm"
-                    variant="ghost"
+                    size="icon"
+                    variant="secondary"
                     aria-label={t("common.delete")}
                     disabled={mutation.isPending}
                   >
                     <Trash2 className="size-4 text-destructive" />
                   </Button>
                 </ConfirmDelete>
-              </CardContent>
-            </Card>
-          ))
+              </div>
+            ))}
+          </div>
         )}
-      </div>
+      </Card>
 
       {editing && (
         <ExerciseEditor
@@ -163,7 +171,7 @@ function ExerciseEditor({
                 setDraft((current) => ({ ...current, kind: kind as ExerciseKind }))
               }
             >
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -177,7 +185,7 @@ function ExerciseEditor({
           </div>
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={onCancel}>
+          <Button variant="secondary" onClick={onCancel}>
             {t("common.cancel")}
           </Button>
           <Button onClick={() => onSave(draft)} disabled={saving || !draft.name.trim()}>

@@ -12,14 +12,17 @@ import {
 import {
   Bar,
   BarChart,
-  CartesianGrid,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
 import PanelPage from "@/layouts/panel";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
+import { PageHeader } from "@/components/page-header";
+import { CardHeading } from "@/components/card-heading";
+import { StatStrip } from "@/components/stat-strip";
+import { CHART_MARGIN_TIGHT, X_AXIS_STYLE } from "@/components/chart-kit";
 import { DataList, type ListColumn } from "@/components/data-list";
 import type { DateRange } from "react-day-picker";
 import { CalendarClock } from "@/components/icons";
@@ -31,7 +34,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ChartTooltipBox, ChartTooltipValue } from "@/components/chart-tooltip";
-import { CHART_HEIGHT, CHART_MARGIN, X_AXIS_HEIGHT } from "@/lib/chart-geometry";
 import eventService, { type EventEntry } from "@/api/services/event-service";
 import settingsService from "@/api/services/settings-service";
 import {
@@ -105,17 +107,18 @@ export default function EventsPage() {
 
   return (
     <PanelPage title={t("events.title")}>
-      <div className="py-6 flex flex-col gap-6">
-        <RangeFilter range={range} setRange={setRange} />
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          {totals.map((total) => (
-            <CategoryTile
-              key={total.category}
-              category={total.category}
-              count={total.count}
-            />
-          ))}
-        </div>
+      <PageHeader title={t("events.title")} actions={<RangeFilter range={range} setRange={setRange} />} />
+      <div className="flex flex-col gap-4">
+        <StatStrip
+          loading={isLoading}
+          cells={totals.map((total) => ({
+            label: t("events.category_" + total.category),
+            value: String(total.count),
+            color: total.category === "low" || total.category === "high"
+              ? `var(${CATEGORY_META[total.category].cssVar})`
+              : undefined,
+          }))}
+        />
         <EventsPerDayChart data={perDay} />
         <DataList
           title={t("events.log")}
@@ -149,7 +152,7 @@ function RangeFilter({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" className="self-end rounded-full font-normal">
+        <Button variant="outline" className="bg-panel hover:bg-raised">
           <CalendarClock className="size-4 text-muted-foreground" />
           {label}
         </Button>
@@ -182,42 +185,6 @@ function RangeFilter({
 
 // A summary tile per category: the category's icon in a tinted circle, its
 // count, and label. Mirrors the log's row styling so the page reads as one set.
-function CategoryTile({
-  category,
-  count,
-}: {
-  category: EventCategory;
-  count: number;
-}) {
-  const { t } = useTranslation();
-  const Icon = CATEGORY_ICON[category];
-  const color = `var(${CATEGORY_META[category].cssVar})`;
-  return (
-    <div
-      className="flex items-center gap-3 rounded-xl border p-4"
-      style={{
-        backgroundColor: `color-mix(in srgb, ${color} 8%, transparent)`,
-        borderColor: `color-mix(in srgb, ${color} 20%, transparent)`,
-      }}
-    >
-      <span
-        className="flex size-10 shrink-0 items-center justify-center rounded-full"
-        style={{ backgroundColor: `color-mix(in srgb, ${color} 16%, transparent)` }}
-      >
-        <Icon className="size-5" style={{ color }} />
-      </span>
-      <div className="flex flex-col">
-        <span className="text-2xl font-bold leading-tight" style={{ color }}>
-          {count}
-        </span>
-        <span className="text-xs font-medium text-muted-foreground">
-          {t("events.category_" + category)}
-        </span>
-      </div>
-    </div>
-  );
-}
-
 function EventTypeCell({ entry }: { entry: EventEntry }) {
   const { t } = useTranslation();
   const category = categoryOf(entry.type);
@@ -226,7 +193,7 @@ function EventTypeCell({ entry }: { entry: EventEntry }) {
   return (
     <span className="flex items-center gap-2.5">
       <span
-        className="flex size-7 items-center justify-center rounded-full"
+        className="flex size-9 shrink-0 items-center justify-center rounded-full"
         style={{ backgroundColor: `color-mix(in srgb, ${color} 16%, transparent)` }}
       >
         <Icon className="size-4" style={{ color }} />
@@ -247,29 +214,26 @@ function EventsPerDayChart({ data }: { data: ReturnType<typeof dailyEventCounts>
   const colors = useMemo(() => resolveCategoryColors(), []);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t("events.per_day")}</CardTitle>
-      </CardHeader>
-      <CardContent>
+    <Card className="gap-0 p-6">
+      <CardHeading title={t("events.per_day")} />
+      <div className="mt-4">
         {data.length === 0 ? (
           <p className="py-16 text-center text-sm text-muted-foreground">
             {t("common.no_data")}
           </p>
         ) : (
-          <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
-            <BarChart data={data} margin={CHART_MARGIN}>
-              <CartesianGrid strokeDasharray="3 3" opacity={0.2} vertical={false} />
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={data} margin={CHART_MARGIN_TIGHT}>
               <XAxis
+                {...X_AXIS_STYLE}
                 dataKey="day"
                 tickFormatter={(value) => format(new Date(value), "dd.MM.")}
-                fontSize={12}
-                height={X_AXIS_HEIGHT}
+                minTickGap={24}
               />
-              <YAxis allowDecimals={false} fontSize={12} width={28} />
+              <YAxis hide allowDecimals={false} />
               <Tooltip
                 content={<EventsTooltip colors={colors} />}
-                cursor={{ fill: "var(--muted)", opacity: 0.4 }}
+                cursor={{ fill: "var(--raised)" }}
                 isAnimationActive={false}
               />
               {EVENT_CATEGORIES.map((category) => (
@@ -278,13 +242,14 @@ function EventsPerDayChart({ data }: { data: ReturnType<typeof dailyEventCounts>
                   dataKey={category}
                   stackId="events"
                   fill={colors[category]}
-                  radius={category === "sensor" ? [4, 4, 0, 0] : 0}
+                  radius={category === "sensor" ? [5, 5, 0, 0] : 0}
+                  isAnimationActive={false}
                 />
               ))}
             </BarChart>
           </ResponsiveContainer>
         )}
-      </CardContent>
+      </div>
     </Card>
   );
 }

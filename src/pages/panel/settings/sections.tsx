@@ -129,7 +129,7 @@ export function SectionPanel({ section }: { section: Section }) {
   const Icon = section.icon;
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
+    <div className="flex w-full max-w-2xl flex-col gap-6">
       <div className="flex items-start gap-4">
         <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
           <Icon className="size-6" />

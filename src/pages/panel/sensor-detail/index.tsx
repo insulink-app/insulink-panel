@@ -6,8 +6,12 @@ import { format } from "date-fns";
 import { ArrowLeft } from "@/components/icons";
 import PanelPage from "@/layouts/panel";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { StatTile } from "@/components/stat-tile";
+import { Card } from "@/components/ui/card";
+import { Cpu } from "@/components/icons";
+import { CardHeading } from "@/components/card-heading";
+import { StatStrip } from "@/components/stat-strip";
+import { formatNumber } from "@/lib/format";
+import { DeviceHeader } from "../devices/device-header";
 import sensorService, {
   type SensorHistoryEntry,
   sensorReadingIntervalMs,
@@ -87,8 +91,8 @@ export default function SensorDetailPage() {
         { title: t("nav.sensor"), href: "/devices/sensor" },
       ]}
     >
-      <div className="py-6 flex flex-col gap-6">
-        <Button asChild variant="ghost" size="sm" className="self-start">
+      <div className="flex flex-col gap-4">
+        <Button asChild variant="secondary" size="sm" className="self-start">
           <Link to="/devices/sensor">
             <ArrowLeft className="size-4" />
             {t("devices.back")}
@@ -102,17 +106,12 @@ export default function SensorDetailPage() {
         ) : (
           <>
             <SensorHeader sensor={sensor} allSensors={allSensors} />
-            <WearCard sensor={sensor} allSensors={allSensors} />
-            <TimelineTiles sensor={sensor} allSensors={allSensors} />
+            <TimelineFacts sensor={sensor} allSensors={allSensors} />
             {readings.length === 0 ? (
-              <Card>
-                <CardContent className="py-10 text-center text-sm text-muted-foreground">
-                  {t("devices.no_readings")}
-                </CardContent>
-              </Card>
+              <Card className="p-6 text-center text-sm text-muted-foreground">{t("devices.no_readings")}</Card>
             ) : (
-              <div className="grid gap-6 lg:grid-cols-3">
-                <div className="lg:col-span-1">
+              <div className="grid gap-4 lg:grid-cols-3">
+                <div className="min-w-0 lg:col-span-1">
                   <TimeInRangeCard
                     entries={readings}
                     low={low}
@@ -121,7 +120,7 @@ export default function SensorDetailPage() {
                     isLoading={glucose.isLoading}
                   />
                 </div>
-                <div className="lg:col-span-2">
+                <div className="min-w-0 lg:col-span-2">
                   <GlucoseSummaryCard
                     sensor={sensor}
                     allSensors={allSensors}
@@ -138,7 +137,10 @@ export default function SensorDetailPage() {
   );
 }
 
-/** Type, status pill and the raw id the backend keys the sensor by. */
+/**
+ * The sensor open on the page: type, status line, and how long it was really
+ * on the body against the lifetime it was rated for.
+ */
 function SensorHeader({
   sensor,
   allSensors,
@@ -150,60 +152,12 @@ function SensorHeader({
   const active = sensorActive(sensor, allSensors);
   const endedAt = sensorEndedAt(sensor, allSensors);
   const early = !active && (endedAt ?? 0) < sensor.expires_at;
-  const color = active
-    ? "var(--glucose-in-range)"
-    : "var(--muted-foreground)";
-
-  return (
-    <div className="flex flex-wrap items-start justify-between gap-3">
-      <div>
-        <h2 className="text-2xl font-bold">{sensorType(sensor.data)}</h2>
-        <p className="mt-1 font-mono text-xs text-muted-foreground">
-          {t("devices.sensor_id")} {sensor.id}
-        </p>
-      </div>
-      <span
-        className="rounded-full px-3 py-1 text-xs font-semibold"
-        style={{
-          color,
-          backgroundColor: `color-mix(in srgb, ${color} 18%, transparent)`,
-        }}
-      >
-        {active
-          ? t("devices.active")
-          : early
-            ? t("devices.replaced")
-            : t("devices.expired")}
-      </span>
-    </div>
-  );
-}
-
-/**
- * The headline figure: how long the sensor was really on the body, drawn
- * against the lifetime it was rated for.
- */
-function WearCard({
-  sensor,
-  allSensors,
-}: {
-  sensor: SensorHistoryEntry;
-  allSensors: SensorHistoryEntry[];
-}) {
-  const { t } = useTranslation();
-  const active = sensorActive(sensor, allSensors);
   const worn = sensorWornMs(sensor, allSensors);
   const rated = sensorRatedMs(sensor);
-  // Worn past the rated days but still reading: the sensor is in its grace
-  // window (~12 h on a G7). The bar is clamped, so that shows as a full 100%.
-  const percent = rated > 0 ? Math.min(100, (worn / rated) * 100) : 0;
   const remaining = Math.max(0, sensor.expires_at - Date.now());
+  // Worn past the rated days but still reading: the sensor is in its grace
+  // window (~12 h on a G7). The bar is clamped, so that shows as full.
   const inGrace = active && worn > rated;
-  const color = inGrace
-    ? "var(--glucose-high)"
-    : active
-      ? "var(--glucose-in-range)"
-      : "var(--muted-foreground)";
 
   const note = () => {
     if (inGrace) {
@@ -222,35 +176,40 @@ function WearCard({
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>
-          {active ? t("devices.worn_so_far") : t("devices.worn")}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-3">
-        <div className="flex flex-wrap items-baseline gap-2">
-          <span className="text-4xl font-bold leading-none" style={{ color }}>
-            {formatSpan(worn, t)}
-          </span>
-          <span className="text-sm text-muted-foreground">
-            {t("devices.of_rated", { span: formatSpan(rated, t) })}
-          </span>
-        </div>
-        <div className="h-2.5 w-full overflow-hidden rounded-full bg-secondary">
-          <div
-            className="h-full rounded-full"
-            style={{ width: `${percent}%`, backgroundColor: color }}
-          />
-        </div>
-        <span className="text-xs text-muted-foreground">{note()}</span>
-      </CardContent>
-    </Card>
+    <div>
+      <DeviceHeader
+        icon={<Cpu />}
+        name={sensorType(sensor.data)}
+        status={active ? t("devices.active") : early ? t("devices.replaced") : t("devices.expired")}
+        connected={active}
+        bars={[
+          {
+            label: active ? t("devices.worn_so_far") : t("devices.worn"),
+            value: `${formatSpan(worn, t)} / ${formatSpan(rated, t)}`,
+            fraction: rated > 0 ? worn / rated : 0,
+          },
+        ]}
+      />
+      <p className="-mt-3 text-[13px] text-muted-foreground">{note()}</p>
+      <p className="mt-1 font-mono text-xs text-muted-foreground">
+        {t("devices.sensor_id")} {sensor.id}
+      </p>
+    </div>
+  );
+}
+
+/** One label and its value as a divider row. */
+function FactRow({ label, value, hint }: { label: string; value: string; hint?: string }) {
+  return (
+    <div className="flex items-center justify-between gap-4 py-3" title={hint}>
+      <span className="text-sm text-muted-foreground">{label}</span>
+      <b className="text-right text-sm">{value}</b>
+    </div>
   );
 }
 
 /** When the sensor started, when it stopped, and what it was rated for. */
-function TimelineTiles({
+function TimelineFacts({
   sensor,
   allSensors,
 }: {
@@ -260,28 +219,30 @@ function TimelineTiles({
   const { t } = useTranslation();
   const endedAt = sensorEndedAt(sensor, allSensors);
   const stamp = (time: number) => format(new Date(time), "dd.MM.yyyy HH:mm");
-
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-      <StatTile
-        label={t("devices.col_started")}
-        value={stamp(sensorStart(sensor))}
-      />
-      <StatTile
-        label={endedAt === null ? t("devices.col_expires") : t("devices.ended")}
-        value={stamp(endedAt ?? sensor.expires_at)}
-      />
-      <StatTile
-        label={t("devices.rated_lifetime")}
-        value={formatSpan(sensorRatedMs(sensor), t)}
-        hint={t("devices.grace_hint", { span: formatSpan(sensorGraceMs(sensor), t) })}
-      />
-      <StatTile
-        label={t("devices.col_registered")}
-        value={stamp(sensor.registered_at)}
-        hint={t("devices.registered_hint")}
-      />
-    </div>
+    <Card className="gap-0 px-6 py-3">
+      <div className="grid gap-x-10 divide-y divide-divider md:grid-cols-2 md:divide-y-0">
+        <div className="divide-y divide-divider">
+          <FactRow label={t("devices.col_started")} value={stamp(sensorStart(sensor))} />
+          <FactRow
+            label={endedAt === null ? t("devices.col_expires") : t("devices.ended")}
+            value={stamp(endedAt ?? sensor.expires_at)}
+          />
+        </div>
+        <div className="divide-y divide-divider">
+          <FactRow
+            label={t("devices.rated_lifetime")}
+            value={formatSpan(sensorRatedMs(sensor), t)}
+            hint={t("devices.grace_hint", { span: formatSpan(sensorGraceMs(sensor), t) })}
+          />
+          <FactRow
+            label={t("devices.col_registered")}
+            value={stamp(sensor.registered_at)}
+            hint={t("devices.registered_hint")}
+          />
+        </div>
+      </div>
+    </Card>
   );
 }
 
@@ -309,36 +270,27 @@ function GlucoseSummaryCard({
     Math.round(worn / sensorReadingIntervalMs(sensor.data)),
   );
   const coverage = Math.min(100, Math.round((readings.length / expected) * 100));
-  const withUnit = (mgdl: number) => `${toDisplay(mgdl, unit)} ${unitLabel(unit)}`;
 
+  const stamp = (time: number) => format(new Date(time), "dd.MM.yyyy HH:mm");
   return (
-    <Card className="h-full">
-      <CardHeader>
-        <CardTitle>{t("devices.glucose_summary")}</CardTitle>
-      </CardHeader>
-      <CardContent className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        <StatTile label={t("devices.avg")} value={withUnit(average)} />
-        <StatTile label={t("devices.min")} value={withUnit(Math.min(...values))} />
-        <StatTile label={t("devices.max")} value={withUnit(Math.max(...values))} />
-        <StatTile label={t("devices.readings")} value={String(readings.length)} />
-        <StatTile label={t("devices.readings_per_day")} value={String(perDay)} />
-        <StatTile
-          label={t("devices.coverage")}
-          value={`${coverage}%`}
-          hint={t("devices.coverage_hint")}
+    <Card className="h-full gap-0 p-6">
+      <CardHeading title={t("devices.glucose_summary")} />
+      <div className="mt-[18px]">
+        <StatStrip
+          cells={[
+            { label: t("devices.avg"), value: toDisplay(average, unit), unit: unitLabel(unit) },
+            { label: t("devices.min"), value: toDisplay(Math.min(...values), unit), unit: unitLabel(unit) },
+            { label: t("devices.max"), value: toDisplay(Math.max(...values), unit), unit: unitLabel(unit) },
+            { label: t("devices.readings"), value: formatNumber(readings.length) },
+          ]}
         />
-        <StatTile
-          label={t("devices.first_reading")}
-          value={format(new Date(readings[0].time), "dd.MM.yyyy HH:mm")}
-        />
-        <StatTile
-          label={t("devices.last_reading")}
-          value={format(
-            new Date(readings[readings.length - 1].time),
-            "dd.MM.yyyy HH:mm",
-          )}
-        />
-      </CardContent>
+      </div>
+      <div className="mt-2 divide-y divide-divider">
+        <FactRow label={t("devices.readings_per_day")} value={formatNumber(perDay)} />
+        <FactRow label={t("devices.coverage")} value={`${coverage} %`} hint={t("devices.coverage_hint")} />
+        <FactRow label={t("devices.first_reading")} value={stamp(readings[0].time)} />
+        <FactRow label={t("devices.last_reading")} value={stamp(readings[readings.length - 1].time)} />
+      </div>
     </Card>
   );
 }

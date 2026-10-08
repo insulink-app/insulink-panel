@@ -22,6 +22,7 @@ import {
 import { isRangeValid, type ExportRange } from "@/lib/export-range";
 import type { GlucoseEntry } from "@/api/services/glucose-service";
 import type { Meal } from "@/api/services/nutrition-service";
+import { PageHeader } from "@/components/page-header";
 
 // Stable, language-independent ids — the labels come from `t()`.
 const FORMAT_IDS = ["clarity", "csv", "json"] as const;
@@ -82,7 +83,8 @@ export default function ExportPage() {
 
   return (
     <PanelPage title={t("export.title")}>
-      <div className="py-6 flex flex-col gap-6">
+      <PageHeader title={t("export.title")} />
+      <div className="flex max-w-3xl flex-col gap-4">
         <Card>
           <CardHeader>
             <CardTitle>{t("export.format")}</CardTitle>

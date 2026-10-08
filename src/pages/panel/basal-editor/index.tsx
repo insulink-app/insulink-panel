@@ -21,6 +21,7 @@ import {
   type BasalProfile,
 } from "@/lib/basal";
 import { BasalPeakRow } from "./peak-row";
+import { formatNumber } from "@/lib/format";
 
 // Edits one basal profile: rename it, click a bar and step the hour's rate, or
 // shape the whole curve from a daily total plus movable maxima. Mirrors the
@@ -89,8 +90,8 @@ export default function BasalEditorPage() {
         { title: t("basal.title"), href: "/settings/basal" },
       ]}
     >
-      <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 py-6">
-        <div className="flex flex-col gap-4 rounded-2xl border bg-card p-5">
+      <div className="flex w-full max-w-2xl flex-col gap-6">
+        <div className="flex flex-col gap-4 rounded-3xl border bg-card p-6">
           <div className="flex flex-col gap-2">
             <Label htmlFor="basal-name">{t("basal.name")}</Label>
             <Input
@@ -102,7 +103,7 @@ export default function BasalEditorPage() {
           </div>
 
           <span className="text-sm font-semibold">
-            {t("basal.total", { total: deliveredTotal(profile).toFixed(2) })}
+            {t("basal.total", { total: formatNumber(deliveredTotal(profile), 2) })}
           </span>
 
           <BasalChart
@@ -125,7 +126,7 @@ export default function BasalEditorPage() {
                 {String(selectedHour).padStart(2, "0")}:00
               </span>
               <span className="text-sm font-semibold text-primary">
-                {t("basal.rate", { rate: profile.rates[selectedHour].toFixed(2) })}
+                {t("basal.rate", { rate: formatNumber(profile.rates[selectedHour], 2) })}
               </span>
             </div>
             <Button
@@ -139,7 +140,7 @@ export default function BasalEditorPage() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-3 rounded-2xl border bg-card p-5">
+        <div className="flex flex-col gap-3 rounded-3xl border bg-card p-6">
           <div className="flex items-center gap-2">
             <ChartLine className="size-5 text-primary" />
             <h3 className="font-bold">{t("basal.generate")}</h3>

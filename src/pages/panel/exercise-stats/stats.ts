@@ -1,5 +1,6 @@
 // Everything that turns raw workouts into the page's numbers. No React here —
 // the views only render what these return.
+import { formatNumber } from "@/lib/format";
 import { startOfWeek } from "date-fns";
 import type { Routine, SetLog, SportExercise, Workout } from "@/api/services/sport-service";
 
@@ -203,7 +204,7 @@ export function formatScore(
     return "–";
   }
   if (kind === "weighted") {
-    return `${score.toFixed(1)} ${t("body.kg")}`;
+    return `${formatNumber(score, 1)} ${t("body.kg")}`;
   }
   if (kind === "timed") {
     return t("exercise_stats.seconds", { n: Math.round(score) });

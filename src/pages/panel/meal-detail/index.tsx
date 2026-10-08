@@ -3,23 +3,17 @@ import { useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
-import { ArrowLeft } from "@/components/icons";
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ReferenceArea,
-  ReferenceLine,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { ArrowLeft, Utensils } from "@/components/icons";
+import { ListRow } from "@/components/list-row";
+import { ReferenceLine } from "recharts";
 import PanelPage from "@/layouts/panel";
-import { ChartTooltipBox, ChartTooltipValue } from "@/components/chart-tooltip";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { StatTile } from "@/components/stat-tile";
+import { Card } from "@/components/ui/card";
+import { CardHeading } from "@/components/card-heading";
+import { PageHeader } from "@/components/page-header";
+import { StatStrip } from "@/components/stat-strip";
+import { GlucoseLineChart } from "@/components/glucose-line-chart";
+import { formatNumber } from "@/lib/format";
 import nutritionService, {
   type Meal,
   type MealEntry,
@@ -34,7 +28,6 @@ import {
   toDisplay,
   unitLabel,
 } from "@/lib/glucose";
-import { useGlucoseHex } from "@/lib/use-glucose-hex";
 import { formatAmount, withUnit } from "@/lib/nutrition";
 
 // Glucose window around the meal: enough run-up to see the pre-meal level and
@@ -59,8 +52,8 @@ export default function MealDetailPage() {
         { title: t("nutrition.meals"), href: "/nutrition/meals" },
       ]}
     >
-      <div className="py-6 flex flex-col gap-6">
-        <Button asChild variant="ghost" size="sm" className="self-start">
+      <div className="flex flex-col gap-4">
+        <Button asChild variant="secondary" size="sm" className="self-start">
           <Link to="/nutrition/meals">
             <ArrowLeft className="size-4" />
             {t("nutrition.meal_detail.back")}
@@ -98,51 +91,33 @@ function MealBody({ meal }: { meal: Meal }) {
 
   return (
     <>
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h2 className="text-3xl font-bold">
+      <PageHeader
+        title={
+          <>
             {withUnit(meal.carbs, "g")}{" "}
-            <span className="text-base font-semibold text-muted-foreground">
-              {t("nutrition.meal_detail.carbs")}
-            </span>
-          </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {format(new Date(meal.time), "EEEE, dd.MM.yyyy HH:mm")}
-          </p>
-        </div>
-      </div>
+            <span className="text-base font-bold text-muted-foreground">{t("nutrition.meal_detail.carbs")}</span>
+          </>
+        }
+        subtitle={format(new Date(meal.time), "EEEE, dd.MM.yyyy HH:mm")}
+      />
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatTile
-          label={t("nutrition.meal_detail.glucose")}
-          value={
-            meal.glucose == null
-              ? "–"
-              : `${toDisplay(meal.glucose, unit)} ${unitLabel(unit)}`
-          }
-          color={
-            meal.glucose == null
-              ? undefined
-              : statusColorVar[classify(meal.glucose, low, high)]
-          }
-        />
-        <StatTile
-          label={t("nutrition.meal_detail.bolus")}
-          value={
-            meal.bolus == null
-              ? "–"
-              : `${meal.bolus.toFixed(1)} ${t("nutrition.unit_insulin")}`
-          }
-        />
-        <StatTile
-          label={t("nutrition.meal_detail.protein")}
-          value={entries.length === 0 ? "–" : withUnit(protein, "g")}
-        />
-        <StatTile
-          label={t("nutrition.meal_detail.products")}
-          value={String(entries.length)}
-        />
-      </div>
+      <StatStrip
+        cells={[
+          {
+            label: t("nutrition.meal_detail.glucose"),
+            value: meal.glucose == null ? "–" : toDisplay(meal.glucose, unit),
+            unit: meal.glucose == null ? undefined : unitLabel(unit),
+            color: meal.glucose == null ? undefined : statusColorVar[classify(meal.glucose, low, high)],
+          },
+          {
+            label: t("nutrition.meal_detail.bolus"),
+            value: meal.bolus == null ? "–" : formatNumber(meal.bolus, 1),
+            unit: meal.bolus == null ? undefined : t("nutrition.unit_insulin"),
+          },
+          { label: t("nutrition.meal_detail.protein"), value: entries.length === 0 ? "–" : withUnit(protein, "g") },
+          { label: t("nutrition.meal_detail.products"), value: String(entries.length) },
+        ]}
+      />
 
       <MealGlucoseChart
         mealTime={meal.time}
@@ -152,11 +127,9 @@ function MealBody({ meal }: { meal: Meal }) {
         unit={unit}
       />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("nutrition.meal_detail.products")}</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-2">
+      <Card className="gap-2 p-6">
+        <CardHeading title={t("nutrition.meal_detail.products")} />
+        <div className="divide-y divide-divider">
           {entries.length === 0 ? (
             <p className="py-6 text-center text-sm text-muted-foreground">
               {t("nutrition.meal_detail.no_products")}
@@ -166,7 +139,7 @@ function MealBody({ meal }: { meal: Meal }) {
               <EntryRow key={(entry.barcode || entry.name) + index} entry={entry} />
             ))
           )}
-        </CardContent>
+        </div>
       </Card>
     </>
   );
@@ -188,13 +161,7 @@ function EntryRow({ entry }: { entry: MealEntry }) {
         )} · ${amount}`;
 
   return (
-    <div className="flex items-center gap-3 rounded-xl bg-secondary/40 px-4 py-2.5">
-      <div className="min-w-0 flex-1">
-        <div className="truncate font-medium">{entry.name}</div>
-        <div className="text-xs text-muted-foreground">{subtitle}</div>
-      </div>
-      <span className="font-semibold tabular-nums">{withUnit(entry.carbs, "g")}</span>
-    </div>
+    <ListRow icon={<Utensils />} title={entry.name} subtitle={subtitle} value={withUnit(entry.carbs, "g")} />
   );
 }
 
@@ -214,101 +181,47 @@ function MealGlucoseChart({
   unit?: string;
 }) {
   const { t } = useTranslation();
-  const hex = useGlucoseHex();
   const from = mealTime - BEFORE_MS;
   const to = mealTime + AFTER_MS;
 
-  const data = useMemo(
+  const rows = useMemo(
     () =>
       entries
         .filter((entry) => entry.time >= from && entry.time <= to)
-        .sort((left, right) => left.time - right.time),
+        .sort((left, right) => left.time - right.time)
+        .map((entry) => ({ time: entry.time, value: entry.value })),
     [entries, from, to],
   );
 
-  const values = data.map((entry) => entry.value);
-  const yMin = Math.min(low - 20, ...(values.length ? values : [low]));
-  const yMax = Math.max(high + 20, ...(values.length ? values : [high]));
-
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t("nutrition.meal_detail.chart_title")}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {data.length === 0 ? (
-          <p className="py-16 text-center text-sm text-muted-foreground">
-            {t("common.no_data")}
-          </p>
-        ) : (
-          <ResponsiveContainer width="100%" height={280}>
-            <AreaChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-              <XAxis
-                dataKey="time"
-                type="number"
-                scale="time"
-                domain={[from, to]}
-                tickFormatter={(value) => format(new Date(value), "HH:mm")}
-                fontSize={12}
-              />
-              <YAxis domain={[yMin, yMax]} fontSize={12} width={36} />
-              <Tooltip
-                content={<ChartTooltip unit={unit} />}
-                cursor={{ stroke: "var(--border)" }}
-                isAnimationActive={false}
-              />
-              <ReferenceArea y1={low} y2={high} fill={hex["in-range"]} fillOpacity={0.08} />
-              <ReferenceLine y={low} stroke={hex.low} strokeOpacity={0.5} strokeDasharray="4 4" />
-              <ReferenceLine y={high} stroke={hex.high} strokeOpacity={0.5} strokeDasharray="4 4" />
-              <ReferenceLine
-                x={mealTime}
-                stroke="var(--primary)"
-                strokeWidth={2}
-                label={{
-                  value: t("nutrition.meal_detail.meal_marker"),
-                  position: "insideTopLeft",
-                  fontSize: 11,
-                  fill: "var(--primary)",
-                }}
-              />
-              <Area
-                type="monotone"
-                dataKey="value"
-                stroke={hex["in-range"]}
-                strokeWidth={2}
-                fill={hex["in-range"]}
-                fillOpacity={0.12}
-                dot={false}
-                isAnimationActive={false}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        )}
-      </CardContent>
+    <Card className="gap-4 p-6">
+      <CardHeading title={t("nutrition.meal_detail.chart_title")} />
+      {rows.length === 0 ? (
+        <p className="py-16 text-center text-sm text-muted-foreground">{t("common.no_data")}</p>
+      ) : (
+        <GlucoseLineChart
+          rows={rows}
+          low={low}
+          high={high}
+          unit={unit}
+          start={from}
+          end={to}
+          height={280}
+          markers={
+            <ReferenceLine
+              x={mealTime}
+              stroke="var(--brand)"
+              strokeDasharray="4 4"
+              label={{
+                value: t("nutrition.meal_detail.meal_marker"),
+                position: "insideTopLeft",
+                fontSize: 11,
+                fill: "var(--brand-text)",
+              }}
+            />
+          }
+        />
+      )}
     </Card>
-  );
-}
-
-function ChartTooltip({
-  active,
-  payload,
-  label,
-  unit,
-}: {
-  active?: boolean;
-  payload?: { value?: number | string }[];
-  label?: number;
-  unit?: string;
-}) {
-  if (!active || !payload?.length) {
-    return null;
-  }
-  return (
-    <ChartTooltipBox caption={format(new Date(label as number), "dd.MM. HH:mm")}>
-      <ChartTooltipValue>
-        {toDisplay(Number(payload[0].value), unit)} {unitLabel(unit)}
-      </ChartTooltipValue>
-    </ChartTooltipBox>
   );
 }

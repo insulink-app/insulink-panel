@@ -27,6 +27,9 @@ import {
   type BasalProfile,
   type BasalProfiles,
 } from "@/lib/basal";
+import { formatNumber } from "@/lib/format";
+import { PageHeader } from "@/components/page-header";
+import { SettingsNav } from "../settings/section-nav";
 
 // Lists the basal-rate profiles: each card has a radio to make it the active
 // one, its name + daily total and a preview of its curve; clicking a card opens
@@ -68,7 +71,9 @@ export default function BasalPage() {
 
   return (
     <PanelPage title={t("basal.title")} parents={[{ title: t("nav.settings") }]}>
-      <div className="mx-auto flex w-full max-w-2xl flex-col gap-3 py-6">
+      <PageHeader title={t("nav.settings")} />
+      <SettingsNav current="basal" />
+      <div className="flex w-full max-w-2xl flex-col gap-3">
         <p className="text-sm text-muted-foreground">{t("settings.desc_basal")}</p>
 
         <RadioGroup
@@ -130,7 +135,7 @@ function ProfileCard({
         }
       }}
       className={cn(
-        "cursor-pointer rounded-2xl border bg-card p-4 transition-colors hover:border-primary/60",
+        "cursor-pointer rounded-3xl border bg-card p-5 transition-colors hover:border-primary/60",
         active && "border-primary ring-1 ring-primary/30",
       )}
     >
@@ -143,7 +148,7 @@ function ProfileCard({
           <span className="flex flex-col items-start">
             <span className="font-semibold">{profile.name}</span>
             <span className="text-xs text-muted-foreground">
-              {t("basal.total", { total: deliveredTotal(profile).toFixed(2) })}
+              {t("basal.total", { total: formatNumber(deliveredTotal(profile), 2) })}
             </span>
           </span>
         </Label>

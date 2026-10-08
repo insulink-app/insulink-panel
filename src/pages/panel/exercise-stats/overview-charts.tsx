@@ -7,9 +7,11 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Cell,
   Legend,
   Line,
   LineChart,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -19,6 +21,17 @@ import type { Routine, Workout } from "@/api/services/sport-service";
 import { routineComparison, weeklyBuckets } from "./stats";
 import { ChartTooltipBox, ChartTooltipValue } from "@/components/chart-tooltip";
 import { ChartCard, StatTooltip } from "./shared";
+import {
+  BAR_FILL,
+  BAR_FILL_CURRENT,
+  BAR_STYLE,
+  CHART_MARGIN_TIGHT,
+  GRID_STYLE,
+  LINE_STYLE,
+  X_AXIS_STYLE,
+  thresholdLabel,
+} from "@/components/chart-kit";
+import { formatNumber } from "@/lib/format";
 
 export function OverviewCharts({ workouts, routines }: { workouts: Workout[]; routines: Routine[] }) {
   const { t } = useTranslation();
@@ -31,23 +44,23 @@ export function OverviewCharts({ workouts, routines }: { workouts: Workout[]; ro
   if (workouts.length === 0) {
     return null;
   }
+  const average = frequency.reduce((sum, week) => sum + week.value, 0) / Math.max(1, frequency.length);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
+    <div className="grid gap-4 lg:grid-cols-2">
       <ChartCard title={t("exercise_stats.chart_frequency")}>
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={frequency}>
-            <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+          <BarChart data={frequency} margin={CHART_MARGIN_TIGHT}>
             <XAxis
+              {...X_AXIS_STYLE}
               dataKey="time"
               tickFormatter={(value) => format(new Date(value), "dd.MM.")}
-              fontSize={12}
               interval="preserveStartEnd"
             />
-            <YAxis fontSize={12} width={28} allowDecimals={false} />
+            <YAxis hide allowDecimals={false} />
             <Tooltip
               isAnimationActive={false}
-              cursor={{ fill: "var(--muted)", opacity: 0.3 }}
+              cursor={{ fill: "var(--raised)" }}
               content={
                 <StatTooltip
                   formatLabel={(label) => format(new Date(label as number), "dd.MM.yyyy")}
@@ -55,11 +68,16 @@ export function OverviewCharts({ workouts, routines }: { workouts: Workout[]; ro
                 />
               }
             />
-            <Bar
-              dataKey="value"
-              fill="var(--primary)"
-              radius={[4, 4, 0, 0]}
-              isAnimationActive={false}
+            <Bar {...BAR_STYLE} dataKey="value">
+              {frequency.map((week, index) => (
+                <Cell key={week.time} fill={index === frequency.length - 1 ? BAR_FILL_CURRENT : BAR_FILL} />
+              ))}
+            </Bar>
+            <ReferenceLine
+              y={average}
+              stroke="var(--text-muted)"
+              strokeDasharray="4 4"
+              label={thresholdLabel(formatNumber(average, 1))}
             />
           </BarChart>
         </ResponsiveContainer>
@@ -72,34 +90,32 @@ export function OverviewCharts({ workouts, routines }: { workouts: Workout[]; ro
           </p>
         ) : (
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart>
-              <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+            <LineChart margin={CHART_MARGIN_TIGHT}>
+              <CartesianGrid {...GRID_STYLE} />
               <XAxis
+                {...X_AXIS_STYLE}
                 dataKey="time"
                 type="number"
-                scale="time"
                 domain={["dataMin", "dataMax"]}
                 tickFormatter={(value) => format(new Date(value), "dd.MM.")}
-                fontSize={12}
                 allowDuplicatedCategory={false}
+                minTickGap={32}
               />
-              <YAxis fontSize={12} width={36} allowDecimals={false} />
+              <YAxis hide allowDecimals={false} />
               <Tooltip
                 isAnimationActive={false}
-                cursor={{ stroke: "var(--border)" }}
+                cursor={{ stroke: "var(--divider)" }}
                 content={<ComparisonTooltip achievedLabel={t("exercise_stats.achieved")} />}
               />
-              <Legend />
+              <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12, color: "var(--text-muted)" }} />
               {comparison.map((series) => (
                 <Line
                   key={series.name}
                   data={series.points}
                   dataKey="value"
                   name={series.name}
+                  {...LINE_STYLE}
                   stroke={series.color}
-                  strokeWidth={2}
-                  dot={{ r: 3 }}
-                  isAnimationActive={false}
                 />
               ))}
             </LineChart>
@@ -136,20 +152,15 @@ function ComparisonTooltip({
           <ChartTooltipValue key={entry.name} className="mt-1">
             <span style={{ color: entry.color }}>{entry.name}</span>
             {": "}
-            {Math.round(Number(entry.value)).toLocaleString()} {achievedLabel}
+            {formatNumber(Math.round(Number(entry.value)))} {achievedLabel}
             <span
               className="ml-1 text-xs font-medium"
               style={{
-                color:
-                  delta > 0
-                    ? "var(--glucose-in-range)"
-                    : delta < 0
-                      ? "var(--glucose-low)"
-                      : undefined,
+                color: delta > 0 ? "var(--brand-text)" : "var(--text-muted)",
               }}
             >
               ({sign}
-              {Math.abs(Math.round(delta)).toLocaleString()})
+              {formatNumber(Math.abs(Math.round(delta)))})
             </span>
           </ChartTooltipValue>
         );

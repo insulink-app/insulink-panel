@@ -22,6 +22,8 @@ import {
 import ProductDialog, { ProductRowActions } from "./add-product-dialog";
 import { drinkKind, withUnit } from "@/lib/nutrition";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/page-header";
+import { formatNumber } from "@/lib/format";
 
 export default function NutritionPage() {
   const { t } = useTranslation();
@@ -70,7 +72,7 @@ export default function NutritionPage() {
       cell: (meal) =>
         meal.bolus == null
           ? "–"
-          : `${meal.bolus.toFixed(1)} ${t("nutrition.unit_insulin")}`,
+          : `${formatNumber(meal.bolus, 1)} ${t("nutrition.unit_insulin")}`,
     },
     {
       header: t("nutrition.col_products"),
@@ -89,7 +91,9 @@ export default function NutritionPage() {
       header: t("nutrition.col_type"),
       cell: (drink) => (
         <span className="flex items-center gap-2">
-          <DrinkIcon kind={drink.kind} className="size-4 text-primary" />
+          <span className="grid size-9 shrink-0 place-items-center rounded-full bg-brand/12 text-brand">
+            <DrinkIcon kind={drink.kind} className="size-[17px]" />
+          </span>
           {t("nutrition.kind_" + drinkKind(drink.kind))}
         </span>
       ),
@@ -98,7 +102,7 @@ export default function NutritionPage() {
       header: t("nutrition.col_amount"),
       className: "text-right",
       cell: (drink) => (
-        <span className="font-semibold tabular-nums">{drink.ml} ml</span>
+        <b>{formatNumber(drink.ml)} ml</b>
       ),
     },
   ];
@@ -162,25 +166,12 @@ export default function NutritionPage() {
       />
     ),
     products: (
-      <div className="space-y-4">
-        <div className="flex justify-end">
-          <ProductDialog
-            existing={productList}
-            trigger={
-              <Button size="sm">
-                <Plus className="size-4" />
-                {t("nutrition.add.button")}
-              </Button>
-            }
-          />
-        </div>
-        <DataList
-          title={t("nutrition.products")}
-          columns={productCols}
-          data={productList}
-          isLoading={products.isLoading}
-        />
-      </div>
+      <DataList
+        title={t("nutrition.products")}
+        columns={productCols}
+        data={productList}
+        isLoading={products.isLoading}
+      />
     ),
   };
 
@@ -191,7 +182,23 @@ export default function NutritionPage() {
       title={t("nutrition." + current)}
       parents={[{ title: t("nav.nutrition") }]}
     >
-      <div className="py-6">{views[current]}</div>
+      <PageHeader
+        title={t("nutrition." + current)}
+        actions={
+          current === "products" && (
+            <ProductDialog
+              existing={productList}
+              trigger={
+                <Button>
+                  <Plus className="size-4" />
+                  {t("nutrition.add.button")}
+                </Button>
+              }
+            />
+          )
+        }
+      />
+      {views[current]}
     </PanelPage>
   );
 }
@@ -231,9 +238,7 @@ function ProductsCell({ entries }: { entries: { name: string }[] }) {
     <span className="flex items-center gap-2">
       <span className="max-w-40 truncate">{entries[0].name}</span>
       {entries.length > 1 && (
-        <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-muted-foreground">
-          +{entries.length - 1}
-        </span>
+        <span className="text-xs text-muted-foreground">+{entries.length - 1}</span>
       )}
     </span>
   );

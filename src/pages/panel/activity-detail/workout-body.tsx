@@ -1,5 +1,7 @@
 import { useTranslation } from "react-i18next";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
+import { CardHeading } from "@/components/card-heading";
+import { formatAmount } from "@/lib/nutrition";
 import type { SetLog, Workout } from "@/api/services/sport-service";
 import { formatDuration } from "./format";
 
@@ -22,32 +24,27 @@ export function WorkoutBody({
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t("routines.exercises")}</CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-4">
+    <Card className="gap-4 p-6">
+      <CardHeading title={t("routines.exercises")} />
+      <div className="flex flex-col gap-5">
         {groups.map((group) => (
           <div key={group.exerciseId}>
-            <div className="mb-1 font-medium">
+            <b className="block text-[15px]">
               {exerciseName.get(group.exerciseId) ?? t("activity.exercise")}
-            </div>
-            <div className="flex flex-col gap-1">
+            </b>
+            <div className="divide-y divide-divider">
               {group.sets.map((set, index) => (
-                <div
-                  key={set.ts + "-" + index}
-                  className="flex justify-between rounded-md bg-secondary/40 px-3 py-1.5 text-sm"
-                >
+                <div key={set.ts + "-" + index} className="flex justify-between py-2.5 text-sm">
                   <span className="text-muted-foreground">
                     {t("activity.set")} {index + 1}
                   </span>
-                  <span className="font-medium">{formatSet(set, t)}</span>
+                  <b>{formatSet(set, t)}</b>
                 </div>
               ))}
             </div>
           </div>
         ))}
-      </CardContent>
+      </div>
     </Card>
   );
 }
@@ -58,7 +55,7 @@ function formatSet(set: SetLog, t: (key: string, options?: Record<string, unknow
   }
   const reps = set.reps ?? set.secs ?? 0;
   if (set.kg != null && set.kg > 0) {
-    return `${reps} × ${set.kg} ${t("body.kg")}`;
+    return `${reps} × ${formatAmount(set.kg)} ${t("body.kg")}`;
   }
   return t("activity.reps", { n: reps });
 }

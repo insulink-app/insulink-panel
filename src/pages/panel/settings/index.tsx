@@ -1,7 +1,9 @@
 import { useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import PanelPage from "@/layouts/panel";
+import { PageHeader } from "@/components/page-header";
 import { SETTINGS_SECTIONS, SectionPanel } from "./sections";
+import { SettingsNav } from "./section-nav";
 
 export default function SettingsPage() {
   const { t } = useTranslation();
@@ -14,9 +16,9 @@ export default function SettingsPage() {
       title={t("settings.section_" + section.id)}
       parents={[{ title: t("nav.settings") }]}
     >
-      <div className="py-6">
-        <SectionPanel section={section} />
-      </div>
+      <PageHeader title={t("nav.settings")} />
+      <SettingsNav current={section.id} />
+      <SectionPanel section={section} />
     </PanelPage>
   );
 }

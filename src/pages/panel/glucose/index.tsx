@@ -2,22 +2,14 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ReferenceArea,
-  ReferenceLine,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 import PanelPage from "@/layouts/panel";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { DataList, type ListColumn } from "@/components/data-list";
-import { StatCard } from "@/components/stat-card";
-import { ChartTooltipBox, ChartTooltipValue } from "@/components/chart-tooltip";
+import { PageHeader } from "@/components/page-header";
+import { CardHeading } from "@/components/card-heading";
+import { StatStrip } from "@/components/stat-strip";
+import { StatusChip } from "@/components/status-chip";
+import { GlucoseLineChart } from "@/components/glucose-line-chart";
 import { TimeRangePicker, TimeWindowNav } from "@/components/time-window";
 import { DAY, useTimeWindow, useWindowedData } from "@/lib/use-time-window";
 import glucoseService, {
@@ -32,9 +24,6 @@ import {
   toDisplay,
   unitLabel,
 } from "@/lib/glucose";
-import { useGlucoseHex } from "@/lib/use-glucose-hex";
-import { ThresholdGradient } from "@/components/threshold-gradient";
-import { CHART_HEIGHT, CHART_MARGIN, X_AXIS_HEIGHT } from "@/lib/chart-geometry";
 
 export default function GlucosePage() {
   const { t } = useTranslation();
@@ -104,16 +93,34 @@ export default function GlucosePage() {
     [unit, low, high, t],
   );
 
+  const latest = entries[0];
   return (
     <PanelPage title={t("glucose.title")}>
-      <div className="py-6 flex flex-col gap-6">
-        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-          <StatCard title={t("glucose.average")} value={formatReading(stats?.avg, unit)} />
-          <StatCard title={t("glucose.minimum")} value={formatReading(stats?.min, unit)} />
-          <StatCard title={t("glucose.maximum")} value={formatReading(stats?.max, unit)} />
-          <StatCard title={t("glucose.in_range")} value={stats ? `${stats.tir} %` : "–"} />
+      <PageHeader title={t("glucose.title")} />
+      <div className="flex flex-col gap-4">
+        <div className="mb-2 flex flex-wrap items-end gap-x-3 gap-y-1">
+          <b className="text-[64px] leading-none font-extrabold tracking-[-0.04em]">
+            {latest ? toDisplay(latest.value, unit) : "–"}
+          </b>
+          <span className="pb-1.5 text-sm text-muted-foreground">{unitLabel(unit)}</span>
+          {latest && (
+            <span className="ml-2 pb-1">
+              <StatusChip color={statusColorVar[classify(latest.value, low, high)]}>
+                {statusLabel[classify(latest.value, low, high)]}
+              </StatusChip>
+            </span>
+          )}
         </div>
         <GlucoseChart entries={entries} low={low} high={high} unit={unit} />
+        <StatStrip
+          loading={isLoading}
+          cells={[
+            { label: t("glucose.minimum"), value: stats ? toDisplay(stats.min, unit) : "–", unit: unitLabel(unit) },
+            { label: t("glucose.average"), value: stats ? toDisplay(stats.avg, unit) : "–", unit: unitLabel(unit) },
+            { label: t("glucose.maximum"), value: stats ? toDisplay(stats.max, unit) : "–", unit: unitLabel(unit) },
+            { label: t("glucose.in_range"), value: stats ? String(stats.tir) : "–", unit: "%" },
+          ]}
+        />
         <DataList
           title={t("glucose.readings")}
           columns={columns}
@@ -139,7 +146,6 @@ function GlucoseChart({
   unit?: string;
 }) {
   const { t } = useTranslation();
-  const hex = useGlucoseHex();
 
   const ascending = useMemo(() => entries.slice().reverse(), [entries]);
   const latest = ascending[ascending.length - 1]?.time ?? Date.now();
@@ -147,103 +153,31 @@ function GlucoseChart({
   const window = useTimeWindow(latest, earliest);
   const windowData = useWindowedData(ascending, (entry) => entry.time, window);
 
-  const values = windowData.map((entry) => entry.value);
-  const yMin = Math.min(low - 20, ...(values.length ? values : [low]));
-  const yMax = Math.max(high + 20, ...(values.length ? values : [high]));
 
+  const rows = windowData.map((entry) => ({ time: entry.time, value: entry.value }));
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between gap-4 flex-wrap">
-        <CardTitle>{t("glucose.chart_title")}</CardTitle>
-        <TimeRangePicker window={window} />
-      </CardHeader>
-      <CardContent className="flex flex-col gap-3">
+    <Card className="gap-0 p-6">
+      <CardHeading title={t("glucose.chart_title")} action={<TimeRangePicker window={window} />} />
+      <div className="mt-3">
         <TimeWindowNav window={window} />
-        {windowData.length === 0 ? (
-          <p className="py-16 text-center text-sm text-muted-foreground">
-            {t("common.no_data")}
-          </p>
+      </div>
+      <div className="mt-4">
+        {rows.length === 0 ? (
+          <p className="py-16 text-center text-sm text-muted-foreground">{t("common.no_data")}</p>
         ) : (
-          <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
-            <AreaChart data={windowData} margin={CHART_MARGIN}>
-              <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-              <XAxis
-                dataKey="time"
-                type="number"
-                scale="time"
-                domain={[window.start, window.end]}
-                tickFormatter={(value) =>
-                  format(new Date(value), window.rangeMs > DAY ? "dd.MM." : "HH:mm")
-                }
-                fontSize={12}
-                height={X_AXIS_HEIGHT}
-              />
-              <YAxis domain={[yMin, yMax]} fontSize={12} width={36} />
-              <Tooltip
-                content={<GlucoseTooltip unit={unit} />}
-                cursor={{ stroke: "var(--border)" }}
-                isAnimationActive={false}
-              />
-              {/* Threshold zones: below low reads red, in-target green, above
-                  high orange. Outer bounds run past the axis; Recharts clips. */}
-              <ReferenceArea y1={0} y2={low} fill={hex.low} fillOpacity={0.07} />
-              <ReferenceArea y1={low} y2={high} fill={hex["in-range"]} fillOpacity={0.08} />
-              <ReferenceArea y1={high} y2={1000} fill={hex.high} fillOpacity={0.07} />
-              <ReferenceLine y={low} stroke={hex.low} strokeOpacity={0.5} strokeDasharray="4 4" />
-              <ReferenceLine y={high} stroke={hex.high} strokeOpacity={0.5} strokeDasharray="4 4" />
-              <defs>
-                <ThresholdGradient
-                  id="glucose-line"
-                  yMin={yMin}
-                  yMax={yMax}
-                  bands={[
-                    { color: hex.high, until: high },
-                    { color: hex["in-range"], until: low },
-                    { color: hex.low },
-                  ]}
-                />
-              </defs>
-              <Area
-                type="monotone"
-                dataKey="value"
-                stroke="url(#glucose-line)"
-                strokeWidth={2}
-                fill="url(#glucose-line)"
-                fillOpacity={0.12}
-                dot={false}
-                isAnimationActive={false}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+          <GlucoseLineChart
+            rows={rows}
+            low={low}
+            high={high}
+            unit={unit}
+            start={window.start}
+            end={window.end}
+            nowTime={window.atLatest ? rows[rows.length - 1].time : undefined}
+            height={300}
+            tickFormat={window.rangeMs > DAY ? "dd.MM." : "HH:mm"}
+          />
         )}
-      </CardContent>
+      </div>
     </Card>
   );
-}
-
-function GlucoseTooltip({
-  active,
-  payload,
-  label,
-  unit,
-}: {
-  active?: boolean;
-  payload?: { value?: number | string }[];
-  label?: number;
-  unit?: string;
-}) {
-  if (!active || !payload?.length) {
-    return null;
-  }
-  return (
-    <ChartTooltipBox caption={format(new Date(label as number), "dd.MM. HH:mm")}>
-      <ChartTooltipValue>
-        {toDisplay(Number(payload[0].value), unit)} {unitLabel(unit)}
-      </ChartTooltipValue>
-    </ChartTooltipBox>
-  );
-}
-
-function formatReading(value: number | undefined, unit?: string) {
-  return value == null ? "–" : `${toDisplay(value, unit)} ${unitLabel(unit)}`;
 }

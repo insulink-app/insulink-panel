@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { PageHeader } from "@/components/page-header";
 import { useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -105,8 +106,8 @@ export default function ActivityDetailPage() {
       title={title || t("activity.title")}
       parents={[{ title: t("nav.health") }, { title: t("activity.title"), href: "/health/activity" }]}
     >
-      <div className="py-6 flex flex-col gap-6">
-        <Button asChild variant="ghost" size="sm" className="self-start">
+      <div className="flex flex-col gap-4">
+        <Button asChild variant="secondary" size="sm" className="self-start">
           <Link to="/health/activity">
             <ArrowLeft className="size-4" />
             {t("activity.back")}
@@ -117,25 +118,21 @@ export default function ActivityDetailPage() {
           <p className="py-16 text-center text-sm text-muted-foreground">{t("common.no_data")}</p>
         ) : (
           <>
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <h2 className="text-2xl font-bold">{title}</h2>
-                {at != null && (
-                  <p className="text-sm text-muted-foreground">
-                    {format(new Date(at), "EEEE, dd.MM.yyyy HH:mm")}
-                  </p>
-                )}
-              </div>
-              <ConfirmDelete
-                onConfirm={() => deletion.mutate()}
-                description={t("activity.delete_confirm")}
-              >
-                <Button variant="outline" disabled={deletion.isPending}>
-                  <Trash2 className="size-4 text-destructive" />
-                  {t("activity.delete")}
-                </Button>
-              </ConfirmDelete>
-            </div>
+            <PageHeader
+              title={title}
+              subtitle={at != null && format(new Date(at), "EEEE, dd.MM.yyyy HH:mm")}
+              actions={
+                <ConfirmDelete
+                  onConfirm={() => deletion.mutate()}
+                  description={t("activity.delete_confirm")}
+                >
+                  <Button variant="outline" className="bg-panel hover:bg-raised" disabled={deletion.isPending}>
+                    <Trash2 className="size-4 text-destructive" />
+                    {t("activity.delete")}
+                  </Button>
+                </ConfirmDelete>
+              }
+            />
 
             {workout && (
               <WorkoutSummaryCard workout={workout} allWorkouts={workouts.data?.workouts ?? []} />

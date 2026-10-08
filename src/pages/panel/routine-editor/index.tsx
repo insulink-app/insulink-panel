@@ -43,8 +43,8 @@ export default function RoutineEditorPage() {
           : []),
       ]}
     >
-      <div className="py-6 flex flex-col gap-6">
-        <Button asChild variant="ghost" size="sm" className="self-start">
+      <div className="flex flex-col gap-4">
+        <Button asChild variant="secondary" size="sm" className="self-start">
           <Link to={backTo}>
             <ArrowLeft className="size-4" />
             {t("routines.back")}

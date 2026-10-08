@@ -4,6 +4,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import PanelPage from "@/layouts/panel";
+import { Cpu } from "@/components/icons";
+import { PageHeader } from "@/components/page-header";
+import { StatusChip } from "@/components/status-chip";
+import { DeviceHeader } from "./device-header";
 import { DataList, type ListColumn } from "@/components/data-list";
 import PumpList from "./pump-list";
 import sensorService, {
@@ -15,6 +19,7 @@ import {
   sensorActive,
   sensorBlob,
   sensorEndedAt,
+  sensorRatedMs,
   sensorStart,
   sensorWornMs,
   uniqueSensors,
@@ -77,14 +82,7 @@ export default function DevicesPage() {
             : early
               ? t("devices.replaced")
               : t("devices.expired");
-          return (
-            <span
-              className="rounded-full px-2 py-0.5 text-xs font-semibold"
-              style={{ color, backgroundColor: `color-mix(in srgb, ${color} 18%, transparent)` }}
-            >
-              {label}
-            </span>
-          );
+          return <StatusChip color={color}>{label}</StatusChip>;
         },
       },
     ],
@@ -96,10 +94,12 @@ export default function DevicesPage() {
       title={view === "pump" ? t("nav.pump") : t("nav.sensor")}
       parents={[{ title: t("nav.devices") }]}
     >
-      <div className="py-6">
-        {view === "pump" ? (
-          <PumpList />
-        ) : (
+      <PageHeader title={view === "pump" ? t("nav.pump") : t("nav.sensor")} />
+      {view === "pump" ? (
+        <PumpList />
+      ) : (
+        <>
+          <SensorHeader sensors={sensors} />
           <DataList
             title={t("devices.sensors")}
             columns={columns}
@@ -108,8 +108,36 @@ export default function DevicesPage() {
             pageSize={25}
             onRowClick={(sensor) => navigate(`/devices/sensor/${sensor.id}`)}
           />
-        )}
-      </div>
+        </>
+      )}
     </PanelPage>
+  );
+}
+
+/** The sensor in use, with how much of its rated life is worn. */
+function SensorHeader({ sensors }: { sensors: SensorHistoryEntry[] }) {
+  const { t } = useTranslation();
+  const current = sensors.find((sensor) => sensorActive(sensor, sensors));
+  if (!current) {
+    return (
+      <DeviceHeader icon={<Cpu />} name={t("nav.sensor")} status={t("devices.no_active_sensor")} connected={false} bars={[]} />
+    );
+  }
+  const worn = sensorWornMs(current, sensors);
+  const rated = sensorRatedMs(current);
+  return (
+    <DeviceHeader
+      icon={<Cpu />}
+      name={sensorType(current.data)}
+      status={t("devices.active")}
+      connected
+      bars={[
+        {
+          label: t("devices.worn_so_far"),
+          value: `${formatSpan(worn, t)} / ${formatSpan(rated, t)}`,
+          fraction: rated > 0 ? worn / rated : 0,
+        },
+      ]}
+    />
   );
 }

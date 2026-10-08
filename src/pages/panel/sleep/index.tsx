@@ -5,7 +5,10 @@ import { format } from "date-fns";
 import { Moon } from "@/components/icons";
 import PanelPage from "@/layouts/panel";
 import { CardSkeleton } from "@/components/card-skeleton";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
+import { CardHeading } from "@/components/card-heading";
+import { PageHeader } from "@/components/page-header";
+import { StatStrip } from "@/components/stat-strip";
 import healthService, {
   type HealthDay,
   type SleepSegment,
@@ -15,12 +18,13 @@ import healthService, {
 const STAGE_KEYS = ["deep", "rem", "light", "awake", "restless"] as const;
 type StageKey = (typeof STAGE_KEYS)[number];
 
+// The app's sleep tokens; awake takes its "low" colour, as in the app.
 const STAGE_COLOR: Record<StageKey, string> = {
-  deep: "#7C4DFF",
-  light: "#4FC3F7",
-  rem: "#1DE9B6",
-  awake: "#EF5350",
-  restless: "#F06292",
+  deep: "var(--sleep-deep)",
+  light: "var(--sleep-light)",
+  rem: "var(--sleep-rem)",
+  awake: "var(--low)",
+  restless: "var(--sleep-restless)",
 };
 
 // Top-to-bottom lane order in the hypnogram: shallowest (awake) to deepest.
@@ -47,7 +51,8 @@ export default function SleepPage() {
 
   return (
     <PanelPage title={t("sleep.title")} parents={[{ title: t("nav.health") }]}>
-      <div className="py-6 flex flex-col gap-6">
+      <PageHeader title={t("sleep.title")} />
+      <div className="flex flex-col gap-4">
         {isLoading ? (
           <CardSkeleton />
         ) : !selected ? (
@@ -58,29 +63,29 @@ export default function SleepPage() {
           <>
             <NightDetail night={selected} />
             {nights.length > 1 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t("sleep.nights")}</CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-col gap-1">
-                  {nights.map((night) => (
-                    <button
-                      key={night.d}
-                      type="button"
-                      onClick={() => setSelectedKey(night.d)}
-                      className={
-                        "flex items-center justify-between rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-secondary/60" +
-                        (night.d === selected.d ? " bg-secondary" : "")
-                      }
-                    >
-                      <span className="flex items-center gap-2">
-                        <Moon className="size-4 text-muted-foreground" />
-                        {format(new Date(night.d), "EEE, dd.MM.yyyy")}
-                      </span>
-                      <span className="font-medium">{formatSleep(night.sleep)}</span>
-                    </button>
-                  ))}
-                </CardContent>
+              <Card className="gap-2 p-6">
+                <CardHeading title={t("sleep.nights")} />
+                <div className="divide-y divide-divider">
+                  {nights.map((night) => {
+                    const current = night.d === selected.d;
+                    return (
+                      <button
+                        key={night.d}
+                        type="button"
+                        aria-pressed={current}
+                        onClick={() => setSelectedKey(night.d)}
+                        className="relative flex w-full items-center gap-3 py-3 pl-4 text-left transition-opacity hover:opacity-80"
+                      >
+                        {current && <i className="absolute top-3 bottom-3 left-0 block w-[3px] rounded-sm bg-primary" aria-hidden />}
+                        <span className="grid size-9 shrink-0 place-items-center rounded-full bg-brand/12 text-brand">
+                          <Moon size={17} />
+                        </span>
+                        <b className="flex-1 text-sm">{format(new Date(night.d), "EEE, dd.MM.yyyy")}</b>
+                        <b className="text-sm">{formatSleep(night.sleep)}</b>
+                      </button>
+                    );
+                  })}
+                </div>
               </Card>
             )}
           </>
@@ -100,38 +105,35 @@ function NightDetail({ night }: { night: HealthDay }) {
     restless: night.stages?.restless ?? 0,
   };
 
+  const extras = [
+    night.rhr != null && { label: t("sleep.resting_hr"), value: String(night.rhr), unit: t("sleep.bpm") },
+    night.spo2 != null && { label: t("sleep.spo2"), value: String(night.spo2), unit: "%" },
+    night.rr != null && { label: t("sleep.respiratory"), value: String(night.rr), unit: t("sleep.per_min") },
+  ].filter((cell) => cell !== false);
+
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>{format(new Date(night.d), "EEEE, dd.MM.yyyy")}</CardTitle>
-        <div className="text-right">
-          <div className="text-2xl font-bold">{formatSleep(night.sleep)}</div>
-          <div className="text-xs text-muted-foreground">{t("sleep.total")}</div>
-        </div>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-6">
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {(["deep", "rem", "light", "awake"] as StageKey[]).map((stage) => (
-            <StageStat
-              key={stage}
-              color={STAGE_COLOR[stage]}
-              label={t("sleep.stage_" + stage)}
-              minutes={stageMinutes[stage]}
-            />
-          ))}
-        </div>
-
-        {night.tl && night.tl.length > 0 && <Hypnogram segments={night.tl} />}
-
-        {(night.rhr != null || night.spo2 != null || night.rr != null) && (
-          <div className="grid grid-cols-3 gap-3">
-            {night.rhr != null && <StageStat label={t("sleep.resting_hr")} minutes={night.rhr} rawUnit={t("sleep.bpm")} />}
-            {night.spo2 != null && <StageStat label={t("sleep.spo2")} minutes={night.spo2} rawUnit="%" />}
-            {night.rr != null && <StageStat label={t("sleep.respiratory")} minutes={night.rr} rawUnit={t("sleep.per_min")} />}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+    <>
+      <div className="mb-2">
+        <b className="text-[64px] leading-none font-extrabold tracking-[-0.04em]">{formatSleep(night.sleep)}</b>
+        <span className="mt-1 block text-sm text-muted-foreground">
+          {t("sleep.total")} · {format(new Date(night.d), "EEEE, dd.MM.yyyy")}
+        </span>
+      </div>
+      <StatStrip
+        cells={(["deep", "rem", "light", "awake"] as StageKey[]).map((stage) => ({
+          label: t("sleep.stage_" + stage),
+          value: formatSleep(stageMinutes[stage]),
+          color: STAGE_COLOR[stage],
+        }))}
+      />
+      {night.tl && night.tl.length > 0 && (
+        <Card className="gap-4 p-6">
+          <CardHeading title={t("sleep.title")} />
+          <Hypnogram segments={night.tl} />
+        </Card>
+      )}
+      {extras.length > 0 && <StatStrip cells={extras} />}
+    </>
   );
 }
 
@@ -164,7 +166,7 @@ function Hypnogram({ segments }: { segments: SleepSegment[] }) {
             const laneY = laneIndex * (laneHeight + gap);
             return (
               <g key={stage}>
-                <rect x={0} y={laneY} width={1000} height={laneHeight} rx={4} fill="var(--muted)" opacity={0.25} />
+                <rect x={0} y={laneY} width={1000} height={laneHeight} rx={6} fill="var(--ground)" />
                 {segments
                   .filter((segment) => STAGE_KEYS[segment.s] === stage)
                   .map((segment, index) => (
@@ -174,7 +176,7 @@ function Hypnogram({ segments }: { segments: SleepSegment[] }) {
                       y={laneY}
                       width={Math.max(1, ((segment.b - segment.a) / span) * 1000)}
                       height={laneHeight}
-                      rx={4}
+                      rx={6}
                       fill={STAGE_COLOR[stage]}
                     />
                   ))}
@@ -187,30 +189,6 @@ function Hypnogram({ segments }: { segments: SleepSegment[] }) {
         <span>{format(new Date(start), "HH:mm")}</span>
         <span>{format(new Date(end), "HH:mm")}</span>
       </div>
-    </div>
-  );
-}
-
-function StageStat({
-  color,
-  label,
-  minutes,
-  rawUnit,
-}: {
-  color?: string;
-  label: string;
-  minutes: number;
-  rawUnit?: string;
-}) {
-  return (
-    <div className="flex flex-col gap-1 rounded-xl bg-secondary/50 p-4">
-      <span className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-        {color && <span className="size-2.5 rounded-full" style={{ backgroundColor: color }} />}
-        {label}
-      </span>
-      <span className="text-lg font-bold">
-        {rawUnit ? `${minutes} ${rawUnit}` : formatSleep(minutes)}
-      </span>
     </div>
   );
 }

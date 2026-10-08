@@ -6,30 +6,22 @@ import {
   CartesianGrid,
   Line,
   LineChart,
-  ReferenceArea,
-  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
 import PanelPage from "@/layouts/panel";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { DataList, type ListColumn } from "@/components/data-list";
-import { StatCard } from "@/components/stat-card";
+import { PageHeader } from "@/components/page-header";
+import { CardHeading } from "@/components/card-heading";
+import { StatStrip } from "@/components/stat-strip";
 import { ChartTooltipBox, ChartTooltipValue } from "@/components/chart-tooltip";
 import { TimeRangePicker, TimeWindowNav } from "@/components/time-window";
+import { CHART_MARGIN_TIGHT, GRID_STYLE, LINE_STYLE, X_AXIS_STYLE, evenTicks } from "@/components/chart-kit";
 import { DAY, useTimeWindow, useWindowedData } from "@/lib/use-time-window";
-import { useGlucoseHex } from "@/lib/use-glucose-hex";
-import { ThresholdGradient } from "@/components/threshold-gradient";
-import { CHART_HEIGHT, CHART_MARGIN, X_AXIS_HEIGHT } from "@/lib/chart-geometry";
 import healthService, { type PulseSample } from "@/api/services/health-service";
-
-// ponytail: fixed resting-HR zone edges (normal < 100 ≤ elevated < 140 ≤ high).
-// No per-user HR-zone setting exists yet; wire these to settings if the app
-// grows one. Kept in sync with the routine runner's pulseZone.
-const PULSE_ELEVATED = 100;
-const PULSE_HIGH = 140;
 
 export default function PulsePage() {
   const { t } = useTranslation();
@@ -77,15 +69,22 @@ export default function PulsePage() {
 
   return (
     <PanelPage title={t("pulse.title")} parents={[{ title: t("nav.health") }]}>
-      <div className="py-6 flex flex-col gap-6">
-        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-          <StatCard title={t("pulse.average")} value={formatBpm(stats?.avg, t)} />
-          <StatCard title={t("pulse.resting")} value={formatBpm(stats?.resting, t)} />
-          <StatCard title={t("pulse.minimum")} value={formatBpm(stats?.min, t)} />
-          <StatCard title={t("pulse.maximum")} value={formatBpm(stats?.max, t)} />
+      <PageHeader title={t("pulse.title")} />
+      <div className="flex flex-col gap-4">
+        <div className="mb-2 flex items-end gap-2">
+          <b className="text-[64px] leading-none font-extrabold tracking-[-0.04em]">{descending[0]?.b ?? "–"}</b>
+          <span className="pb-1.5 text-sm text-muted-foreground">{t("pulse.bpm")}</span>
         </div>
-
         <PulseChart samples={ascending} isLoading={isLoading} />
+        <StatStrip
+          loading={isLoading}
+          cells={[
+            { label: t("pulse.minimum"), value: stats?.min ?? "–", unit: t("pulse.bpm") },
+            { label: t("pulse.average"), value: stats?.avg ?? "–", unit: t("pulse.bpm") },
+            { label: t("pulse.maximum"), value: stats?.max ?? "–", unit: t("pulse.bpm") },
+            { label: t("pulse.resting"), value: stats?.resting ?? "–", unit: t("pulse.bpm") },
+          ]}
+        />
 
         <DataList
           title={t("pulse.readings")}
@@ -99,7 +98,8 @@ export default function PulsePage() {
   );
 }
 
-// Pannable, range-adjustable heart-rate graph. `samples` arrive oldest-first.
+// Pannable, range-adjustable heart-rate graph, one violet line. `samples`
+// arrive oldest-first.
 function PulseChart({
   samples,
   isLoading,
@@ -108,84 +108,48 @@ function PulseChart({
   isLoading: boolean;
 }) {
   const { t } = useTranslation();
-  const hex = useGlucoseHex();
   const latest = samples[samples.length - 1]?.t ?? Date.now();
   const earliest = samples[0]?.t ?? latest;
   const window = useTimeWindow(latest, earliest);
   const windowData = useWindowedData(samples, (sample) => sample.t, window);
-
-  // The gradient needs the axis bounds as numbers, so they are computed here
-  // rather than left to the axis' own dataMin/dataMax strings.
   const beats = windowData.map((sample) => sample.b);
   const yMin = beats.length ? Math.min(...beats) - 5 : 0;
-  const yMax = beats.length ? Math.max(...beats) + 5 : PULSE_HIGH;
+  const yMax = beats.length ? Math.max(...beats) + 5 : 100;
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between gap-4 flex-wrap">
-        <CardTitle>{t("pulse.chart_title")}</CardTitle>
-        <TimeRangePicker window={window} />
-      </CardHeader>
-      <CardContent className="flex flex-col gap-3">
+    <Card className="gap-0 p-6">
+      <CardHeading title={t("pulse.chart_title")} action={<TimeRangePicker window={window} />} />
+      <div className="mt-3">
         <TimeWindowNav window={window} />
+      </div>
+      <div className="mt-4">
         {isLoading ? (
           <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
         ) : windowData.length === 0 ? (
-          <p className="py-16 text-center text-sm text-muted-foreground">
-            {t("common.no_data")}
-          </p>
+          <p className="py-16 text-center text-sm text-muted-foreground">{t("common.no_data")}</p>
         ) : (
-          <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
-            <LineChart data={windowData} margin={CHART_MARGIN}>
-              <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={windowData} margin={CHART_MARGIN_TIGHT}>
+              <CartesianGrid {...GRID_STYLE} />
               <XAxis
+                {...X_AXIS_STYLE}
                 dataKey="t"
                 type="number"
-                scale="time"
                 domain={[window.start, window.end]}
-                tickFormatter={(value) =>
-                  format(new Date(value), window.rangeMs > DAY ? "dd.MM." : "HH:mm")
-                }
-                fontSize={12}
-                height={X_AXIS_HEIGHT}
+                ticks={evenTicks(window.start, window.end)}
+                tickFormatter={(value) => format(new Date(value), window.rangeMs > DAY ? "dd.MM." : "HH:mm")}
               />
-              <YAxis fontSize={12} width={36} domain={[yMin, yMax]} />
+              <YAxis hide domain={[yMin, yMax]} />
               <Tooltip
                 content={<PulseTooltip unit={t("pulse.bpm")} />}
-                cursor={{ stroke: "var(--border)" }}
+                cursor={{ stroke: "var(--divider)" }}
                 isAnimationActive={false}
               />
-              {/* Heart-rate zones: normal green, elevated orange, high red.
-                  Outer bounds run past the axis; Recharts clips them. */}
-              <ReferenceArea y1={0} y2={PULSE_ELEVATED} fill={hex["in-range"]} fillOpacity={0.07} />
-              <ReferenceArea y1={PULSE_ELEVATED} y2={PULSE_HIGH} fill={hex.high} fillOpacity={0.07} />
-              <ReferenceArea y1={PULSE_HIGH} y2={400} fill={hex.low} fillOpacity={0.07} />
-              <ReferenceLine y={PULSE_ELEVATED} stroke={hex.high} strokeOpacity={0.5} strokeDasharray="4 4" />
-              <ReferenceLine y={PULSE_HIGH} stroke={hex.low} strokeOpacity={0.5} strokeDasharray="4 4" />
-              <defs>
-                <ThresholdGradient
-                  id="pulse-line"
-                  yMin={yMin}
-                  yMax={yMax}
-                  bands={[
-                    { color: hex.low, until: PULSE_HIGH },
-                    { color: hex.high, until: PULSE_ELEVATED },
-                    { color: hex["in-range"] },
-                  ]}
-                />
-              </defs>
-              <Line
-                type="monotone"
-                dataKey="b"
-                stroke="url(#pulse-line)"
-                strokeWidth={2}
-                dot={false}
-                isAnimationActive={false}
-              />
+              <Line {...LINE_STYLE} dataKey="b" stroke="var(--pulse)" />
             </LineChart>
           </ResponsiveContainer>
         )}
-      </CardContent>
+      </div>
     </Card>
   );
 }
@@ -210,8 +174,4 @@ function PulseTooltip({
       </ChartTooltipValue>
     </ChartTooltipBox>
   );
-}
-
-function formatBpm(value: number | undefined, t: (key: string) => string) {
-  return value == null ? "–" : `${value} ${t("pulse.bpm")}`;
 }

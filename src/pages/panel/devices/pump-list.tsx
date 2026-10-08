@@ -12,12 +12,18 @@ import {
   podEndedAt,
   podInGrace,
   podLotLabel,
+  podRatedMs,
   podReservoirUnits,
   podStart,
   podWornMs,
   uniquePods,
 } from "@/lib/pump";
 import { formatSpan } from "@/lib/sensor";
+import type { TFunction } from "i18next";
+import { Syringe } from "@/components/icons";
+import { StatusChip } from "@/components/status-chip";
+import { formatNumber } from "@/lib/format";
+import { DeviceHeader, type DeviceBar } from "./device-header";
 
 /**
  * Every pod the account has recorded, newest first — the pump counterpart to the
@@ -68,7 +74,7 @@ export default function PumpList() {
           const units = podReservoirUnits(pod);
           return units === null
             ? t("devices.reservoir_unknown")
-            : t("devices.reservoir_units", { units: units.toFixed(2) });
+            : t("devices.reservoir_units", { units: formatNumber(units, 2) });
         },
       },
       {
@@ -79,16 +85,55 @@ export default function PumpList() {
     [t, pods],
   );
 
+  const current = pods.find((pod) => podActive(pod, pods));
   return (
-    <DataList
-      title={t("devices.pods")}
-      columns={columns}
-      data={pods}
-      isLoading={isLoading}
-      pageSize={25}
-      empty={t("devices.no_pump_data")}
-    />
+    <>
+      {current ? (
+        <DeviceHeader
+          icon={<Syringe />}
+          name={pumpType(current)}
+          status={podInGrace(current, pods) ? t("devices.in_grace_short") : t("devices.active")}
+          connected
+          bars={podBars(current, pods, t)}
+        />
+      ) : (
+        <DeviceHeader icon={<Syringe />} name={t("nav.pump")} status={t("devices.no_active_pod")} connected={false} bars={[]} />
+      )}
+      <DataList
+        title={t("devices.pods")}
+        columns={columns}
+        data={pods}
+        isLoading={isLoading}
+        pageSize={25}
+        empty={t("devices.no_pump_data")}
+      />
+    </>
   );
+}
+
+/** A pod holds at most 200 U. */
+const POD_CAPACITY_UNITS = 200;
+
+/** The running pod's worn time against its rated life, and its reservoir. */
+function podBars(pod: PumpHistoryEntry, pods: PumpHistoryEntry[], t: TFunction): DeviceBar[] {
+  const worn = podWornMs(pod, pods);
+  const rated = podRatedMs(pod);
+  const bars: DeviceBar[] = [
+    {
+      label: t("devices.worn_so_far"),
+      value: `${formatSpan(worn, t)} / ${formatSpan(rated, t)}`,
+      fraction: rated > 0 ? worn / rated : 0,
+    },
+  ];
+  const units = podReservoirUnits(pod);
+  if (units !== null) {
+    bars.push({
+      label: t("devices.pod_capacity"),
+      value: t("devices.reservoir_units", { units: formatNumber(units, 1) }),
+      fraction: units / POD_CAPACITY_UNITS,
+    });
+  }
+  return bars;
 }
 
 /**
@@ -121,15 +166,5 @@ function PodStatusBadge({
         ? t("devices.replaced")
         : t("devices.expired");
 
-  return (
-    <span
-      className="rounded-full px-2 py-0.5 text-xs font-semibold"
-      style={{
-        color,
-        backgroundColor: `color-mix(in srgb, ${color} 18%, transparent)`,
-      }}
-    >
-      {label}
-    </span>
-  );
+  return <StatusChip color={color}>{label}</StatusChip>;
 }

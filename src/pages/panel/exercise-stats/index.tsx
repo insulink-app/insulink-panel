@@ -1,4 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
+import { PageHeader } from "@/components/page-header";
+import { StatStrip } from "@/components/stat-strip";
+import { formatNumber } from "@/lib/format";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
@@ -14,7 +17,6 @@ import {
 } from "@/components/ui/select";
 import sportService from "@/api/services/sport-service";
 import { buildStats, formatScore, sortStats, type ExerciseStat, type SortKey } from "./stats";
-import { SummaryTile } from "./shared";
 import { OverviewCharts } from "./overview-charts";
 import { ExerciseDetail } from "./exercise-detail";
 
@@ -70,24 +72,27 @@ export default function ExerciseStatsPage() {
 
   return (
     <PanelPage title={t("exercise_stats.title")} parents={[{ title: t("nav.health") }]}>
-      <div className="flex flex-col gap-6 py-6">
+      <PageHeader title={t("exercise_stats.title")} />
+      <div className="flex flex-col gap-4">
         {workouts.isLoading || exercises.isLoading ? (
           <CardSkeleton />
         ) : (
           <>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-              <SummaryTile label={t("exercise_stats.total_sessions")} value={workoutList.length} />
-              <SummaryTile label={t("exercise_stats.total_sets")} value={totalSets} />
-              <SummaryTile label={t("exercise_stats.total_reps")} value={totalReps.toLocaleString()} />
-            </div>
+            <StatStrip
+              cells={[
+                { label: t("exercise_stats.total_sessions"), value: formatNumber(workoutList.length) },
+                { label: t("exercise_stats.total_sets"), value: formatNumber(totalSets) },
+                { label: t("exercise_stats.total_reps"), value: formatNumber(totalReps) },
+              ]}
+            />
 
             <OverviewCharts workouts={workoutList} routines={routines.data?.routines ?? []} />
 
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center justify-between gap-4">
-                <h3 className="font-semibold">{t("exercise_stats.per_exercise")}</h3>
+            <DataList
+              title={t("exercise_stats.per_exercise")}
+              action={
                 <Select value={sort} onValueChange={(value) => setSort(value as SortKey)}>
-                  <SelectTrigger className="w-44">
+                  <SelectTrigger size="sm" className="w-44">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -97,14 +102,12 @@ export default function ExerciseStatsPage() {
                     <SelectItem value="best">{t("exercise_stats.sort_best")}</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-              <DataList
-                columns={columns}
-                data={sortedStats}
-                empty={t("exercise_stats.empty")}
-                onRowClick={setSelected}
-              />
-            </div>
+              }
+              columns={columns}
+              data={sortedStats}
+              empty={t("exercise_stats.empty")}
+              onRowClick={setSelected}
+            />
           </>
         )}
       </div>

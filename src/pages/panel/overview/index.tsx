@@ -7,15 +7,26 @@ import nutritionService from "@/api/services/nutrition-service";
 import settingsService from "@/api/services/settings-service";
 import sportService from "@/api/services/sport-service";
 import { DEFAULT_TARGET_HIGH, DEFAULT_TARGET_LOW } from "@/lib/glucose";
+import { useUserInformation } from "@/store/user-store";
+import { PageHeader } from "@/components/page-header";
 import { TimeInRangeCard } from "./glucose-cards";
-import { GlucoseChart } from "./glucose-chart";
+import { GlucoseCard } from "./glucose-card";
 import { NutritionCard } from "./nutrition-card";
 import { ActivityCard } from "./activity-card";
 
 const GLUCOSE_POLL_MS = 60_000;
 
+/** The greeting's key for the hour of the day. */
+function greetingKey(hour: number) {
+  if (hour < 12) {
+    return "overview.greeting_morning";
+  }
+  return hour < 18 ? "overview.greeting_afternoon" : "overview.greeting_evening";
+}
+
 export default function OverviewPage() {
   const { t } = useTranslation();
+  const name = useUserInformation()?.name ?? "";
 
   const { data: settings } = useQuery({
     queryKey: ["settings"],
@@ -61,9 +72,10 @@ export default function OverviewPage() {
 
   return (
     <PanelPage title={t("overview.title")}>
-      <div className="py-6 flex flex-col gap-6">
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
-          <GlucoseChart
+      <PageHeader title={t(greetingKey(new Date().getHours()), { name })} />
+      <div className="flex flex-col gap-4">
+        <div className="grid gap-4 min-[1100px]:grid-cols-[minmax(0,2.3fr)_minmax(0,1fr)]">
+          <GlucoseCard
             entries={entries}
             low={low}
             high={high}
@@ -79,8 +91,7 @@ export default function OverviewPage() {
             isLoading={glucose.isLoading}
           />
         </div>
-
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-4 min-[1100px]:grid-cols-2">
           <NutritionCard
             meals={meals.data?.meals ?? []}
             drinks={drinks.data?.drinks ?? []}

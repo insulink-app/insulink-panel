@@ -1,10 +1,12 @@
 import { useTranslation } from "react-i18next";
-import { format } from "date-fns";
 import { Utensils } from "@/components/icons";
+import { ListRow } from "@/components/list-row";
 import type { Drink, Meal } from "@/api/services/nutrition-service";
 import { formatAmount } from "@/lib/nutrition";
+import { formatNumber } from "@/lib/format";
+import { formatWhen } from "@/lib/when";
 import { sumToday, todayRows } from "./today";
-import { SectionCard, SectionMetric, SectionRow } from "./section-card";
+import { SectionCard } from "./section-card";
 
 /** Today's carbs/bolus/drinks, plus the meals logged most recently. */
 export function NutritionCard({
@@ -16,7 +18,7 @@ export function NutritionCard({
   drinks: Drink[];
   isLoading?: boolean;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const mealTime = (meal: Meal) => meal.time;
   const drinkTime = (drink: Drink) => drink.at;
 
@@ -34,47 +36,24 @@ export function NutritionCard({
       title={t("overview.nutrition_today")}
       to="/nutrition/meals"
       loading={isLoading}
-      metrics={
-        <>
-          <SectionMetric
-            label={t("overview.carbs")}
-            value={`${formatAmount(carbs)} g`}
-            loading={isLoading}
-          />
-          <SectionMetric
-            label={t("overview.bolus")}
-            value={`${formatAmount(bolus)} ${t("nutrition.unit_insulin")}`}
-            loading={isLoading}
-          />
-          <SectionMetric
-            label={t("overview.meals")}
-            value={String(todayRows(meals, mealTime).length)}
-            loading={isLoading}
-          />
-          <SectionMetric
-            label={t("overview.water")}
-            value={`${Math.round(water)} ml`}
-            loading={isLoading}
-          />
-        </>
-      }
+      empty={recent.length === 0}
+      cells={[
+        { label: t("overview.carbs"), value: formatNumber(carbs, 1), unit: "g" },
+        { label: t("overview.bolus"), value: formatNumber(bolus, 1), unit: t("nutrition.unit_insulin") },
+        { label: t("overview.meals"), value: String(todayRows(meals, mealTime).length) },
+        { label: t("overview.water"), value: formatNumber(water), unit: "ml" },
+      ]}
     >
-      {recent.length === 0 ? (
-        <p className="py-6 text-center text-sm text-muted-foreground">
-          {t("common.no_data")}
-        </p>
-      ) : (
-        recent.map((meal) => (
-          <SectionRow
-            key={meal.time}
-            to={`/nutrition/meals/${meal.time}`}
-            icon={<Utensils className="size-4" />}
-            title={meal.entries?.[0]?.name ?? t("nutrition.manual_entry")}
-            subtitle={format(new Date(meal.time), "dd.MM. HH:mm")}
-            value={`${formatAmount(meal.carbs ?? 0)} g`}
-          />
-        ))
-      )}
+      {recent.map((meal) => (
+        <ListRow
+          key={meal.time}
+          to={`/nutrition/meals/${meal.time}`}
+          icon={<Utensils />}
+          title={meal.entries?.[0]?.name ?? t("nutrition.manual_entry")}
+          subtitle={formatWhen(meal.time, t, i18n.language)}
+          value={`${formatAmount(meal.carbs ?? 0)} g`}
+        />
+      ))}
     </SectionCard>
   );
 }

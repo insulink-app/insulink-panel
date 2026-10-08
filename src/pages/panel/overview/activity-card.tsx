@@ -1,5 +1,4 @@
 import { useTranslation } from "react-i18next";
-import { format } from "date-fns";
 import { Bike, Dumbbell, Footprints, Zap } from "@/components/icons";
 import type { LucideIcon } from "@/components/icons";
 import type {
@@ -11,7 +10,10 @@ import type {
 } from "@/api/services/sport-service";
 import { workoutTitle } from "@/lib/workout";
 import { sumToday, todayRows } from "./today";
-import { SectionCard, SectionMetric, SectionRow } from "./section-card";
+import { SectionCard } from "./section-card";
+import { ListRow } from "@/components/list-row";
+import { formatNumber } from "@/lib/format";
+import { formatWhen } from "@/lib/when";
 
 const CARDIO_ICON: Record<CardioType, LucideIcon> = {
   walk: Footprints,
@@ -49,8 +51,6 @@ export function ActivityCard({
   const { t } = useTranslation();
   const workoutStart = (workout: Workout) => workout.started;
   const trainingStart = (training: Training) => training.start;
-  const minutes = (ms: number) =>
-    t("overview.minutes", { n: Math.round(ms / 60000) });
 
   const steps = measurements.filter((entry) => entry.type === "STEPS");
   const activeToday =
@@ -85,50 +85,24 @@ export function ActivityCard({
       title={t("overview.activity_today")}
       to="/health/activity"
       loading={isLoading}
-      metrics={
-        <>
-          <SectionMetric
-            label={t("overview.workouts")}
-            value={String(todayRows(workouts, workoutStart).length)}
-            loading={isLoading}
-          />
-          <SectionMetric
-            label={t("overview.active_time")}
-            value={minutes(activeToday)}
-            loading={isLoading}
-          />
-          <SectionMetric
-            label={t("body.distance")}
-            value={`${(sumToday(trainings, trainingStart, (training) => training.dist) / 1000).toFixed(2)} ${t("body.km")}`}
-            loading={isLoading}
-          />
-          <SectionMetric
-            label={t("body.steps")}
-            value={Math.round(
-              sumToday(
-                steps,
-                (entry) => entry.time,
-                (entry) => entry.value,
-              ),
-            ).toLocaleString()}
-            loading={isLoading}
-          />
-        </>
-      }
+      empty={recent.length === 0}
+      cells={[
+        { label: t("overview.workouts"), value: String(todayRows(workouts, workoutStart).length) },
+        { label: t("overview.active_time"), value: formatNumber(activeToday / 60000), unit: t("overview.unit_min") },
+        {
+          label: t("body.distance"),
+          value: formatNumber(sumToday(trainings, trainingStart, (training) => training.dist) / 1000, 1),
+          unit: t("body.km"),
+        },
+        {
+          label: t("body.steps"),
+          value: formatNumber(sumToday(steps, (entry) => entry.time, (entry) => entry.value)),
+        },
+      ]}
     >
-      {recent.length === 0 ? (
-        <p className="py-6 text-center text-sm text-muted-foreground">
-          {t("common.no_data")}
-        </p>
-      ) : (
-        recent.map((item) => (
-          <RecentActivityRow
-            key={`${item.kind}-${item.data.id}`}
-            item={item}
-            routineName={routineName}
-          />
-        ))
-      )}
+      {recent.map((item) => (
+        <RecentActivityRow key={`${item.kind}-${item.data.id}`} item={item} routineName={routineName} />
+      ))}
     </SectionCard>
   );
 }
@@ -140,26 +114,27 @@ function RecentActivityRow({
   item: ActivityItem;
   routineName: Map<string, string>;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const when = formatWhen(item.at, t, i18n.language);
   if (item.kind === "workout") {
     return (
-      <SectionRow
+      <ListRow
         to={`/health/activity/workout/${item.data.id}`}
-        icon={<Dumbbell className="size-4" />}
+        icon={<Dumbbell />}
         title={workoutTitle(item.data.routine, routineName, t)}
-        subtitle={format(new Date(item.at), "dd.MM. HH:mm")}
+        subtitle={when}
         value={t("activity.set_count", { n: item.data.sets.length })}
       />
     );
   }
   const Icon = CARDIO_ICON[item.data.type];
   return (
-    <SectionRow
+    <ListRow
       to={`/health/activity/training/${item.data.id}`}
-      icon={<Icon className="size-4" />}
+      icon={<Icon />}
       title={t("activity.type_" + item.data.type)}
-      subtitle={format(new Date(item.at), "dd.MM. HH:mm")}
-      value={`${(item.data.dist / 1000).toFixed(2)} ${t("body.km")}`}
+      subtitle={when}
+      value={`${formatNumber(item.data.dist / 1000, 2)} ${t("body.km")}`}
     />
   );
 }

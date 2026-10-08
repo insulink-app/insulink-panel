@@ -1,111 +1,68 @@
-import { ChevronRight, type LucideIcon } from "@/components/icons";
+import { Link, useLocation } from "react-router-dom";
+import type { LucideIcon } from "@/components/icons";
+import { useSidebar } from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils";
+import { activeUrl } from "./active-url";
 
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import {
-  SidebarGroup,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
-} from "@/components/ui/sidebar";
-import { Badge } from "@/components/ui/badge.tsx";
-import { Link } from "react-router-dom";
-import { useLocation } from "react-use";
-import { cn } from "@/lib/utils.ts";
+export interface NavItem {
+  title: string;
+  url: string;
+  icon: LucideIcon;
+  /** Set on device entries: a green dot when connected, grey when not. */
+  connected?: boolean;
+}
 
-export function SidebarNavigation({
-  items,
-}: {
-  items: {
-    title: string;
-    url?: string;
-    icon?: LucideIcon;
-    isActive?: boolean;
-    items: {
-      title: string;
-      url: string;
-      icon?: LucideIcon;
-      notifications?: number;
-      disabled?: boolean;
-    }[];
-  }[];
-}) {
+export interface NavGroup {
+  label?: string;
+  items: NavItem[];
+}
+
+export function SidebarNavigation({ groups }: { groups: NavGroup[] }) {
   const { pathname } = useLocation();
+  const active = activeUrl(
+    pathname,
+    groups.flatMap((group) => group.items.map((item) => item.url)),
+  );
   return (
-    <SidebarGroup>
-      <SidebarMenu>
-        {items.map((item) =>
-          item.items.length > 0 ? (
-            <Collapsible
-              key={item.title}
-              asChild
-              defaultOpen
-              className="group/collapsible"
-            >
-              <SidebarMenuItem>
-                <CollapsibleTrigger asChild>
-                  <SidebarMenuButton tooltip={item.title}>
-                    {item.icon && <item.icon />}
-                    <span>{item.title}</span>
-                    <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                  </SidebarMenuButton>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <SidebarMenuSub>
-                    {item.items?.map((subItem) => (
-                      <SidebarMenuSubItem key={subItem.title}>
-                        <SidebarMenuSubButton
-                          asChild={!subItem.disabled}
-                          isActive={pathname === subItem.url}
-                          className={cn(
-                            subItem.disabled &&
-                              "opacity-50 pointer-events-none",
-                          )}
-                        >
-                          {subItem.disabled ? (
-                            // Sub-items are text-only; only top-level items carry an icon.
-                            <div className="flex items-center gap-2">
-                              <span>{subItem.title}</span>
-                            </div>
-                          ) : (
-                            <Link to={subItem.url}>
-                              <span>{subItem.title}</span>
-                              {subItem.notifications && (
-                                <Badge className="ml-auto h-5 min-w-5 rounded-full px-1 pt-1 font-mono tabular-nums">
-                                  {subItem.notifications}
-                                </Badge>
-                              )}
-                            </Link>
-                          )}
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    ))}
-                  </SidebarMenuSub>
-                </CollapsibleContent>
-              </SidebarMenuItem>
-            </Collapsible>
-          ) : (
-            <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton
-                asChild
-                tooltip={item.title}
-                isActive={pathname === item.url}
-              >
-                <Link to={item.url!}>
-                  {item.icon && <item.icon />}
-                  <span>{item.title}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ),
-        )}
-      </SidebarMenu>
-    </SidebarGroup>
+    <nav className="flex flex-col">
+      {groups.map((group, index) => (
+        <div key={group.label ?? index} className="flex flex-col gap-px">
+          {group.label && (
+            <span className="mx-2.5 mt-3.5 mb-1 text-xs font-bold text-label">{group.label}</span>
+          )}
+          {group.items.map((item) => (
+            <SidebarLink key={item.url} item={item} active={item.url === active} />
+          ))}
+        </div>
+      ))}
+    </nav>
+  );
+}
+
+function SidebarLink({ item, active }: { item: NavItem; active: boolean }) {
+  const { isMobile, setOpenMobile } = useSidebar();
+  const Icon = item.icon;
+  return (
+    <Link
+      to={item.url}
+      aria-current={active ? "page" : undefined}
+      onClick={() => isMobile && setOpenMobile(false)}
+      className={cn(
+        "flex h-[34px] items-center gap-[11px] rounded-[10px] px-2.5 text-sm transition-colors",
+        active ? "bg-panel font-bold text-foreground" : "text-nav-text hover:bg-panel/60 hover:text-foreground",
+      )}
+    >
+      <Icon size={17} weight="regular" className={active ? "text-brand" : "text-nav-icon"} aria-hidden />
+      <span className="truncate">{item.title}</span>
+      {item.connected !== undefined && (
+        <i
+          aria-hidden
+          className={cn(
+            "ml-auto block size-[7px] rounded-full",
+            item.connected ? "bg-glucose-in-range" : "bg-nav-icon/60",
+          )}
+        />
+      )}
+    </Link>
   );
 }

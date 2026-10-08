@@ -1,23 +1,22 @@
 import { useState } from "react";
-import { ChevronsUpDown, UserRound } from "@/components/icons";
-
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { Settings } from "@/components/icons";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
-} from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator.tsx";
+import { useSidebar } from "@/components/ui/sidebar";
 import { SidebarUserDropdownContent } from "@/layouts/panel/sidebar/user/dropdown-content.tsx";
 import { SettingsDialog } from "@/layouts/panel/settings-dialog.tsx";
 
-export function SidebarUser({ user }: { user: { name: string } }) {
+/**
+ * The sidebar's last row: the avatar and name open the account menu (theme,
+ * language, logout), the gear goes to the settings page.
+ */
+export function SidebarUser({ name }: { name: string }) {
+  const { t } = useTranslation();
   const { isMobile } = useSidebar();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsCategory, setSettingsCategory] = useState<string>();
@@ -28,44 +27,35 @@ export function SidebarUser({ user }: { user: { name: string } }) {
   };
 
   return (
-    <SidebarMenu>
-      <Separator className="my-2" />
-      <SidebarMenuItem>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <SidebarMenuButton
-              size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-            >
-              <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarFallback className="rounded-lg">
-                  <UserRound className="size-5" />
-                </AvatarFallback>
-              </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.name}</span>
-              </div>
-              <ChevronsUpDown className="ml-auto size-4" />
-            </SidebarMenuButton>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
-            side={isMobile ? "bottom" : "right"}
-            align="end"
-            sideOffset={4}
-          >
-            <SidebarUserDropdownContent
-              user={user}
-              onOpenSettings={openSettings}
-            />
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </SidebarMenuItem>
+    <div className="mt-2 flex items-center gap-1 border-t px-1.5 pt-2.5">
+      <DropdownMenu>
+        <DropdownMenuTrigger className="flex min-w-0 flex-1 items-center gap-2.5 rounded-[10px] py-1 text-left">
+          <span className="grid size-[30px] shrink-0 place-items-center rounded-full bg-divider text-[13px] font-extrabold text-foreground">
+            {name.slice(0, 1).toUpperCase()}
+          </span>
+          <b className="truncate text-sm text-foreground">{name}</b>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          className="min-w-56 rounded-2xl"
+          side={isMobile ? "top" : "right"}
+          align="end"
+          sideOffset={8}
+        >
+          <SidebarUserDropdownContent user={{ name }} onOpenSettings={openSettings} />
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <Link
+        to="/settings/"
+        aria-label={t("nav.settings")}
+        className="grid size-8 shrink-0 place-items-center rounded-[10px] text-nav-icon transition-colors hover:bg-panel hover:text-foreground"
+      >
+        <Settings size={17} weight="regular" aria-hidden />
+      </Link>
       <SettingsDialog
         open={settingsOpen}
         onOpenChange={setSettingsOpen}
         initialCategory={settingsCategory}
       />
-    </SidebarMenu>
+    </div>
   );
 }

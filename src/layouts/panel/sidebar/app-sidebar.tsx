@@ -1,89 +1,57 @@
-"use client";
-
-import * as React from "react";
+import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import {
   Activity,
-  ChartColumnBig,
+  CalendarClock,
   ChartLine,
   CupSoda,
-  CalendarClock,
   Cpu,
   Download,
   Droplet,
   Dumbbell,
-  HeartPulse,
-  ListChecks,
+  Heart,
   LayoutDashboard,
+  Moon,
   Package,
   Ruler,
+  Running,
   Syringe,
-  Timer,
   Utensils,
-  Moon,
-  Settings,
-  Flag,
 } from "@/components/icons";
-
-import { SidebarNavigation } from "./navigation";
-import { SidebarUser } from "./user";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarRail,
-} from "@/components/ui/sidebar";
-import { Link } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import type { TFunction } from "i18next";
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from "@/components/ui/sidebar";
 import { useUserInformation } from "@/store/user-store.ts";
+import { SidebarNavigation, type NavGroup } from "./navigation";
+import { SidebarUser } from "./user";
+import { useDeviceStatus } from "./use-device-status";
 
-export function AppNavigation(t: TFunction) {
+/**
+ * The navigation, grouped the way the sidebar shows it. The first group has no
+ * label. Settings is not an entry: it opens from the gear in the user row.
+ */
+export function AppNavigation(t: TFunction, status: { sensor: boolean; pump: boolean }): NavGroup[] {
   return [
     {
-      title: t("nav.overview"),
-      url: "/overview/",
-      icon: LayoutDashboard,
-      isActive: false,
-      items: [],
-    },
-    {
-      title: t("nav.glucose"),
-      url: "/glucose/",
-      icon: Droplet,
-      isActive: false,
-      items: [],
-    },
-    {
-      title: t("nav.events"),
-      url: "/events/",
-      icon: CalendarClock,
-      isActive: false,
-      items: [],
-    },
-    {
-      title: t("nav.health"),
-      url: "/health/",
-      icon: Activity,
-      isActive: false,
       items: [
-        { title: t("nav.routines"), url: "/health/routines", icon: Timer },
-        { title: t("nav.exercises"), url: "/health/routines/exercises", icon: ListChecks },
-        { title: t("nav.exercise_stats"), url: "/health/routines/stats", icon: ChartColumnBig },
-        { title: t("nav.activity"), url: "/health/activity", icon: Dumbbell },
-        { title: t("nav.pulse"), url: "/health/pulse", icon: HeartPulse },
+        { title: t("nav.overview"), url: "/overview", icon: LayoutDashboard },
+        { title: t("nav.glucose"), url: "/glucose", icon: Droplet },
+        { title: t("nav.events"), url: "/events", icon: CalendarClock },
+      ],
+    },
+    {
+      label: t("nav.health"),
+      items: [
+        { title: t("nav.routines"), url: "/health/routines", icon: Dumbbell },
+        { title: t("nav.exercises"), url: "/health/routines/exercises", icon: Running },
+        { title: t("nav.exercise_stats"), url: "/health/routines/stats", icon: ChartLine },
+        { title: t("nav.activity"), url: "/health/activity", icon: Activity },
+        { title: t("nav.pulse"), url: "/health/pulse", icon: Heart },
         { title: t("nav.sleep"), url: "/health/sleep", icon: Moon },
         { title: t("nav.body"), url: "/health/body", icon: Ruler },
       ],
     },
     {
-      title: t("nav.nutrition"),
-      url: "/nutrition/",
-      icon: Utensils,
-      isActive: false,
+      label: t("nav.nutrition"),
       items: [
         { title: t("nav.meals"), url: "/nutrition/meals", icon: Utensils },
         { title: t("nav.drinks"), url: "/nutrition/drinks", icon: CupSoda },
@@ -91,72 +59,39 @@ export function AppNavigation(t: TFunction) {
       ],
     },
     {
-      title: t("nav.devices"),
-      url: "/devices/",
-      icon: Cpu,
-      isActive: false,
+      label: t("nav.devices"),
       items: [
-        { title: t("nav.sensor"), url: "/devices/sensor", icon: Droplet },
-        { title: t("nav.pump"), url: "/devices/pump", icon: Syringe },
-      ],
-    },
-    {
-      title: t("nav.export"),
-      url: "/export/",
-      icon: Download,
-      isActive: false,
-      items: [],
-    },
-    {
-      title: t("nav.settings"),
-      url: "/settings/",
-      icon: Settings,
-      isActive: false,
-      items: [
-        { title: t("settings.section_glucose"), url: "/settings/glucose", icon: Droplet },
-        { title: t("settings.section_bolus"), url: "/settings/bolus", icon: Syringe },
-        { title: t("settings.section_basal"), url: "/settings/basal", icon: ChartLine },
-        { title: t("settings.section_body"), url: "/settings/body", icon: Ruler },
-        { title: t("settings.section_activity_goals"), url: "/settings/activity_goals", icon: Flag },
-        { title: t("settings.section_nutrition"), url: "/settings/nutrition", icon: Utensils },
+        { title: t("nav.sensor"), url: "/devices/sensor", icon: Cpu, connected: status.sensor },
+        { title: t("nav.pump"), url: "/devices/pump", icon: Syringe, connected: status.pump },
       ],
     },
   ];
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar() {
   const { t } = useTranslation();
   const userInformation = useUserInformation();
-  const user = { name: userInformation?.name ?? "" };
+  const status = useDeviceStatus();
   return (
-    <div id="sidebar">
-      <Sidebar className="z-40" collapsible="icon" {...props}>
-        <SidebarHeader>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton size="lg" asChild>
-                <Link to="/overview/">
-                  <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary p-0.5">
-                    <img
-                      src="/logo-white.png"
-                      alt="Insulink"
-                      className="size-full object-contain"
-                    />
-                  </div>
-                  <span className="text-lg font-bold">Insulink</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarNavigation items={AppNavigation(t)} />
-        </SidebarContent>
-        <SidebarFooter>
-          <SidebarUser user={user} />
-        </SidebarFooter>
-        <SidebarRail />
-      </Sidebar>
-    </div>
+    <Sidebar collapsible="offcanvas" className="z-40">
+      <SidebarHeader className="px-3 pt-4 pb-0">
+        <Link to="/overview/" className="flex items-center gap-2.5 rounded-[10px] px-1.5 pt-0.5 pb-4">
+          <span className="grid size-7 place-items-center rounded-[9px] bg-primary p-1">
+            <img src="/logo-white.png" alt="" className="size-full object-contain dark:hidden" />
+            <img src="/logo-black.png" alt="" className="hidden size-full object-contain dark:block" />
+          </span>
+          <b className="text-base tracking-tight text-foreground">Insulink</b>
+        </Link>
+      </SidebarHeader>
+      <SidebarContent className="px-3">
+        <SidebarNavigation groups={AppNavigation(t, status)} />
+      </SidebarContent>
+      <SidebarFooter className="gap-0 px-3 pt-3 pb-4">
+        <SidebarNavigation
+          groups={[{ items: [{ title: t("nav.export"), url: "/export", icon: Download }] }]}
+        />
+        <SidebarUser name={userInformation?.name ?? ""} />
+      </SidebarFooter>
+    </Sidebar>
   );
 }

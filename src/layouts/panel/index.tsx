@@ -4,28 +4,31 @@ import { AppHeader, type Crumb } from "./header";
 interface PanelPageProps {
   title?: string;
   parents?: Crumb[];
-  layout?: boolean;
+  /**
+   * "full" is the workout runner: the whole width, with the sidebar collapsed
+   * (the topbar toggle still opens it). Pages default to 1600 px.
+   */
+  width?: "default" | "full";
   children?: React.ReactNode;
 }
+
+const CONTENT_WIDTH = {
+  default: "max-w-[1600px] px-4 py-7 sm:px-7 xl:px-10",
+  full: "max-w-none px-4 py-7 sm:px-7 xl:px-10 xl:py-9",
+};
 
 export default function PanelPage({
   title,
   parents,
-  layout,
+  width = "default",
   children,
 }: PanelPageProps) {
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={width !== "full"}>
       <AppSidebar />
-      <SidebarInset>
+      <SidebarInset className="min-w-0">
         <AppHeader title={title} parents={parents} />
-        <div
-          className={
-            layout == false
-              ? ""
-              : "w-[min(1500px,95%)] mx-auto flex flex-col flex-1"
-          }
-        >
+        <div className={`mx-auto flex w-full min-w-0 flex-1 flex-col ${CONTENT_WIDTH[width]}`}>
           {children}
         </div>
       </SidebarInset>

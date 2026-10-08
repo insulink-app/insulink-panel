@@ -63,7 +63,7 @@ export function SettingsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="!max-w-[800px] p-0 gap-0 overflow-hidden">
         <div className="flex h-[520px] w-full">
-          <div className="flex w-[210px] shrink-0 flex-col space-y-1 overflow-y-auto rounded-l-md bg-secondary/30 p-3">
+          <div className="flex w-[210px] shrink-0 flex-col space-y-1 overflow-y-auto border-r border-divider p-3">
             {navItems.map((item) => (
               <SidebarItem
                 key={item.id}

@@ -41,6 +41,7 @@ export {
 // Names that map to a differently-named Phosphor glyph.
 export {
   Pulse as Activity,
+  PersonSimpleRun as Running,
   Bicycle as Bike,
   Book as BookA,
   ChartBar as ChartColumnBig,

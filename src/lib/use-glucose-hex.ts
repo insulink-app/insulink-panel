@@ -6,9 +6,9 @@ export function useGlucoseHex() {
   const read = () => {
     const style = getComputedStyle(document.documentElement);
     return {
-      low: style.getPropertyValue("--glucose-low").trim() || "#e0533d",
-      "in-range": style.getPropertyValue("--glucose-in-range").trim() || "#2e9e5b",
-      high: style.getPropertyValue("--glucose-high").trim() || "#e8a13a",
+      low: style.getPropertyValue("--glucose-low").trim() || "#ff6b7f",
+      "in-range": style.getPropertyValue("--glucose-in-range").trim() || "#7ccb8f",
+      high: style.getPropertyValue("--glucose-high").trim() || "#f4b740",
     } as Record<string, string>;
   };
   const [colors, setColors] = useState(read);

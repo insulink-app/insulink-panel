@@ -85,125 +85,132 @@
   --color-glucose-low: var(--glucose-low);
 
   --color-glucose-high: var(--glucose-high);
+
+  --color-ground: var(--ground);
+  --color-panel: var(--panel);
+  --color-raised: var(--raised);
+  --color-raised-strong: var(--raised-strong);
+  --color-line: var(--line);
+  --color-divider: var(--divider);
+  --color-label: var(--text-label);
+  --color-brand: var(--brand);
+  --color-brand-text: var(--brand-text);
+  --color-on-brand: var(--on-brand);
+  --color-pulse: var(--pulse);
+  --color-teal: var(--teal);
+  --color-nav-icon: var(--nav-icon);
+  --color-nav-text: var(--nav-text);
+  --color-placeholder: var(--placeholder);
+
+  --font-sans: "Atkinson Hyperlegible Next", system-ui, sans-serif;
 }
 
-/* Palette takes the mobile app's slate-blue brand (`--primary`) and glucose
-   colours (see `insulink-app/lib/src/theme/app_theme.dart`), but the surfaces
-   are web-native: clean white cards on a soft page in light, a clearly-stepped
-   grey ladder in dark. `--accent` is a NEUTRAL grey — it is shadcn's generic
-   hover/selected tone (dropdowns, selects, ghost buttons), so a tinted accent
-   turns every hover blue. Brand colour lives on `--primary`, the ring and the
-   charts only. 14px corners. */
+/* The design tokens of the redesign, the one place every colour starts from.
+   They mirror the app's `insulink_colors.dart` (dark and light) and the panel
+   spec in `design/panel/PANEL.md`. The shadcn names below are only aliases onto
+   them, so the stock components follow the same palette. Green, amber and red
+   are reserved for glucose ranges and device status, never for decoration. */
 :root {
-  --radius: 0.875rem; /* app buttonRadius = 14px */
+  --radius: 0.875rem;
 
-  /* Mirrors the mobile app's light ladder (app_theme.dart): the page is the
-     BRIGHTEST thing, and surfaces that sit on it step DOWNWARD — cards are a
-     shade deeper than the page, raised layers (popovers) deeper still. Hover
-     DARKENS (neutral, not a brand tint), like the app. */
-  --background: #fafafa; /* _lightBg */
-  --foreground: #1b1f27;
+  --ground: #edf2f6;
+  --panel: #ffffff;
+  --raised: #f5f8fb;
+  --raised-strong: #e8eef4;
+  --line: rgba(15, 27, 38, 0.08);
+  --divider: #d3dee7;
+  --text: #0f1b26;
+  --text-muted: #4d6175;
+  --text-label: #5b6f82;
+  --nav-icon: #5b6f82;
+  --nav-text: #3a4d60;
+  --placeholder: #7d8fa0;
+  --brand: #3346c8;
+  --brand-text: #2a3aa8;
+  --on-brand: #ffffff;
+  --range: #3b8a4f;
+  --high: #a86a00;
+  --low: #c8293f;
+  --very-high: #8a5500;
+  --very-low: #9e1f31;
+  --pulse: #7b4fcc;
+  --teal: #0b7f6a;
+  --prediction: #6a7e91;
 
-  --card: #e8e8e8; /* _lightSurface — deeper than the page */
-  --card-foreground: #1b1f27;
-
-  --popover: #d8dce3; /* _lightSurfaceRaised — most raised layer */
-  --popover-foreground: #1b1f27;
-
-  --primary: #45569f; /* app lightPrimary (fill) */
-  --primary-foreground: #ffffff;
-
-  /* GlucoseColors.standard */
-  --glucose-in-range: #2e9e5b;
-  --glucose-low: #e0533d;
-  --glucose-high: #e8a13a;
-
-  --secondary: #dce0e7;
-  --secondary-foreground: #1b1f27;
-
-  --muted: #dce0e7;
-  --muted-foreground: #5a6070; /* app _lightMuted */
-
-  --accent: #d1d6de; /* neutral hover/selected — DARKENS the surface, like the app */
-  --accent-foreground: #1b1f27;
-
-  --destructive: #c42108; /* app _lightError */
-
-  --border: #d5d9e1; /* app _lightBorder */
-  --input: #dce0e7;
-  --ring: #45569f;
-
-  /* brand family + glucose semantics, no stray teal/purple */
-  --chart-1: #45569f;
-  --chart-2: #5d73cc;
-  --chart-3: #93a6ff;
-  --chart-4: #2e9e5b;
-  --chart-5: #e8a13a;
-
-  /* Sidebar takes the app's surface tone; the active/hover tab steps DOWN to a
-     deeper grey (not lighter), matching the app's "raised = darker" light
-     ladder. No brand blue — brand shows only on the focus ring. */
-  --sidebar: #e8e8e8;
-  --sidebar-foreground: #3a3f4a;
-  --sidebar-primary: #45569f;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #d2d7df;
-  --sidebar-accent-foreground: #1b1f27;
-  --sidebar-border: #d5d9e1;
-  --sidebar-ring: #45569f;
+  --sleep-deep: #8c7bff;
+  --sleep-light: #5bc0f8;
+  --sleep-rem: #2ed8b6;
+  --sleep-restless: #f06292;
 }
 
 .dark {
-  /* Clearly-stepped ladder so stacked surfaces (a bg-secondary box on a card on
-     the page) each read as their own layer. */
-  --background: #14171c;
-  --foreground: #e8ebf0;
+  --ground: #0f1b26;
+  --panel: #152432;
+  --raised: #1a2c3d;
+  --raised-strong: #1e3042;
+  --line: rgba(234, 241, 246, 0.06);
+  --divider: #26394b;
+  --text: #eaf1f6;
+  --text-muted: #97a9ba;
+  /* The spec's #62778B lifted to reach 4.5:1 on the ground. */
+  --text-label: #72879b;
+  --nav-icon: #7c90a3;
+  --nav-text: #a9b9c8;
+  --placeholder: #4f6377;
+  --brand: #9daeff;
+  --brand-text: #c4ceff;
+  --on-brand: #0f1b26;
+  --range: #7ccb8f;
+  --high: #f4b740;
+  --low: #ff6b7f;
+  --very-high: #e59a2e;
+  --very-low: #c8293f;
+  --pulse: #c9a7ff;
+  --teal: #2ed8b6;
+  --prediction: #97a9ba;
+}
 
-  --card: #1c2027;
-  --card-foreground: #e8ebf0;
+/* shadcn aliases. `--accent` stays shadcn's neutral hover tone (a raised
+   surface); the brand colour is `--primary`. */
+:root,
+.dark {
+  --background: var(--ground);
+  --foreground: var(--text);
+  --card: var(--panel);
+  --card-foreground: var(--text);
+  --popover: var(--panel);
+  --popover-foreground: var(--text);
+  --primary: var(--brand);
+  --primary-foreground: var(--on-brand);
+  --secondary: var(--raised);
+  --secondary-foreground: var(--text);
+  --muted: var(--raised);
+  --muted-foreground: var(--text-muted);
+  --accent: var(--raised-strong);
+  --accent-foreground: var(--text);
+  --destructive: var(--low);
+  --border: var(--line);
+  --input: var(--divider);
+  --ring: var(--brand);
 
-  --popover: #2b313b;
-  --popover-foreground: #e8ebf0;
+  --glucose-in-range: var(--range);
+  --glucose-low: var(--low);
+  --glucose-high: var(--high);
 
-  --primary: #5d73cc; /* app darkPrimary (fill) */
-  --primary-foreground: #ffffff;
+  --chart-1: var(--brand);
+  --chart-2: var(--teal);
+  --chart-3: var(--pulse);
+  --chart-4: var(--text-muted);
+  --chart-5: var(--brand-text);
 
-  /* GlucoseColors.headlineDark — vivid on dark */
-  --glucose-in-range: #39ef82;
-  --glucose-low: #ff453a;
-  --glucose-high: #ffb23e;
-
-  /* A clear step above --card, so bg-secondary boxes (sleep tiles, rows) stay
-     visible even at reduced opacity. */
-  --secondary: #272d37;
-  --secondary-foreground: #e8ebf0;
-
-  --muted: #272d37;
-  --muted-foreground: #a6aebf; /* app _darkMuted */
-
-  --accent: #2a313c; /* neutral hover/selected — NOT a brand tint */
-  --accent-foreground: #e8ebf0;
-
-  --destructive: #e0533d; /* app _darkError */
-
-  --border: #313842;
-  --input: #272d37;
-  --ring: #5d73cc;
-
-  --chart-1: #5d73cc;
-  --chart-2: #9dacea;
-  --chart-3: #93a6ff;
-  --chart-4: #5dd98c;
-  --chart-5: #ffb23e;
-
-  --sidebar: #1c2027;
-  --sidebar-foreground: #c4cad6;
-  --sidebar-primary: #5d73cc;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #2a313c;
-  --sidebar-accent-foreground: #e8ebf0;
-  --sidebar-border: #313842;
-  --sidebar-ring: #5d73cc;
+  --sidebar: var(--ground);
+  --sidebar-foreground: var(--nav-text);
+  --sidebar-primary: var(--brand);
+  --sidebar-primary-foreground: var(--on-brand);
+  --sidebar-accent: var(--panel);
+  --sidebar-accent-foreground: var(--text);
+  --sidebar-border: var(--line);
+  --sidebar-ring: var(--brand);
 }
 
 @layer base {
@@ -212,8 +219,10 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+    font-variant-numeric: tabular-nums;
   }
+
 
   /* Tailwind v4 dropped the pointer from buttons; everything clickable gets it
      back here, once, instead of a `cursor-pointer` on every call site. */
@@ -245,6 +254,14 @@
   [role^="menuitem"][data-disabled] {
     cursor: not-allowed;
   }
+}
+
+/* One visible focus ring everywhere: 3 px brand outline, 2 px offset. Kept
+   outside the layers on purpose, so it outranks the `outline-none` the stock
+   components carry. Text fields show focus as a brand border instead. */
+:focus-visible:not(input, textarea, select, [role="combobox"]) {
+  outline: 3px solid var(--brand);
+  outline-offset: 2px;
 }
 
 /* Phosphor icons draw with more internal padding than the lucide icons they

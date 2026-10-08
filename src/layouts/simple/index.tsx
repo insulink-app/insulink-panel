@@ -5,7 +5,7 @@ type Props = {
 };
 export default function SimpleLayout({ children }: Props) {
   return (
-    <div className="flex h-screen w-full flex-col text-text-base bg-bg">
+    <div className="flex min-h-svh w-full flex-col bg-background text-foreground">
       {children}
     </div>
   );

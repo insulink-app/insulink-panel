@@ -44,7 +44,8 @@
       "theme": "Aussehen",
       "theme.dark": "Dunkel",
       "theme.light": "Hell",
-      "theme.system": "System"
+      "theme.system": "System",
+      "toggle": "Seitenleiste ein- oder ausblenden"
     }
   },
   "nav": {
@@ -89,11 +90,15 @@
     "back": "Zurück",
     "previous_page": "Vorherige Seite",
     "next_page": "Nächste Seite",
-    "range_hours": "{{n}}h",
-    "range_days": "{{n}}d",
+    "range_hours": "{{n}} h",
+    "range_days": "{{n}} T",
     "older": "Älter",
     "newer": "Neuer",
-    "latest": "Aktuell"
+    "latest": "Aktuell",
+    "close": "Schließen",
+    "now": "jetzt",
+    "today_at": "Heute, {{time}}",
+    "yesterday_at": "Gestern, {{time}}"
   },
   "login": {
     "welcome": "Willkommen zurück",
@@ -135,7 +140,12 @@
     "activity_today": "Sport heute",
     "workouts": "Workouts",
     "active_time": "Aktive Zeit",
-    "minutes": "{{n}} Min."
+    "minutes": "{{n}} Min.",
+    "greeting_morning": "Guten Morgen, {{name}}",
+    "greeting_afternoon": "Guten Tag, {{name}}",
+    "greeting_evening": "Guten Abend, {{name}}",
+    "unit_min": "min",
+    "range": "Zeitraum"
   },
   "glucose": {
     "mgdl": "mg/dL",
@@ -286,7 +296,10 @@
     "reservoir_units": "{{units}} E",
     "reservoir_unknown": "unbekannt",
     "in_grace_short": "Kulanzzeit",
-    "col_code": "Sensorcode"
+    "col_code": "Sensorcode",
+    "no_active_sensor": "Kein aktiver Sensor",
+    "no_active_pod": "Kein aktiver Pod",
+    "pod_capacity": "Reservoir"
   },
   "account": {
     "title": "Account",
@@ -513,7 +526,11 @@
     },
     "sets_progress": "{{done}} von {{planned}} Sätzen",
     "reps_up": "Mehr Wiederholungen",
-    "reps_down": "Weniger Wiederholungen"
+    "reps_down": "Weniger Wiederholungen",
+    "session_progress": "{{exercise}} / {{exercises}} Übungen · {{done}} / {{planned}} Sätze",
+    "ends": "Ende",
+    "workout_progress": "Trainingsfortschritt",
+    "vitals": "Vitalwerte"
   },
   "exercises": {
     "title": "Übungen",

@@ -2,6 +2,7 @@ import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { XIcon } from "@/components/icons";
 
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
 function Dialog({
@@ -21,6 +22,10 @@ function DialogPortal({
 }: React.ComponentProps<typeof DialogPrimitive.Portal>) {
   return <DialogPrimitive.Portal data-slot="dialog-portal" {...props} />;
 }
+
+/** The round X every dialog carries at its top right. */
+export const DIALOG_CLOSE_CLASS =
+  "absolute top-4 right-4 grid size-10 place-items-center rounded-full bg-secondary text-foreground transition-colors hover:bg-accent disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4";
 
 function DialogClose({
   ...props
@@ -52,13 +57,14 @@ function DialogContent({
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean;
 }) {
+  const { t } = useTranslation();
   return (
     <DialogPortal data-slot="dialog-portal">
       <DialogOverlay />
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg duration-200 sm:max-w-lg",
+          "bg-card data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-5 rounded-[28px] border p-6 duration-200 sm:max-w-md",
           className,
         )}
         {...props}
@@ -67,10 +73,10 @@ function DialogContent({
         {showCloseButton && (
           <DialogPrimitive.Close
             data-slot="dialog-close"
-            className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
+            className={DIALOG_CLOSE_CLASS}
+            aria-label={t("common.close")}
           >
-            <XIcon />
-            <span className="sr-only">Close</span>
+            <XIcon aria-hidden />
           </DialogPrimitive.Close>
         )}
       </DialogPrimitive.Content>
@@ -82,7 +88,7 @@ function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="dialog-header"
-      className={cn("flex flex-col gap-2 text-center sm:text-left", className)}
+      className={cn("flex flex-col gap-2 pr-10 text-left", className)}
       {...props}
     />
   );
@@ -93,7 +99,7 @@ function DialogFooter({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="dialog-footer"
       className={cn(
-        "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",
+        "flex flex-col-reverse gap-2 *:w-full",
         className,
       )}
       {...props}
@@ -108,7 +114,7 @@ function DialogTitle({
   return (
     <DialogPrimitive.Title
       data-slot="dialog-title"
-      className={cn("text-lg leading-none font-semibold", className)}
+      className={cn("text-lg leading-tight font-extrabold", className)}
       {...props}
     />
   );

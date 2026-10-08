@@ -1,6 +1,7 @@
 import * as React from "react";
 
-const MOBILE_BREAKPOINT = 768;
+// The sidebar turns into a drawer below this width.
+const MOBILE_BREAKPOINT = 900;
 
 function subscribe(callback: () => void) {
   const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);

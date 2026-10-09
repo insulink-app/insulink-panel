@@ -16,7 +16,7 @@ export function PageHeader({
 }) {
   return (
     <div className="mb-[22px] flex flex-wrap items-center gap-x-4 gap-y-3">
-      <div className="min-w-0 flex-1">
+      <div className="min-w-[min(100%,12rem)] flex-1">
         <h1 className="text-[30px] leading-tight font-extrabold tracking-[-0.02em] break-words">{title}</h1>
         {subtitle && <span className="mt-1 block text-sm text-muted-foreground">{subtitle}</span>}
       </div>

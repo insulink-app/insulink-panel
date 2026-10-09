@@ -51,7 +51,7 @@ export function ExerciseDetail({
   return (
     <Card className="gap-0 p-6">
       <div className="flex flex-wrap items-start gap-3">
-        <div className="min-w-0 flex-1">
+        <div className="min-w-[min(100%,14rem)] flex-1">
           <h2 className="text-[26px] leading-tight font-extrabold break-words">{exercise.name}</h2>
           <span className="text-sm text-muted-foreground">
             {t("exercises.kind_" + exercise.kind)}

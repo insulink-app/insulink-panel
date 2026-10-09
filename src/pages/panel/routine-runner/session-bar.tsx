@@ -62,7 +62,10 @@ export function SessionTimeline(props: {
       <b role="timer" aria-label={t("routines.total")} className="text-base">
         {formatClock(props.elapsed)}
       </b>
+      {/* Keyed by the current exercise: a switch re-mounts the segments at
+          their new fill instead of easing each one there on its own. */}
       <div
+        key={props.exerciseIndex}
         role="progressbar"
         aria-label={t("routines.workout_progress")}
         aria-valuemin={0}
@@ -95,14 +98,16 @@ export function SessionTimeline(props: {
 
 /**
  * One exercise of the timeline, as wide as it has sets. The fill eases over
- * the clock's one-second step, so it glides instead of jumping.
+ * the clock's one-second step, so it glides instead of jumping. It scales
+ * rather than resizes: a width snaps to whole pixels and stutters, a transform
+ * moves in sub-pixels on the compositor.
  */
 function TimelineSegment({ sets, filled }: { sets: number; filled: number }) {
   return (
     <span className="block h-2 overflow-hidden rounded bg-divider" style={{ flexGrow: Math.max(1, sets), flexBasis: 0 }}>
       <i
-        className="block h-full bg-primary transition-[width] duration-1000 ease-linear motion-reduce:transition-none"
-        style={{ width: `${Math.min(1, filled) * 100}%` }}
+        className="block h-full origin-left bg-primary transition-transform duration-1000 ease-linear will-change-transform motion-reduce:transition-none"
+        style={{ transform: `scaleX(${Math.min(1, filled)})` }}
       />
     </span>
   );

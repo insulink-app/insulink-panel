@@ -34,7 +34,8 @@ test("editing an exercise replaces it in place and keeps the rest", async ({ pag
   const { writes } = await fakeSportApi(page, { exercises: LIBRARY });
   await signInAndOpen(page, "/health/routines/exercises");
 
-  await page.getByRole("button", { name: "Edit" }).nth(1).click();
+  await page.getByRole("button", { name: PUSHUP.name }).click();
+  await page.getByRole("button", { name: "Edit" }).click();
   const dialog = page.getByRole("dialog");
   await expect(dialog.getByRole("textbox")).toHaveValue(PUSHUP.name);
   await dialog.getByRole("textbox").fill("Diamond push-up");

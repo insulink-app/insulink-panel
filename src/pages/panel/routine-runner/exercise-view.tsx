@@ -2,19 +2,17 @@ import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { CheckIcon } from "@/components/icons";
-import type { Routine, SetLog, SportExercise } from "@/api/services/sport-service";
+import type { SetLog } from "@/api/services/sport-service";
 import { formatClock } from "./core";
-import { JumpHeader, LastTimeChip } from "./controls";
+import { LastTimeChip } from "./controls";
 import { RepsStepper, WeightStepper } from "./number-stepper";
 
-// The set being done: which one it is, its stopwatch, the reps (and weight) to
+// The set being done: its name, its stopwatch, the reps (and weight) to
 // log, the number to beat from last time, and the one button that logs it.
 export function ExerciseView(props: {
   name: string;
   exerciseIndex: number;
-  totalExercises: number;
   setNumber: number;
-  totalSets: number;
   elapsed: number;
   isTimed: boolean;
   isWeighted: boolean;
@@ -24,11 +22,6 @@ export function ExerciseView(props: {
   onReps: (reps: number) => void;
   onWeight: (delta: number) => void;
   lastComparable?: SetLog;
-  items: Routine["items"];
-  exercises: SportExercise[];
-  exerciseById: (id: string) => SportExercise | undefined;
-  onJump: (index: number) => void;
-  onAddExercise: (exerciseId: string) => void;
   onComplete: () => void;
 }) {
   const { t } = useTranslation();
@@ -42,15 +35,7 @@ export function ExerciseView(props: {
   }, [props.exerciseIndex, props.setNumber, props.isTimed]);
   return (
     <div className="flex flex-col items-center text-center">
-      <JumpHeader
-        label={`${t("routines.exercise")} ${props.exerciseIndex + 1}/${props.totalExercises}  ·  ${t("routines.set")} ${props.setNumber}/${props.totalSets}`}
-        items={props.items}
-        exercises={props.exercises}
-        exerciseById={props.exerciseById}
-        onJump={props.onJump}
-        onAdd={props.onAddExercise}
-      />
-      <h2 className="mt-2 max-w-full text-[clamp(34px,4vw,52px)] leading-tight font-extrabold tracking-tight break-words">
+      <h2 className="max-w-full text-[clamp(34px,4vw,52px)] leading-tight font-extrabold tracking-tight break-words">
         {props.name}
       </h2>
       <div className="mt-3.5 text-[clamp(96px,11vw,176px)] leading-none font-extrabold tracking-[-0.05em]">

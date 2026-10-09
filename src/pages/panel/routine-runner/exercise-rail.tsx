@@ -1,6 +1,7 @@
 // The workout's running order, at the right edge of the runner: every exercise
 // with what has happened to it in plain words (sets done, on now, still open),
-// and the two ways to change the plan on the spot under the current one.
+// the two ways to change the plan on the spot under the current one, and a way
+// to add one more exercise to this session.
 import { useTranslation } from "react-i18next";
 import { ArrowsLeftRight, CheckIcon, SkipForward } from "@/components/icons";
 import type { RoutineItem, SetLog, SportExercise } from "@/api/services/sport-service";
@@ -20,6 +21,7 @@ type RailProps = {
   onSkip: () => void;
   onSwap: (exerciseId: string) => void;
   onJump: (index: number) => void;
+  onAdd: (exerciseId: string) => void;
 };
 
 /** The pill shape of the current exercise's Skip and Swap. */
@@ -35,6 +37,7 @@ export function ExerciseRail(props: RailProps) {
           <RailStep key={item.id} item={item} index={index} {...props} />
         ))}
       </ol>
+      <AddExerciseDialog exercises={props.exercises} onAdd={props.onAdd} variant="ghost" className="mt-2 w-full" />
     </aside>
   );
 }

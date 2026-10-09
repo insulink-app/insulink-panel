@@ -6,16 +6,16 @@ import { AddExerciseDialog, JumpHeader, LastTimeChip } from "./controls";
 import { RepsStepper, WeightStepper } from "./number-stepper";
 import { RestRing } from "./rest-ring";
 
-// The rest between two sets: the countdown ring, what comes next and its number
-// from last time, the set just done (still correctable), and the way on.
+// The rest between two sets: the countdown ring, the coming set's number from
+// last time, the set just done (still correctable), and the way on. What comes
+// next is shown in the exercise rail.
 export function RestView(props: {
   expired: boolean;
   remaining: number;
   overtime: number;
   total: number;
-  nextName: string;
-  setNumber: number;
-  totalSets: number;
+  endsAt: number | null;
+  paused: boolean;
   items: Routine["items"];
   exercises: SportExercise[];
   exerciseById: (id: string) => SportExercise | undefined;
@@ -41,19 +41,19 @@ export function RestView(props: {
         overtime={props.overtime}
         expired={props.expired}
         total={props.total}
+        endsAt={props.endsAt}
+        paused={props.paused}
       />
-      <JumpHeader
-        label={
-          props.awaitingNext
-            ? t("routines.pick_next")
-            : `${t("routines.next")} ${props.nextName}  ·  ${t("routines.set")} ${props.setNumber}/${props.totalSets}`
-        }
-        items={props.items}
-        exercises={props.exercises}
-        exerciseById={props.exerciseById}
-        onJump={props.onJump}
-        onAdd={props.onAddExercise}
-      />
+      {props.awaitingNext && (
+        <JumpHeader
+          label={t("routines.pick_next")}
+          items={props.items}
+          exercises={props.exercises}
+          exerciseById={props.exerciseById}
+          onJump={props.onJump}
+          onAdd={props.onAddExercise}
+        />
+      )}
       {props.lastComparable && <LastTimeChip set={props.lastComparable} />}
       {props.lastSet && props.lastSet.reps != null && <PreviousSet {...props} />}
       <div className="mt-2 grid w-full max-w-[420px] grid-cols-2 gap-3">

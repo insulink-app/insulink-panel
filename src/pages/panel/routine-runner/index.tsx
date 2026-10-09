@@ -220,9 +220,8 @@ function Runner({
               remaining={restRemaining}
               overtime={restOvertime}
               total={restTotal}
-              nextName={exercise?.name ?? "—"}
-              setNumber={core.setIndex + 1}
-              totalSets={item.sets}
+              endsAt={core.restEndsAt}
+              paused={core.pausedAt != null}
               items={routine.items}
               exercises={exercises}
               exerciseById={exerciseById}
@@ -239,9 +238,7 @@ function Runner({
             <ExerciseView
               name={exercise?.name ?? "—"}
               exerciseIndex={core.exerciseIndex}
-              totalExercises={routine.items.length}
               setNumber={core.setIndex + 1}
-              totalSets={item.sets}
               elapsed={setElapsed}
               isTimed={exercise?.kind === "timed"}
               isWeighted={exercise?.kind === "weighted"}
@@ -251,11 +248,6 @@ function Runner({
               onReps={runner.recordReps}
               onWeight={runner.adjustWeight}
               lastComparable={lastComparable}
-              items={routine.items}
-              exercises={exercises}
-              exerciseById={exerciseById}
-              onJump={runner.jumpTo}
-              onAddExercise={addExercise}
               onComplete={runner.completeSet}
             />
           )}
@@ -275,6 +267,7 @@ function Runner({
               onSkip={skipExercise}
               onSwap={swapExercise}
               onJump={runner.jumpTo}
+              onAdd={addExercise}
             />
           )}
         </div>

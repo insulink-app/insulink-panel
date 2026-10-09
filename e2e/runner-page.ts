@@ -50,9 +50,12 @@ export async function openLiveRunner(page: Page, routineId: string, seed: Partia
   return api;
 }
 
-/** The "Exercise 1/2 · Set 1/3" line, whitespace-tolerant. */
-export function position(page: Page, exercise: string, set: string) {
-  return page.getByText(new RegExp(`Exercise ${exercise}\\s+·\\s+Set ${set}`));
+/** Where the workout stands: "1/2" exercises in the header, "1/3" sets on the current card. */
+export async function expectPosition(page: Page, exercise: string, set: string) {
+  const [exerciseNumber, exercises] = exercise.split("/");
+  const [setNumber, sets] = set.split("/");
+  await expect(page.getByText(`${exerciseNumber} / ${exercises} exercises`)).toBeVisible();
+  await expect(currentCard(page)).toContainText(`set ${setNumber} of ${sets}`);
 }
 
 /** The running order at the right edge. */

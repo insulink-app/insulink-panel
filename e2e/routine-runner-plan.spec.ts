@@ -6,7 +6,7 @@ import {
   expectWorkoutPage,
   finishWorkout,
   openRunner,
-  position,
+  expectPosition,
   runningOrder,
 } from "./runner-page";
 import { BENCH, FULL_BODY, LIBRARY, PLANK, PUSHUP } from "./sport-fixtures";
@@ -50,7 +50,7 @@ test("skipping during a rest drops the remaining sets of that exercise", async (
   await expect(page.getByText("Rest", { exact: true })).toBeVisible();
 
   await page.getByRole("button", { name: "Skip", exact: true }).click();
-  await expect(position(page, "2/3", "1/2")).toBeVisible();
+  await expectPosition(page, "2/3", "1/2");
   await completeSet(page);
   await finishWorkout(page);
 
@@ -64,7 +64,7 @@ test("a swap replaces the exercise for this session only", async ({ page }) => {
   await swapTo(page, PUSHUP.name);
 
   await expect(currentCard(page)).toContainText(PUSHUP.name);
-  await expect(position(page, "1/3", "1/2")).toBeVisible();
+  await expectPosition(page, "1/3", "1/2");
   await expect(page.getByRole("spinbutton")).toHaveValue("8");
   await advance(page, 1);
   await expect
@@ -86,7 +86,8 @@ test("a swap during the rest changes what comes next and keeps resting", async (
   await swapTo(page, PLANK.name);
 
   await expect(page.getByText("Rest", { exact: true })).toBeVisible();
-  await expect(page.getByText(/Next: Plank\s+·\s+Set 1\/2/)).toBeVisible();
+  await expect(currentCard(page)).toContainText(PLANK.name);
+  await expect(currentCard(page)).toContainText("After the rest: set 1 of 2");
   await page.getByRole("button", { name: "Continue" }).click();
   await expect(page.getByText("Target: 8 s")).toBeVisible();
 });
@@ -95,11 +96,11 @@ test("a click on an exercise in the running order jumps there, back as well", as
   const { writes } = await openRunner(page, FULL_BODY.id, SEED);
   await step(page, PLANK.name).getByRole("button").click();
   await expect(currentCard(page)).toContainText(PLANK.name);
-  await expect(position(page, "3/3", "1/1")).toBeVisible();
+  await expectPosition(page, "3/3", "1/1");
 
   await step(page, BENCH.name).getByRole("button").click();
   await expect(currentCard(page)).toContainText(BENCH.name);
-  await expect(position(page, "1/3", "1/2")).toBeVisible();
+  await expectPosition(page, "1/3", "1/2");
   await completeSet(page);
   await finishWorkout(page);
   await expect.poll(() => writes.workouts.length).toBe(1);

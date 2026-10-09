@@ -8,7 +8,8 @@ import {
   expectWorkoutPage,
   finishWorkout,
   openRunner,
-  position,
+  expectPosition,
+  runningOrder,
   totalClock,
 } from "./runner-page";
 import { BENCH, LIBRARY, PLANK, PUSHUP, PUSH_DAY } from "./sport-fixtures";
@@ -18,7 +19,7 @@ const SEED = { exercises: LIBRARY, routines: [PUSH_DAY] };
 test("a full routine logs every set with reps, weight, time and rest", async ({ page }) => {
   const { writes, state } = await openRunner(page, PUSH_DAY.id, SEED);
 
-  await expect(position(page, "1/2", "1/2")).toBeVisible();
+  await expectPosition(page, "1/2", "1/2");
   await expect(currentCard(page)).toContainText(BENCH.name);
   const reps = page.getByRole("spinbutton");
   await expect(reps).toHaveValue("8");
@@ -38,11 +39,11 @@ test("a full routine logs every set with reps, weight, time and rest", async ({ 
   await expect(page.getByText("1:00", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Continue" }).click();
 
-  await expect(position(page, "1/2", "2/2")).toBeVisible();
+  await expectPosition(page, "1/2", "2/2");
   await expect(page.getByRole("spinbutton")).toHaveValue("8");
   await expect(page.getByText("40,0 kg")).toBeVisible();
   await page.keyboard.press("Enter");
-  await expect(page.getByText(/Next: Plank/)).toBeVisible();
+  await expect(currentCard(page)).toContainText(PLANK.name);
   await page.getByRole("button", { name: "Continue" }).click();
 
   await expect(page.getByText("Target: 30 s")).toBeVisible();
@@ -106,21 +107,12 @@ test("finishing early asks first and saves only what was done", async ({ page })
   expect(writes.workouts[0][0].sets).toHaveLength(1);
 });
 
-test("the header jumps to any exercise", async ({ page }) => {
-  await openRunner(page, PUSH_DAY.id, SEED);
-  await position(page, "1/2", "1/2").click();
-  await page.getByRole("button", { name: `2. ${PLANK.name}` }).click();
-  await expect(position(page, "2/2", "1/1")).toBeVisible();
-  await expect(page.getByText("Target: 30 s")).toBeVisible();
-});
-
 test("an exercise added mid-workout joins the session, not the routine", async ({ page }) => {
   const { writes } = await openRunner(page, PUSH_DAY.id, SEED);
-  await position(page, "1/2", "1/2").click();
-  await page.getByRole("button", { name: "Add exercise" }).click();
+  await runningOrder(page).getByRole("button", { name: "Add exercise" }).click();
   await page.getByRole("dialog").getByRole("button", { name: PUSHUP.name }).click();
 
-  await expect(position(page, "1/3", "1/2")).toBeVisible();
+  await expectPosition(page, "1/3", "1/2");
   await advance(page, 1);
   await expect.poll(() => writes.active.at(-1)?.items?.length).toBe(3);
   expect(writes.active.at(-1)?.items?.[2]).toMatchObject({ ex: PUSHUP.id, sets: 3, rest: 60 });

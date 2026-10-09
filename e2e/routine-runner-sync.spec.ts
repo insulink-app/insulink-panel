@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import type { SportState } from "./fake-sport-api";
-import { completeSet, currentCard, openLiveRunner, position } from "./runner-page";
+import { completeSet, currentCard, openLiveRunner, expectPosition } from "./runner-page";
 import { BENCH, LIBRARY, PLANK, PUSH_DAY, runningSnapshot } from "./sport-fixtures";
 
 const SEED = { exercises: LIBRARY, routines: [PUSH_DAY] };
@@ -47,7 +47,7 @@ test("a workout from the phone resumes from the phone's copy of the routine", as
     updated: 1,
   });
 
-  await expect(position(page, "1/2", "2/2")).toBeVisible();
+  await expectPosition(page, "1/2", "2/2");
   await expect(currentCard(page)).toContainText(BENCH.name);
   await expect(page.getByRole("link", { name: PUSH_DAY.name, exact: true })).toBeVisible();
   await expect.poll(() => writes.active.at(-1)?.started, POLL_TIMEOUT).toBe(snapshot.started);
@@ -57,7 +57,7 @@ test("a workout from the phone resumes from the phone's copy of the routine", as
 test("a legacy snapshot without items falls back to the local routine", async ({ page }) => {
   const legacy = runningSnapshot({ ex: 1, set: 0, items: undefined, name: undefined });
   await openLiveRunner(page, PUSH_DAY.id, { ...SEED, active: legacy, updated: 1 });
-  await expect(position(page, "2/2", "1/1")).toBeVisible();
+  await expectPosition(page, "2/2", "1/1");
   await expect(currentCard(page)).toContainText(PLANK.name);
 });
 
@@ -71,7 +71,7 @@ test("a snapshot already in the logbook starts fresh instead of logging twice", 
     updated: 1,
   });
 
-  await expect(position(page, "1/2", "1/2")).toBeVisible();
+  await expectPosition(page, "1/2", "1/2");
   await expect.poll(() => writes.active.length, POLL_TIMEOUT).toBeGreaterThan(0);
   expect(writes.active[0].started).not.toBe(snapshot.started);
   expect(writes.active[0].sets).toEqual([]);
@@ -91,7 +91,7 @@ test("a set logged on the phone shows up here", async ({ page }) => {
   });
 
   await expect(page.getByText("Rest", { exact: true })).toBeVisible(POLL_TIMEOUT);
-  await expect(page.getByText(/Next: Bench press\s+·\s+Set 2\/2/)).toBeVisible();
+  await expect(currentCard(page)).toContainText("After the rest: set 2 of 2");
 });
 
 test("a pause on the phone freezes this screen too", async ({ page }) => {

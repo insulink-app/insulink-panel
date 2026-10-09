@@ -100,7 +100,12 @@
     "today_at": "Today, {{time}}",
     "yesterday_at": "Yesterday, {{time}}",
     "today": "Today",
-    "yesterday": "Yesterday"
+    "yesterday": "Yesterday",
+    "col_change": "Change",
+    "every_minutes": "every {{n}} min",
+    "older_entries": "Older entries",
+    "export": "Export",
+    "now_button": "Now"
   },
   "login": {
     "welcome": "Welcome back",
@@ -163,7 +168,8 @@
     "maximum": "Maximum",
     "in_range": "In range",
     "readings": "Readings",
-    "chart_title": "Graph"
+    "chart_title": "Graph",
+    "older": "Older readings"
   },
   "nutrition": {
     "title": "Nutrition",
@@ -301,7 +307,11 @@
     "col_code": "Sensor code",
     "no_active_sensor": "No active sensor",
     "no_active_pod": "No active pod",
-    "pod_capacity": "Reservoir"
+    "pod_capacity": "Reservoir",
+    "connected": "Connected",
+    "disconnected": "Disconnected",
+    "started_at": "Started {{when}}",
+    "remaining_short": "{{span}} left"
   },
   "account": {
     "title": "Account",
@@ -384,7 +394,17 @@
     "chart_title": "Heart rate",
     "readings": "Readings",
     "col_time": "Time",
-    "col_bpm": "bpm"
+    "col_bpm": "bpm",
+    "zones": "Zones",
+    "zone_rest": "Rest",
+    "zone_normal": "Normal",
+    "zone_elevated": "Elevated",
+    "zone_high": "High",
+    "below": "below {{n}} bpm",
+    "between": "{{from}}–{{to}} bpm",
+    "above": "above {{n}} bpm",
+    "resting_week": "Resting · 7 days",
+    "older": "Older readings"
   },
   "body": {
     "title": "Body",

@@ -3,12 +3,10 @@ import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Segmented } from "@/components/segmented";
-import { StatusChip } from "@/components/status-chip";
 import { GlucoseLineChart, type GlucoseChartRow } from "@/components/glucose-line-chart";
 import type { GlucoseEntry, GlucosePredictionResponse } from "@/api/services/glucose-service";
-import { classify, statusColorVar } from "@/lib/glucose";
 import { HOUR } from "@/lib/use-time-window";
-import { CurrentReading } from "./glucose-cards";
+import { GlucoseHero } from "@/components/glucose-hero";
 
 const RANGE_HOURS = [3, 6, 12, 24];
 const CHART_HEIGHT = 280;
@@ -62,19 +60,11 @@ export function GlucoseCard({
   }
   const rows = [...readings, ...forecast];
   const end = rows[rows.length - 1]?.time ?? Date.now();
-  const statusColor = statusColorVar[latest ? classify(latest.value, low, high) : "in-range"];
 
   return (
     <Card className="h-full gap-0 p-6">
       <div className="mb-[26px] flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
-          <CurrentReading entries={entries} unit={unit} color={statusColor} isLoading={isLoading} />
-          {latest && !isLoading && (
-            <StatusChip color={statusColor}>
-              {t("overview.status_" + classify(latest.value, low, high).replace("-", "_"))}
-            </StatusChip>
-          )}
-        </div>
+        <GlucoseHero entries={entries} low={low} high={high} unit={unit} isLoading={isLoading} />
         <Segmented
           label={t("overview.range")}
           value={rangeHours}

@@ -11,7 +11,7 @@ import sportService from "@/api/services/sport-service";
 import { DEFAULT_TARGET_HIGH, DEFAULT_TARGET_LOW } from "@/lib/glucose";
 import { useUserInformation } from "@/store/user-store";
 import { PageHeader } from "@/components/page-header";
-import { TimeInRangeCard } from "./glucose-cards";
+import { TimeInRangeCard } from "@/components/time-in-range-card";
 import { GlucoseCard } from "./glucose-card";
 import { NutritionCard } from "./nutrition-card";
 import { ActivityCard } from "./activity-card";
@@ -88,6 +88,7 @@ export default function OverviewPage() {
             isLoading={glucose.isLoading}
           />
           <TimeInRangeCard
+            period={t("common.range_hours", { n: 24 })}
             entries={entries}
             low={low}
             high={high}

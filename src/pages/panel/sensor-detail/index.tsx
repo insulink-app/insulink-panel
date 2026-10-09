@@ -37,7 +37,7 @@ import {
   toDisplay,
   unitLabel,
 } from "@/lib/glucose";
-import { TimeInRangeCard } from "@/pages/panel/overview/glucose-cards";
+import { TimeInRangeCard } from "@/components/time-in-range-card";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 

@@ -234,7 +234,19 @@
       "servings": "Portionen",
       "chart_title": "Glukose rund um diese Mahlzeit",
       "meal_marker": "Mahlzeit"
-    }
+    },
+    "per_meal": "Ø pro Mahlzeit",
+    "carbs_week": "Kohlenhydrate · 7 Tage",
+    "drinks_week": "Getränke · 7 Tage",
+    "water_goal": "Ziel {{value}} ml",
+    "count_meals_one": "{{count}} Mahlzeit",
+    "count_meals_other": "{{count}} Mahlzeiten",
+    "count_drinks_one": "{{count}} Getränk",
+    "count_drinks_other": "{{count}} Getränke",
+    "older_meals": "Ältere Mahlzeiten",
+    "older_drinks": "Ältere Getränke",
+    "today": "Heute",
+    "amount": "Menge"
   },
   "health": {
     "title": "Sport & Gesundheit",

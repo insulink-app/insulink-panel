@@ -4,7 +4,7 @@ import { Dumbbell } from "@/components/icons";
 import { Card } from "@/components/ui/card";
 import { CardHeading } from "@/components/card-heading";
 import { ListRow } from "@/components/list-row";
-import { WeeklyBars } from "@/components/weekly-bars";
+import { PeriodBars } from "@/components/period-bars";
 import type { Routine, Workout } from "@/api/services/sport-service";
 import { formatDay } from "@/lib/when";
 import { formatNumber } from "@/lib/format";
@@ -52,7 +52,7 @@ export function WorkoutsPerWeek({ workouts }: { workouts: Workout[] }) {
         <b className="text-[32px] leading-none font-extrabold">{weeks[weeks.length - 1]?.value ?? 0}</b>
         <span className="text-[13px] text-muted-foreground">{t("routines.this_week", { avg: formatNumber(average, 1) })}</span>
       </div>
-      <WeeklyBars
+      <PeriodBars
         data={weeks}
         averageLabel={(avg) => t("routines.average_short", { avg })}
         formatValue={(value) => `${value} ${t("exercise_stats.workouts")}`}

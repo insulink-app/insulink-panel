@@ -5,10 +5,10 @@ import { ChartTooltipBox, ChartTooltipValue } from "@/components/chart-tooltip";
 import { formatNumber } from "@/lib/format";
 
 /**
- * One muted bar per week, the current week in the brand colour, and the
- * average as a dashed line labelled at the right.
+ * One muted bar per period (a day, a week), the current one in the brand
+ * colour, and the average as a dashed line labelled at the right.
  */
-export function WeeklyBars({
+export function PeriodBars({
   data,
   height = 180,
   averageLabel,

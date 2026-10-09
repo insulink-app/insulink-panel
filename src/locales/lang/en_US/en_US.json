@@ -234,7 +234,19 @@
       "servings": "servings",
       "chart_title": "Glucose around this meal",
       "meal_marker": "Meal"
-    }
+    },
+    "per_meal": "Ø per meal",
+    "carbs_week": "Carbs · 7 days",
+    "drinks_week": "Drinks · 7 days",
+    "water_goal": "Goal {{value}} ml",
+    "count_meals_one": "{{count}} meal",
+    "count_meals_other": "{{count}} meals",
+    "count_drinks_one": "{{count}} drink",
+    "count_drinks_other": "{{count}} drinks",
+    "older_meals": "Older meals",
+    "older_drinks": "Older drinks",
+    "today": "Today",
+    "amount": "Amount"
   },
   "health": {
     "title": "Sports & Health",

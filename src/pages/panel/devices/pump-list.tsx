@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { format } from "date-fns";
 import { DataList, type ListColumn } from "@/components/data-list";
 import pumpService, {
   type PumpHistoryEntry,
@@ -24,6 +23,7 @@ import { Syringe } from "@/components/icons";
 import { StatusChip } from "@/components/status-chip";
 import { formatNumber } from "@/lib/format";
 import { DeviceHeader, type DeviceBar } from "./device-header";
+import { formatWhen } from "@/lib/when";
 
 /**
  * Every pod the account has recorded, newest first — the pump counterpart to the
@@ -34,7 +34,7 @@ import { DeviceHeader, type DeviceBar } from "./device-header";
  * snapshot and never a live reading. The live figure is in the app.
  */
 export default function PumpList() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { data, isLoading } = useQuery({
     queryKey: ["pump-history"],
     queryFn: pumpService.history,
@@ -62,7 +62,7 @@ export default function PumpList() {
       },
       {
         header: t("devices.col_started"),
-        cell: (pod) => format(new Date(podStart(pod)), "dd.MM.yyyy HH:mm"),
+        cell: (pod) => formatWhen(podStart(pod), t, i18n.language),
       },
       {
         header: t("devices.col_runtime"),
@@ -82,7 +82,7 @@ export default function PumpList() {
         cell: (pod) => <PodStatusBadge pod={pod} pods={pods} />,
       },
     ],
-    [t, pods],
+    [t, i18n.language, pods],
   );
 
   const current = pods.find((pod) => podActive(pod, pods));

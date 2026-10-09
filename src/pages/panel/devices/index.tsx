@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { format } from "date-fns";
 import PanelPage from "@/layouts/panel";
 import { Cpu } from "@/components/icons";
 import { PageHeader } from "@/components/page-header";
@@ -24,9 +23,10 @@ import {
   sensorWornMs,
   uniqueSensors,
 } from "@/lib/sensor";
+import { formatWhen } from "@/lib/when";
 
 export default function DevicesPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { view } = useParams();
   const navigate = useNavigate();
   const { data, isLoading } = useQuery({
@@ -56,11 +56,11 @@ export default function DevicesPage() {
       },
       {
         header: t("devices.col_started"),
-        cell: (sensor) => format(new Date(sensorStart(sensor)), "dd.MM.yyyy HH:mm"),
+        cell: (sensor) => formatWhen(sensorStart(sensor), t, i18n.language),
       },
       {
         header: t("devices.col_expires"),
-        cell: (sensor) => format(new Date(sensor.expires_at), "dd.MM.yyyy HH:mm"),
+        cell: (sensor) => formatWhen(sensor.expires_at, t, i18n.language),
       },
       {
         header: t("devices.col_runtime"),
@@ -86,7 +86,7 @@ export default function DevicesPage() {
         },
       },
     ],
-    [t, sensors],
+    [t, i18n.language, sensors],
   );
 
   return (

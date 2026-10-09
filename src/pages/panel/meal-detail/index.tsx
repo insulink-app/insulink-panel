@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { format } from "date-fns";
 import { ArrowLeft, Utensils } from "@/components/icons";
 import { ListRow } from "@/components/list-row";
 import { ReferenceLine } from "recharts";
@@ -29,6 +28,7 @@ import {
   unitLabel,
 } from "@/lib/glucose";
 import { formatAmount, withUnit } from "@/lib/nutrition";
+import { formatWhen } from "@/lib/when";
 
 // Glucose window around the meal: enough run-up to see the pre-meal level and
 // enough tail to cover the rise it caused.
@@ -73,7 +73,7 @@ export default function MealDetailPage() {
 }
 
 function MealBody({ meal }: { meal: Meal }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { data: settings } = useQuery({
     queryKey: ["settings"],
     queryFn: settingsService.find,
@@ -98,7 +98,7 @@ function MealBody({ meal }: { meal: Meal }) {
             <span className="text-base font-bold text-muted-foreground">{t("nutrition.meal_detail.carbs")}</span>
           </>
         }
-        subtitle={format(new Date(meal.time), "EEEE, dd.MM.yyyy HH:mm")}
+        subtitle={formatWhen(meal.time, t, i18n.language)}
       />
 
       <StatStrip

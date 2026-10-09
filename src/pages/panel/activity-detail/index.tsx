@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { format } from "date-fns";
 import { ArrowLeft, Trash2 } from "@/components/icons";
 import PanelPage from "@/layouts/panel";
 import { Button } from "@/components/ui/button";
@@ -18,9 +17,10 @@ import { WorkoutBody } from "./workout-body";
 import { WorkoutSummaryCard } from "./workout-summary-card";
 import { VitalsChart } from "./vitals-chart";
 import { workoutTitle } from "@/lib/workout";
+import { formatWhen } from "@/lib/when";
 
 export default function ActivityDetailPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { kind, id } = useParams();
   const workouts = useQuery({ queryKey: ["workouts"], queryFn: sportService.workouts });
   const trainings = useQuery({ queryKey: ["trainings"], queryFn: sportService.trainings });
@@ -120,7 +120,7 @@ export default function ActivityDetailPage() {
           <>
             <PageHeader
               title={title}
-              subtitle={at != null && format(new Date(at), "EEEE, dd.MM.yyyy HH:mm")}
+              subtitle={at != null && formatWhen(at, t, i18n.language)}
               actions={
                 <ConfirmDelete
                   onConfirm={() => deletion.mutate()}

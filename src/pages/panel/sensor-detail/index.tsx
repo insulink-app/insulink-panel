@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { format } from "date-fns";
 import { ArrowLeft } from "@/components/icons";
 import PanelPage from "@/layouts/panel";
 import { Button } from "@/components/ui/button";
@@ -38,6 +37,7 @@ import {
   unitLabel,
 } from "@/lib/glucose";
 import { TimeInRangeCard } from "@/components/time-in-range-card";
+import { formatWhen } from "@/lib/when";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -216,9 +216,9 @@ function TimelineFacts({
   sensor: SensorHistoryEntry;
   allSensors: SensorHistoryEntry[];
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const endedAt = sensorEndedAt(sensor, allSensors);
-  const stamp = (time: number) => format(new Date(time), "dd.MM.yyyy HH:mm");
+  const stamp = (time: number) => formatWhen(time, t, i18n.language);
   return (
     <Card className="gap-0 px-6 py-3">
       <div className="grid gap-x-10 divide-y divide-divider md:grid-cols-2 md:divide-y-0">
@@ -258,7 +258,7 @@ function GlucoseSummaryCard({
   readings: GlucoseEntry[];
   unit?: string;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const values = readings.map((entry) => entry.value);
   const average = Math.round(
     values.reduce((sum, value) => sum + value, 0) / values.length,
@@ -271,7 +271,7 @@ function GlucoseSummaryCard({
   );
   const coverage = Math.min(100, Math.round((readings.length / expected) * 100));
 
-  const stamp = (time: number) => format(new Date(time), "dd.MM.yyyy HH:mm");
+  const stamp = (time: number) => formatWhen(time, t, i18n.language);
   return (
     <Card className="h-full gap-0 p-6">
       <CardHeading title={t("devices.glucose_summary")} />

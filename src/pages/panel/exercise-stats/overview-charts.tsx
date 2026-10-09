@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { Routine, Workout } from "@/api/services/sport-service";
-import { WeeklyBars } from "@/components/weekly-bars";
+import { PeriodBars } from "@/components/period-bars";
 import { ChartTooltipBox, ChartTooltipValue } from "@/components/chart-tooltip";
 import { CHART_MARGIN_TIGHT, GRID_STYLE, LINE_STYLE, X_AXIS_STYLE } from "@/components/chart-kit";
 import { routineDurations, weeklyBuckets, type RoutineSeries } from "./stats";
@@ -31,7 +31,7 @@ export function OverviewCharts({
   return (
     <div className="grid items-stretch gap-4 lg:grid-cols-2">
       <ChartCard title={t("routines.per_week")}>
-        <WeeklyBars
+        <PeriodBars
           data={frequency}
           height={HEIGHT}
           averageLabel={(avg) => t("routines.average_short", { avg })}

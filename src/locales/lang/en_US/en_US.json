@@ -423,7 +423,18 @@
     "kg": "kg",
     "km": "km",
     "kcal": "kcal",
-    "unit_steps": "steps"
+    "unit_steps": "steps",
+    "minimum": "Minimum",
+    "key_figures": "Key figures",
+    "span_hint": "Range min–max",
+    "all_readings": "All readings",
+    "vs_previous": "{{value}} vs. previous",
+    "average_7": "Ø 7 days",
+    "raw": "Readings",
+    "span_months": "{{n}} M",
+    "span_year": "1 Y",
+    "span_all": "All",
+    "goal": "Goal {{value}}"
   },
   "activity": {
     "title": "Activity",

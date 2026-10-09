@@ -1,99 +1,41 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { format } from "date-fns";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  Line,
-  LineChart,
-  ReferenceLine,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { format, subMonths } from "date-fns";
 import PanelPage from "@/layouts/panel";
 import { Card } from "@/components/ui/card";
-import { DataList, type ListColumn } from "@/components/data-list";
 import { PageHeader } from "@/components/page-header";
-import { CardHeading } from "@/components/card-heading";
 import { Segmented } from "@/components/segmented";
-import { StatStrip } from "@/components/stat-strip";
-import { ChartTooltipBox, ChartTooltipValue } from "@/components/chart-tooltip";
-import {
-  BAR_FILL,
-  BAR_FILL_CURRENT,
-  BAR_STYLE,
-  CHART_MARGIN_TIGHT,
-  GRID_STYLE,
-  LINE_STYLE,
-  X_AXIS_STYLE,
-  thresholdLabel,
-} from "@/components/chart-kit";
+import { StatusChip } from "@/components/status-chip";
 import { formatNumber } from "@/lib/format";
-import sportService, {
-  type Measurement,
-  type MeasurementType,
-} from "@/api/services/sport-service";
+import { formatDay } from "@/lib/when";
+import sportService, { type MeasurementType } from "@/api/services/sport-service";
+import settingsService from "@/api/services/settings-service";
+import { METRICS } from "./series";
+import { BodyChart } from "./body-chart";
+import { KeyFigures, LatestReadings } from "./side-cards";
 
-// Per-metric formatting. `daily` metrics get a bar chart (one bar per day),
-// weight gets a line (a continuous body measurement).
-const METRICS: {
-  type: MeasurementType;
-  labelKey: string;
-  unitKey: string;
-  daily: boolean;
-  digits: number;
-}[] = [
-  { type: "WEIGHT", labelKey: "body.weight", unitKey: "body.kg", daily: false, digits: 1 },
-  { type: "STEPS", labelKey: "body.steps", unitKey: "body.unit_steps", daily: true, digits: 0 },
-  { type: "DISTANCE", labelKey: "body.distance", unitKey: "body.km", daily: true, digits: 2 },
-  { type: "CALORIES", labelKey: "body.calories", unitKey: "body.kcal", daily: true, digits: 0 },
-];
+type Span = 3 | 6 | 12 | 0;
 
 export default function BodyPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [metricType, setMetricType] = useState<MeasurementType>("WEIGHT");
-  const { data, isLoading } = useQuery({
-    queryKey: ["measurements"],
-    queryFn: sportService.measurements,
-  });
+  const [span, setSpan] = useState<Span>(0);
+  const { data, isLoading } = useQuery({ queryKey: ["measurements"], queryFn: sportService.measurements });
+  const { data: settings } = useQuery({ queryKey: ["settings"], queryFn: settingsService.find });
 
   const metric = METRICS.find((entry) => entry.type === metricType) ?? METRICS[0];
   const unit = t(metric.unitKey);
-
-  // Ascending for the chart, descending for the list.
-  const ascending = useMemo(
-    () =>
-      (data?.entries ?? [])
-        .filter((entry) => entry.type === metricType)
-        .sort((left, right) => left.time - right.time),
-    [data, metricType],
-  );
-
-  const stats = useMemo(() => {
-    if (ascending.length === 0) {
-      return null;
-    }
-    const values = ascending.map((entry) => entry.value);
-    const total = values.reduce((sum, value) => sum + value, 0);
-    return {
-      latest: values[values.length - 1],
-      average: total / values.length,
-      total,
-      max: Math.max(...values),
-    };
-  }, [ascending]);
-
-  const chartData = ascending.map((entry) => ({ t: entry.time, value: entry.value }));
-
-  const columns: ListColumn<Measurement>[] = [
-    { header: t("body.col_date"), cell: (entry) => format(new Date(entry.time), metric.daily ? "dd.MM.yyyy" : "dd.MM.yyyy HH:mm") },
-    { header: t("body.col_value"), cell: (entry) => `${round(entry.value, metric.digits)} ${unit}` },
-  ];
+  const ascending = useMemo(() => {
+    const since = span === 0 ? 0 : subMonths(new Date(), span).getTime();
+    return (data?.entries ?? [])
+      .filter((entry) => entry.type === metricType && entry.time >= since)
+      .sort((left, right) => left.time - right.time);
+  }, [data, metricType, span]);
+  const descending = useMemo(() => ascending.slice().reverse(), [ascending]);
+  const latest = descending[0];
+  const change = latest && descending[1] ? latest.value - descending[1].value : null;
+  const goal = metricType === "WEIGHT" ? settings?.["sport.weight_goal_kg"] : undefined;
 
   return (
     <PanelPage title={t("body.title")} parents={[{ title: t("nav.health") }]}>
@@ -104,109 +46,67 @@ export default function BodyPage() {
             label={t("body.title")}
             value={metricType}
             onChange={setMetricType}
-            className="bg-panel"
+            className="border border-line"
             options={METRICS.map((entry) => ({ value: entry.type, label: t(entry.labelKey) }))}
           />
         }
       />
-      <div className="flex flex-col gap-4">
-        <div className="mb-2 flex items-end gap-2">
-          <b className="text-[64px] leading-none font-extrabold tracking-[-0.04em]">
-            {stats ? round(stats.latest, metric.digits) : "–"}
-          </b>
-          <span className="pb-1.5 text-sm text-muted-foreground">{unit}</span>
-        </div>
-
+      <div className="grid items-stretch gap-4 lg:grid-cols-[minmax(0,1.9fr)_minmax(0,1fr)]">
         <Card className="gap-0 p-6">
-          <CardHeading title={t(metric.labelKey)} />
-          <div className="mt-4">
+          <div className="flex flex-wrap items-start gap-4">
+            <div className="min-w-0 flex-1">
+              <span className="text-sm text-muted-foreground">
+                {t(metric.labelKey)}
+                {latest && ` · ${formatDay(latest.time, t, i18n.language)}, ${format(new Date(latest.time), "HH:mm")}`}
+              </span>
+              <div className="mt-1 flex flex-wrap items-center gap-3.5">
+                <span>
+                  <b className="text-[64px] leading-none font-extrabold tracking-[-0.04em]">
+                    {latest ? formatNumber(latest.value, metric.digits) : "–"}
+                  </b>
+                  <span className="text-[22px] font-bold text-muted-foreground"> {unit}</span>
+                </span>
+                {change != null && (
+                  <StatusChip color="var(--text-muted)">
+                    {t("body.vs_previous", {
+                      value: `${change >= 0 ? "+" : "−"}${formatNumber(Math.abs(change), metric.digits)} ${unit}`,
+                    })}
+                  </StatusChip>
+                )}
+              </div>
+            </div>
+            <Segmented
+              label={t("overview.range")}
+              value={span}
+              onChange={setSpan}
+              options={[
+                { value: 3, label: t("body.span_months", { n: 3 }) },
+                { value: 6, label: t("body.span_months", { n: 6 }) },
+                { value: 12, label: t("body.span_year") },
+                { value: 0, label: t("body.span_all") },
+              ]}
+            />
+          </div>
+          <div className="mt-6 flex flex-1 flex-col">
             {isLoading ? (
               <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
-            ) : chartData.length === 0 ? (
+            ) : ascending.length === 0 ? (
               <p className="py-16 text-center text-sm text-muted-foreground">{t("common.no_data")}</p>
             ) : (
-              <ResponsiveContainer width="100%" height={300}>
-                {metric.daily ? (
-                  <BarChart data={chartData} margin={CHART_MARGIN_TIGHT}>
-                    <XAxis {...X_AXIS_STYLE} dataKey="t" tickFormatter={(value) => format(new Date(value), "dd.MM.")} minTickGap={24} />
-                    <YAxis hide />
-                    <Tooltip content={<MetricTooltip unit={unit} digits={metric.digits} />} isAnimationActive={false} cursor={{ fill: "var(--raised)" }} />
-                    <Bar {...BAR_STYLE} dataKey="value">
-                      {chartData.map((entry, index) => (
-                        <Cell key={entry.t} fill={index === chartData.length - 1 ? BAR_FILL_CURRENT : BAR_FILL} />
-                      ))}
-                    </Bar>
-                    {stats && (
-                      <ReferenceLine
-                        y={stats.average}
-                        stroke="var(--text-muted)"
-                        strokeDasharray="4 4"
-                        label={thresholdLabel(round(stats.average, metric.digits))}
-                      />
-                    )}
-                  </BarChart>
-                ) : (
-                  <LineChart data={chartData} margin={CHART_MARGIN_TIGHT}>
-                    <CartesianGrid {...GRID_STYLE} />
-                    <XAxis {...X_AXIS_STYLE} dataKey="t" type="number" domain={["dataMin", "dataMax"]} tickFormatter={(value) => format(new Date(value), "dd.MM.")} minTickGap={40} />
-                    <YAxis hide domain={["dataMin - 1", "dataMax + 1"]} />
-                    <Tooltip content={<MetricTooltip unit={unit} digits={metric.digits} />} isAnimationActive={false} cursor={{ stroke: "var(--divider)" }} />
-                    <Line {...LINE_STYLE} dataKey="value" stroke="var(--brand)" />
-                  </LineChart>
-                )}
-              </ResponsiveContainer>
+              <BodyChart
+                points={ascending.map((entry) => ({ t: entry.time, value: entry.value }))}
+                metric={metric}
+                unit={unit}
+                goal={goal}
+              />
             )}
           </div>
         </Card>
-
-        <StatStrip
-          loading={isLoading}
-          cells={[
-            { label: t("body.current"), value: stats ? round(stats.latest, metric.digits) : "–", unit },
-            { label: t("body.average"), value: stats ? round(stats.average, metric.digits) : "–", unit },
-            metric.daily
-              ? { label: t("body.total"), value: stats ? round(stats.total, metric.digits) : "–", unit }
-              : { label: t("body.maximum"), value: stats ? round(stats.max, metric.digits) : "–", unit },
-            { label: t("body.entries"), value: formatNumber(ascending.length) },
-          ]}
-        />
-
-        <DataList
-          title={t("body.readings")}
-          columns={columns}
-          data={ascending.slice().reverse()}
-          isLoading={isLoading}
-          pageSize={25}
-        />
+        <div className="flex min-w-0 flex-col gap-4">
+          <KeyFigures values={ascending.map((entry) => entry.value)} metric={metric} unit={unit} />
+          <LatestReadings entries={descending} metric={metric} unit={unit} className="flex-1" />
+        </div>
       </div>
     </PanelPage>
   );
-}
-
-function MetricTooltip({
-  active,
-  payload,
-  unit,
-  digits,
-}: {
-  active?: boolean;
-  payload?: { value?: number; payload?: { t: number } }[];
-  unit?: string;
-  digits: number;
-}) {
-  if (!active || !payload?.length) {
-    return null;
-  }
-  const point = payload[0].payload;
-  return (
-    <ChartTooltipBox caption={point ? format(new Date(point.t), "dd.MM.yyyy") : ""}>
-      <ChartTooltipValue>
-        {round(Number(payload[0].value), digits)} {unit}
-      </ChartTooltipValue>
-    </ChartTooltipBox>
-  );
-}
-
-function round(value: number, digits: number) {
-  return formatNumber(value, digits);
 }

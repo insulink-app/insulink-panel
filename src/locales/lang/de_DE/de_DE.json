@@ -423,7 +423,18 @@
     "kg": "kg",
     "km": "km",
     "kcal": "kcal",
-    "unit_steps": "Schritte"
+    "unit_steps": "Schritte",
+    "minimum": "Minimum",
+    "key_figures": "Kennwerte",
+    "span_hint": "Spanne Min–Max",
+    "all_readings": "Alle Messungen",
+    "vs_previous": "{{value}} zum Vortag",
+    "average_7": "Ø 7 Tage",
+    "raw": "Messwerte",
+    "span_months": "{{n}} M",
+    "span_year": "1 J",
+    "span_all": "Alle",
+    "goal": "Ziel {{value}}"
   },
   "activity": {
     "title": "Aktivität",

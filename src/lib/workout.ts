@@ -1,4 +1,6 @@
 // Naming a logged workout across the panel.
+import type { Workout } from "@/api/services/sport-service";
+
 export const FREE_ROUTINE_ID = "free";
 
 // What a logged workout is called wherever it is listed: its routine's name, the
@@ -13,4 +15,10 @@ export function workoutTitle(
     return t("routines.free");
   }
   return routineName.get(routineId) ?? t("activity.workout");
+}
+
+// A workout carries no end time; its last logged set is when it stopped.
+export function workoutDurationMs(workout: Workout) {
+  const last = workout.sets[workout.sets.length - 1];
+  return last ? Math.max(0, last.ts - workout.started) : 0;
 }

@@ -91,7 +91,6 @@ export function RangeHistory({
               reading={readings[index]}
               previous={readings[index + 1]}
               scale={scale}
-              position={position}
             />
           ))}
         </section>
@@ -116,16 +115,13 @@ function HistoryRow({
   reading,
   previous,
   scale,
-  position,
 }: {
   reading: HistoryReading;
   previous?: HistoryReading;
   scale: HistoryScale;
-  position: (value: number) => number;
 }) {
   const flag = scale.flag?.(reading.value);
   const change = previous ? scale.change(reading.value, previous.value) : null;
-  const bandLeft = position(scale.band[0]);
   return (
     <div className="flex min-h-[46px] items-center gap-3.5">
       <span className="w-11 shrink-0 text-[13px] font-bold text-muted-foreground">
@@ -141,17 +137,13 @@ function HistoryRow({
           </span>
         )}
       </span>
-      <span className="mx-3 hidden min-w-0 flex-1 sm:block" aria-hidden>
-        <span className="relative block h-1.5 rounded-[3px] bg-ground">
-          <i
-            className="absolute inset-y-0 rounded-[3px] bg-foreground/10"
-            style={{ left: `${bandLeft}%`, width: `${position(scale.band[1]) - bandLeft}%` }}
-          />
-          <i
-            className="absolute -top-[3px] size-3 rounded-full ring-[3px] ring-panel"
-            style={{ left: `calc(${position(reading.value)}% - 6px)`, backgroundColor: scale.color(reading.value) }}
-          />
-        </span>
+      <span className="mx-3 hidden min-w-0 flex-1 sm:block">
+        <RangeStrip
+          value={reading.value}
+          band={scale.band}
+          domain={scale.domain}
+          color={scale.color(reading.value)}
+        />
       </span>
       <span className="ml-auto w-16 shrink-0 text-right text-[13px] text-muted-foreground">
         {change != null && change !== 0 && (
@@ -162,5 +154,36 @@ function HistoryRow({
         )}
       </span>
     </div>
+  );
+}
+
+/**
+ * A 6 px track with the normal band lit and the value as a ringed dot, so a
+ * column of strips reads as a small vertical chart.
+ */
+export function RangeStrip({
+  value,
+  band,
+  domain,
+  color,
+}: {
+  value: number;
+  band: [number, number];
+  domain: [number, number];
+  color: string;
+}) {
+  const [min, max] = domain;
+  const position = (point: number) => Math.min(100, Math.max(0, ((point - min) / (max - min)) * 100));
+  return (
+    <span className="relative block h-1.5 rounded-[3px] bg-ground" aria-hidden>
+      <i
+        className="absolute inset-y-0 rounded-[3px] bg-foreground/10"
+        style={{ left: `${position(band[0])}%`, width: `${position(band[1]) - position(band[0])}%` }}
+      />
+      <i
+        className="absolute -top-[3px] size-3 rounded-full ring-[3px] ring-panel"
+        style={{ left: `calc(${position(value)}% - 6px)`, backgroundColor: color }}
+      />
+    </span>
   );
 }

@@ -2,6 +2,8 @@
 // `npx tsx src/lib/events.check.ts`.
 import assert from "node:assert/strict";
 import {
+  hourlyCounts,
+  peakTwoHours,
   categoryOf,
   countByCategory,
   dailyEventCounts,
@@ -40,3 +42,13 @@ assert.equal(days[0].high, 1);
 assert.equal(days[1].signal, 1);
 
 console.log("events: ok");
+
+const hours = hourlyCounts([
+  { type: "glucose_low", data: "60", time: new Date(2026, 0, 1, 13, 5).getTime() },
+  { type: "glucose_low", data: "60", time: new Date(2026, 0, 2, 14, 40).getTime() },
+  { type: "glucose_low", data: "60", time: new Date(2026, 0, 3, 3, 0).getTime() },
+]);
+assert.equal(hours[13], 1);
+assert.equal(peakTwoHours(hours), 13);
+assert.equal(peakTwoHours(Array.from({ length: 24 }, () => 0)), null);
+console.log("events peak: ok");

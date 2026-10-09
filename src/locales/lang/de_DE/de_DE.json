@@ -550,7 +550,15 @@
     "session_progress": "{{exercise}} / {{exercises}} Übungen · {{done}} / {{planned}} Sätze",
     "ends": "Ende",
     "workout_progress": "Trainingsfortschritt",
-    "vitals": "Vitalwerte"
+    "vitals": "Vitalwerte",
+    "meta": "{{exercises}} Übungen · {{sets}} Sätze · ~{{minutes}} min",
+    "last_done": "Zuletzt",
+    "more": "Mehr Optionen",
+    "start_named": "{{name}} starten",
+    "recent": "Letzte Trainings",
+    "per_week": "Trainings pro Woche",
+    "this_week": "diese Woche · Ø {{avg}}",
+    "average_short": "Ø {{avg}}"
   },
   "exercises": {
     "title": "Übungen",
@@ -664,6 +672,21 @@
     "type_glucose_high_urgent": "Dringend hoch",
     "type_signal_loss": "Signalverlust",
     "type_new_sensor": "Neuer Sensor",
-    "type_sensor_stopped": "Sensor gestoppt"
+    "type_sensor_stopped": "Sensor gestoppt",
+    "range_all": "Alle",
+    "count_one": "{{count}} Ereignis",
+    "count_other": "{{count}} Ereignisse",
+    "filter_all": "Alle",
+    "filter_signal": "Signal",
+    "filter_sensor": "Sensor",
+    "older": "Ältere Ereignisse",
+    "lows_by_hour": "Tiefs nach Uhrzeit",
+    "peak_prefix": "{{period}} · am häufigsten zwischen",
+    "peak_hours": "{{from}} und {{to}} Uhr",
+    "period_days": "Letzte {{n}} Tage",
+    "period_all": "Alle Tage",
+    "since_sensor": "Seit dem letzten Sensorwechsel",
+    "remaining": "verbleibend",
+    "events": "Ereignisse"
   }
 }

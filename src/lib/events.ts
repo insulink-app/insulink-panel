@@ -22,8 +22,8 @@ interface CategoryMeta {
 export const CATEGORY_META: Record<EventCategory, CategoryMeta> = {
   low: { cssVar: "--glucose-low" },
   high: { cssVar: "--glucose-high" },
-  signal: { cssVar: "--muted-foreground" },
-  sensor: { cssVar: "--primary" },
+  signal: { cssVar: "--brand" },
+  sensor: { cssVar: "--text-muted" },
   other: { cssVar: "--muted-foreground" },
 };
 
@@ -95,4 +95,27 @@ export function dailyEventCounts(entries: EventEntry[]): DailyEventCounts[] {
     byDay.set(day, bucket);
   }
   return [...byDay.values()].sort((left, right) => left.day - right.day);
+}
+
+// How many entries fall into each hour of the day (index 0..23).
+export function hourlyCounts(entries: EventEntry[]): number[] {
+  const counts = Array.from({ length: 24 }, () => 0);
+  for (const entry of entries) {
+    counts[new Date(entry.time).getHours()]++;
+  }
+  return counts;
+}
+
+// The start hour of the busiest two-hour window, or null without any entry.
+export function peakTwoHours(counts: number[]): number | null {
+  let best: number | null = null;
+  let bestSum = 0;
+  for (let hour = 0; hour < 23; hour++) {
+    const sum = counts[hour] + counts[hour + 1];
+    if (sum > bestSum) {
+      best = hour;
+      bestSum = sum;
+    }
+  }
+  return best;
 }

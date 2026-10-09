@@ -550,7 +550,15 @@
     "session_progress": "{{exercise}} / {{exercises}} exercises · {{done}} / {{planned}} sets",
     "ends": "ends",
     "workout_progress": "Workout progress",
-    "vitals": "Vitals"
+    "vitals": "Vitals",
+    "meta": "{{exercises}} exercises · {{sets}} sets · ~{{minutes}} min",
+    "last_done": "Last",
+    "more": "More options",
+    "start_named": "Start {{name}}",
+    "recent": "Recent workouts",
+    "per_week": "Workouts per week",
+    "this_week": "this week · Ø {{avg}}",
+    "average_short": "Ø {{avg}}"
   },
   "exercises": {
     "title": "Exercises",
@@ -664,6 +672,21 @@
     "type_glucose_high_urgent": "Urgent high",
     "type_signal_loss": "Signal loss",
     "type_new_sensor": "New sensor",
-    "type_sensor_stopped": "Sensor stopped"
+    "type_sensor_stopped": "Sensor stopped",
+    "range_all": "All",
+    "count_one": "{{count}} event",
+    "count_other": "{{count}} events",
+    "filter_all": "All",
+    "filter_signal": "Signal",
+    "filter_sensor": "Sensor",
+    "older": "Older events",
+    "lows_by_hour": "Lows by time of day",
+    "peak_prefix": "{{period}} · most often between",
+    "peak_hours": "{{from}}:00 and {{to}}:00",
+    "period_days": "Last {{n}} days",
+    "period_all": "All days",
+    "since_sensor": "Since the last sensor change",
+    "remaining": "remaining",
+    "events": "Events"
   }
 }

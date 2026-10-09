@@ -98,7 +98,9 @@
     "close": "Close",
     "now": "now",
     "today_at": "Today, {{time}}",
-    "yesterday_at": "Yesterday, {{time}}"
+    "yesterday_at": "Yesterday, {{time}}",
+    "today": "Today",
+    "yesterday": "Yesterday"
   },
   "login": {
     "welcome": "Welcome back",
@@ -488,8 +490,6 @@
     "workout_saved": "Workout saved",
     "target_time": "Target: {{n}} s",
     "reps": "Reps",
-    "set": "Set",
-    "next": "Next:",
     "total": "Total",
     "pause": "Pause",
     "resume": "Resume",

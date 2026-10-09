@@ -1,6 +1,6 @@
 # Insulink Web-Panel – Redesign
 
-Ziel: panel.insulink.de optisch an die neue App angleichen. Funktionen, Routen, Daten und Texte (Englisch) bleiben gleich – nur das Design ändert sich.
+Ziel: panel.insulink.de optisch an die neue App angleichen. Funktionen, Routen, Daten und die deutschen Texte bleiben gleich – nur das Design ändert sich. Referenzbreite 1600 px (Training 1920 px); Inhalt max. 1440 px, Seitenabstand 32 px.
 
 Referenz: `screens/panel-overview.png`, `screens/panel-workout.png` (1440 px breit), Markup in `reference/*.dc.html` (Inline-Styles = exakte Maße).
 
@@ -37,22 +37,28 @@ Schrift: Atkinson Hyperlegible Next, `font-variant-numeric: tabular-nums`. Zahle
 - **Topbar** 64 px, Sidebar-Toggle + Breadcrumb (letztes Element fett/weiß), untere Linie.
 - **Inhalt** Padding 28 px, Karten-Gap 16 px, Karten Radius 24, Padding 24, `panel` + 1 px Linie. Keine Boxen in Boxen außer Stat-Kacheln.
 
-## Overview
+## Seiten (Details: MASTER_PROMPT.md, Abschnitt 6)
 
-- Begrüßung „Good evening, lukas“ 30 px, 800.
-- Reihe 1: **Current glucose** (2,3fr) + **Time in range** (1fr), gleiche Höhe.
-  - Wert 64 px weiß + Trendpfeil, Einheit/Rate muted; Chip „In range“ (grün auf grünem 14 %-Grund) rechts oben, darunter „Updated 18:39“.
-  - Range-Selector 3h/6h/12h/24h als Segment-Control (aktiv = accent, dunkler Text).
-  - Chart: durchgehende Linie, beginnt am linken Rand, keine y-Achsen-Beschriftung links (nur 180/70 klein rechts an der Zielband-Grenze), Zielband als heller Streifen, Linie farblich nach Bereich (grün/amber/rot), Prognose grau gestrichelt, Endpunkt weißer Punkt, x-Labels unten.
-  - TIR: 89 % groß, vertikaler gestapelter Balken links, rechts 5 Bereiche als Liste mit Trennlinien (Punkt, Name, Bereich muted, Prozent rechts).
-- Reihe 2: **Nutrition today** / **Activity today** (je 1fr, gleich breit). Kopf mit „View all ›“. 4 Stat-Kacheln in einem Raised-Block (Label muted, Wert 24 px, Einheit muted). Darunter Liste: Icon im Kreis, Titel + Zeit, Wert rechts, Trennlinien.
+| Seite | Screenshot | Aufbau |
+|---|---|---|
+| Übersicht | PanelOverview.png | Glukose-Karte (Kopf in einer Zeile) + TIR · Ernährung/Sport heute mit Tagesleiste |
+| Glukose | PanelGlukose.png | Wert + KPI-Leiste offen · Chart-Karte mit Navigation · Messungen + TIR/Sensor |
+| Ereignisse | PanelEreignisse.png | KPI-Leiste = Legende · gestapelte Balken · Protokoll + Tiefs nach Uhrzeit |
+| Routinen | PanelRoutinen.png | 3er-Kartenraster mit Play · Letzte Trainings + Trainings/Woche |
+| Übungen | PanelUebungen.png | Master-Detail: Liste mit Suche · Detail mit KPIs, Verlauf, Routinen |
+| Übungsstatistiken | PanelStatistiken.png | KPI-Leiste · 2 Charts · Tabelle mit Inline-Balken |
+| Aktivität | PanelAktivitaet.png | Verlauf mit Tagesgruppen · Diese Woche + Kalender-Heatmap |
+| Puls | PanelPuls.png | wie Glukose, violett · Zonen + Ruhepuls 7 Tage |
+| Schlaf | PanelSchlaf.png | Hypnogramm-Karte + Nacht-Details · Schlafdauer + Nächte |
+| Körper | PanelKoerper.png | Chart (Messwerte + Ø 7 Tage) · Kennwerte + Messungen |
+| Training | PanelWorkout.png | siehe unten |
 
 ## Workout-Runner (Routines › Normale Routine › Start)
 
 Offenes Layout ohne Karten. Struktur wird nur über Linien und Abstände gebildet.
 
-- **Kopf:** Links Routinenname 26 px, darunter muted „1 / 11 exercises · 0 / 20 sets“. Rechts Pause (runder Icon-Button) und Finish.
-- **Zeitleiste (wie bei einem Player):** eine Zeile mit links nur „**0:01**“, in der Mitte dem Fortschrittsbalken (8 px, ein Segment pro Übung, Breite proportional zur Satzanzahl, aktuelles Segment anteilig in accent) und rechts „ends **19:45**“. Die Werte sind 16 px weiß, „ends“ ist 14 px muted.
+- **Kopf:** Links Routinenname 26 px, darunter muted „1 / 11 Übungen · 0 / 20 Sätze“. Rechts Pause (runder Icon-Button) und Finish.
+- **Zeitleiste (wie bei einem Player):** eine Zeile mit links nur „**0:01**“, in der Mitte dem Fortschrittsbalken (8 px, ein Segment pro Übung, Breite proportional zur Satzanzahl, aktuelles Segment anteilig in accent) und rechts „endet **19:45**“. Die Werte sind 16 px weiß.
 - Referenzgröße 1920 × 1080 (großer Bildschirm), Inhalt max. 1640 px.
 - **Darunter 3 Spalten, symmetrisch** (`340px 1fr 340px`, füllen die Höhe; die Trennlinien laufen bis unten, die Bühne ist vertikal zentriert): Die Timer-Bühne steht dadurch **exakt in der Mitte** des Inhaltsbereichs. Das ist wichtig: Beide Seitenspalten müssen immer gleich breit bleiben.
   - **Links – Vitals** (rechte Linie, keine Karte): Glukose und Puls untereinander, jeweils Label, Wert 40 px, Sparkline über die volle Spaltenbreite (durchgehend). Keine Meta-Zeile.

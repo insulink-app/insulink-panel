@@ -98,7 +98,9 @@
     "close": "Schließen",
     "now": "jetzt",
     "today_at": "Heute, {{time}}",
-    "yesterday_at": "Gestern, {{time}}"
+    "yesterday_at": "Gestern, {{time}}",
+    "today": "Heute",
+    "yesterday": "Gestern"
   },
   "login": {
     "welcome": "Willkommen zurück",
@@ -488,8 +490,6 @@
     "workout_saved": "Workout gespeichert",
     "target_time": "Ziel: {{n}} s",
     "reps": "Wiederholungen",
-    "set": "Satz",
-    "next": "Als nächstes:",
     "total": "Gesamt",
     "pause": "Pausieren",
     "resume": "Fortsetzen",

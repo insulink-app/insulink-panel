@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { format } from "date-fns";
+import { dateLocale } from "@/lib/when";
 import PanelPage from "@/layouts/panel";
 import glucoseService from "@/api/services/glucose-service";
 import nutritionService from "@/api/services/nutrition-service";
@@ -25,7 +27,7 @@ function greetingKey(hour: number) {
 }
 
 export default function OverviewPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const name = useUserInformation()?.name ?? "";
 
   const { data: settings } = useQuery({
@@ -49,7 +51,6 @@ export default function OverviewPage() {
     refetchInterval: GLUCOSE_POLL_MS,
   });
   const meals = useQuery({ queryKey: ["meals"], queryFn: nutritionService.meals });
-  const drinks = useQuery({ queryKey: ["drinks"], queryFn: nutritionService.drinks });
   const workouts = useQuery({ queryKey: ["workouts"], queryFn: sportService.workouts });
   const trainings = useQuery({ queryKey: ["trainings"], queryFn: sportService.trainings });
   const routines = useQuery({ queryKey: ["routines"], queryFn: sportService.routines });
@@ -72,7 +73,10 @@ export default function OverviewPage() {
 
   return (
     <PanelPage title={t("overview.title")}>
-      <PageHeader title={t(greetingKey(new Date().getHours()), { name })} />
+      <PageHeader
+        title={t(greetingKey(new Date().getHours()), { name })}
+        subtitle={format(new Date(), "EEEE, d. MMMM", { locale: dateLocale(i18n.language) })}
+      />
       <div className="flex flex-col gap-4">
         <div className="grid gap-4 min-[1100px]:grid-cols-[minmax(0,2.3fr)_minmax(0,1fr)]">
           <GlucoseCard
@@ -94,8 +98,7 @@ export default function OverviewPage() {
         <div className="grid gap-4 min-[1100px]:grid-cols-2">
           <NutritionCard
             meals={meals.data?.meals ?? []}
-            drinks={drinks.data?.drinks ?? []}
-            isLoading={meals.isLoading || drinks.isLoading}
+            isLoading={meals.isLoading}
           />
           <ActivityCard
             workouts={workouts.data?.workouts ?? []}

@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { format } from "date-fns";
 import { GlucoseTrendArrow } from "@/components/glucose-trend-arrow";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -23,42 +24,52 @@ function formatRate(perMin: number, unit?: string) {
   return `${rate >= 0 ? "+" : "−"}${formatNumber(Math.abs(rate), digits)}`;
 }
 
-/** The latest reading, 64 px, with its trend arrow, unit and rate. */
+/**
+ * The latest reading as the card's header row: the value (72 px), its trend
+ * arrow in a circle tinted by the range, and the unit over the rate and time.
+ */
 export function CurrentReading({
   entries,
   unit,
+  color,
   isLoading,
 }: {
   entries: GlucoseEntry[];
   unit?: string;
+  /** The latest reading's range colour, for the arrow's circle. */
+  color: string;
   isLoading?: boolean;
 }) {
   const { t } = useTranslation();
   const latest = entries[entries.length - 1];
   const perMinute = trendPerMinute(entries);
 
+  if (isLoading) {
+    return <Skeleton className="h-16 w-64" />;
+  }
   return (
-    <div>
-      <span className="text-sm text-muted-foreground">{t("overview.current_glucose")}</span>
-      {isLoading ? (
-        <Skeleton className="mt-1 h-16 w-48" />
-      ) : (
-        <div className="mt-1 flex items-center gap-2.5">
-          <b className="text-[64px] leading-none font-extrabold tracking-[-0.04em]">
-            {latest ? toDisplay(latest.value, unit) : "–"}
-          </b>
-          {perMinute !== undefined && <GlucoseTrendArrow perMin={perMinute} color="var(--text)" size={40} />}
-          <span className="ml-1 text-sm leading-snug text-muted-foreground">
-            {unitLabel(unit)}
-            {perMinute !== undefined && (
-              <>
-                <br />
-                {t("overview.per_min", { value: formatRate(perMinute, unit) })}
-              </>
-            )}
-          </span>
-        </div>
+    <div className="flex items-center gap-3.5">
+      <b className="text-[72px] leading-[0.9] font-extrabold tracking-[-0.045em]">
+        {latest ? toDisplay(latest.value, unit) : "–"}
+      </b>
+      {perMinute !== undefined && (
+        <span
+          className="grid size-11 shrink-0 place-items-center rounded-full"
+          style={{ color, backgroundColor: `color-mix(in srgb, ${color} 14%, transparent)` }}
+        >
+          <GlucoseTrendArrow perMin={perMinute} color={color} size={20} />
+        </span>
       )}
+      <span className="text-sm leading-[1.45] text-muted-foreground">
+        <b className="text-foreground">{unitLabel(unit)}</b>
+        {latest && (
+          <>
+            <br />
+            {perMinute !== undefined && `${t("overview.per_min", { value: formatRate(perMinute, unit) })} · `}
+            {format(new Date(latest.time), "HH:mm")}
+          </>
+        )}
+      </span>
     </div>
   );
 }
@@ -86,7 +97,9 @@ export function TimeInRangeCard({
 
   return (
     <Card className="h-full gap-0 p-6">
-      <span className="text-sm text-muted-foreground">{t("overview.time_in_range")}</span>
+      <span className="text-sm text-muted-foreground">
+        {t("overview.time_in_range")} · {t("common.range_hours", { n: 24 })}
+      </span>
       {isLoading ? (
         <Skeleton className="mt-1 h-12 w-24" />
       ) : (
@@ -96,7 +109,7 @@ export function TimeInRangeCard({
         </div>
       )}
       <div className="mt-5 flex flex-1 gap-[18px]">
-        <div className="flex min-h-[260px] w-7 flex-col gap-[3px]" aria-hidden>
+        <div className="flex min-h-[220px] w-7 flex-col gap-[3px]" aria-hidden>
           {GLUCOSE_BANDS.filter((band) => percent(band) > 0).map((band) => (
             <i
               key={band}

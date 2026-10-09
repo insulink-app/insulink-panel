@@ -13,6 +13,7 @@ export function ListRow({
   title,
   subtitle,
   value,
+  detail,
   to,
   className,
 }: {
@@ -20,6 +21,8 @@ export function ListRow({
   title: ReactNode;
   subtitle?: ReactNode;
   value?: ReactNode;
+  /** A muted line under the value (a meal's bolus under its carbs). */
+  detail?: ReactNode;
   to?: string;
   className?: string;
 }) {
@@ -34,7 +37,12 @@ export function ListRow({
         <b className="block truncate text-sm">{title}</b>
         {subtitle && <span className="block truncate text-xs text-muted-foreground">{subtitle}</span>}
       </span>
-      {value != null && <b className="shrink-0 text-sm">{value}</b>}
+      {value != null && (
+        <span className="shrink-0 text-right">
+          <b className="text-sm">{value}</b>
+          {detail != null && <span className="block text-xs text-muted-foreground">{detail}</span>}
+        </span>
+      )}
     </>
   );
   const rowClass = cn("flex items-center gap-3 py-3", className);

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { format, isToday } from "date-fns";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Segmented } from "@/components/segmented";
@@ -12,7 +11,7 @@ import { HOUR } from "@/lib/use-time-window";
 import { CurrentReading } from "./glucose-cards";
 
 const RANGE_HOURS = [3, 6, 12, 24];
-const CHART_HEIGHT = 250;
+const CHART_HEIGHT = 280;
 
 // The forecast rows, anchored at the latest reading so the dashed line starts
 // on the curve. Points at or before that reading are dropped: a stale forecast
@@ -63,25 +62,19 @@ export function GlucoseCard({
   }
   const rows = [...readings, ...forecast];
   const end = rows[rows.length - 1]?.time ?? Date.now();
+  const statusColor = statusColorVar[latest ? classify(latest.value, low, high) : "in-range"];
 
   return (
     <Card className="h-full gap-0 p-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <CurrentReading entries={entries} unit={unit} isLoading={isLoading} />
-        {latest && !isLoading && (
-          <div className="flex flex-col items-end gap-2.5">
-            <StatusChip color={statusColorVar[classify(latest.value, low, high)]}>
+      <div className="mb-[26px] flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
+          <CurrentReading entries={entries} unit={unit} color={statusColor} isLoading={isLoading} />
+          {latest && !isLoading && (
+            <StatusChip color={statusColor}>
               {t("overview.status_" + classify(latest.value, low, high).replace("-", "_"))}
             </StatusChip>
-            <span className="text-[13px] text-muted-foreground">
-              {t("overview.last_updated", {
-                time: format(new Date(latest.time), isToday(latest.time) ? "HH:mm" : "dd.MM. HH:mm"),
-              })}
-            </span>
-          </div>
-        )}
-      </div>
-      <div className="mt-3.5 mb-3 flex justify-end">
+          )}
+        </div>
         <Segmented
           label={t("overview.range")}
           value={rangeHours}

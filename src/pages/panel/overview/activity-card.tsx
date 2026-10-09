@@ -86,18 +86,13 @@ export function ActivityCard({
       to="/health/activity"
       loading={isLoading}
       empty={recent.length === 0}
-      cells={[
+      primary={{
+        label: t("body.steps"),
+        value: formatNumber(sumToday(steps, (entry) => entry.time, (entry) => entry.value)),
+      }}
+      secondary={[
         { label: t("overview.workouts"), value: String(todayRows(workouts, workoutStart).length) },
         { label: t("overview.active_time"), value: formatNumber(activeToday / 60000), unit: t("overview.unit_min") },
-        {
-          label: t("body.distance"),
-          value: formatNumber(sumToday(trainings, trainingStart, (training) => training.dist) / 1000, 1),
-          unit: t("body.km"),
-        },
-        {
-          label: t("body.steps"),
-          value: formatNumber(sumToday(steps, (entry) => entry.time, (entry) => entry.value)),
-        },
       ]}
     >
       {recent.map((item) => (

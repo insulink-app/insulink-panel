@@ -6,15 +6,16 @@ interface PanelPageProps {
   parents?: Crumb[];
   /**
    * "full" is the workout runner: the whole width, with the sidebar collapsed
-   * (the topbar toggle still opens it). Pages default to 1600 px.
+   * (the topbar toggle still opens it). Pages use up to 1440 px.
    */
   width?: "default" | "full";
   children?: React.ReactNode;
 }
 
 const CONTENT_WIDTH = {
-  default: "max-w-[1600px] px-4 py-7 sm:px-7 xl:px-10",
-  full: "max-w-none px-4 py-7 sm:px-7 xl:px-10 xl:py-9",
+  // 1440 px of content plus the 32 px gutters.
+  default: "max-w-[1504px] px-4 py-7 sm:px-8 sm:py-8",
+  full: "max-w-none px-4 pt-4 pb-7 sm:px-7 xl:px-10 xl:pb-9",
 };
 
 export default function PanelPage({

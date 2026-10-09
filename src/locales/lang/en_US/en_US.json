@@ -611,7 +611,14 @@
     "chart_comparison": "Routine runs compared",
     "comparison_empty": "Run a routine at least twice to compare its sessions.",
     "achieved": "achieved",
-    "workouts": "Workouts"
+    "workouts": "Workouts",
+    "chart_duration": "Duration per run",
+    "per_week": "Ø per week",
+    "unit_workouts": "workouts",
+    "span_weeks": "{{n}} W",
+    "span_months": "{{n}} M",
+    "span_all": "All",
+    "sort_label": "Sort"
   },
   "export": {
     "title": "Export",

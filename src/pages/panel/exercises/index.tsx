@@ -67,7 +67,7 @@ export default function ExercisesPage() {
       ) : list.length === 0 ? (
         <p className="py-16 text-center text-sm text-muted-foreground">{t("exercises.empty")}</p>
       ) : (
-        <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
+        <div className="grid items-stretch gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
           <ExerciseList
             exercises={shown}
             setsById={setsById}

@@ -611,7 +611,14 @@
     "chart_comparison": "Routinen-Durchgänge im Vergleich",
     "comparison_empty": "Führe eine Routine mindestens zweimal durch, um die Durchgänge zu vergleichen.",
     "achieved": "erreicht",
-    "workouts": "Workouts"
+    "workouts": "Workouts",
+    "chart_duration": "Dauer pro Durchgang",
+    "per_week": "Ø pro Woche",
+    "unit_workouts": "Trainings",
+    "span_weeks": "{{n}} W",
+    "span_months": "{{n}} M",
+    "span_all": "Alle",
+    "sort_label": "Sortierung"
   },
   "export": {
     "title": "Export",

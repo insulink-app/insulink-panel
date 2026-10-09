@@ -1,5 +1,6 @@
 // Everything that turns raw workouts into the page's numbers. No React here —
 // the views only render what these return.
+import { workoutDurationMs } from "@/lib/workout";
 import { formatNumber } from "@/lib/format";
 import { startOfWeek } from "date-fns";
 import type { Routine, SetLog, SportExercise, Workout } from "@/api/services/sport-service";
@@ -23,7 +24,7 @@ export type SortKey = "last" | "name" | "sets" | "best";
 export interface RoutineSeries {
   name: string;
   color: string;
-  points: { time: number; value: number; delta: number }[];
+  points: { time: number; value: number }[];
 }
 
 const CHART_COLORS = [
@@ -119,22 +120,9 @@ export function sortStats(stats: ExerciseStat[], key: SortKey): ExerciseStat[] {
   }
 }
 
-// A single "how much did I do this run" number, so two runs of the same routine
-// compare on one axis: total reps, plus lifted volume (kg × reps) when weight is
-// used and seconds for timed holds. For a reps-only routine it is just the reps.
-// ponytail: a flat sum mixes units; fine as a relative progress proxy, revisit
-// if a routine ever blends heavy lifting and long holds and the scale skews.
-function workoutScore(workout: Workout): number {
-  return workout.sets.reduce((sum, set) => {
-    const reps = set.reps ?? 0;
-    return sum + reps + (set.kg ?? 0) * reps + (set.secs ?? 0);
-  }, 0);
-}
-
-// One line per routine that has been run at least twice, each point a run scored
-// by [workoutScore] with its change from the previous run — so the line shows
-// whether each session beat the last.
-export function routineComparison(
+// One line per routine run at least twice, each point a run's duration in
+// minutes, so the lines show whether a routine gets faster or slower.
+export function routineDurations(
   workouts: Workout[],
   routines: Routine[],
   untitled: string,
@@ -142,40 +130,32 @@ export function routineComparison(
   const nameById = new Map(routines.map((routine) => [routine.id, routine.name]));
   const runsByRoutine = new Map<string, Workout[]>();
   for (const workout of workouts) {
-    const runs = runsByRoutine.get(workout.routine) ?? [];
-    runs.push(workout);
-    runsByRoutine.set(workout.routine, runs);
+    runsByRoutine.set(workout.routine, [...(runsByRoutine.get(workout.routine) ?? []), workout]);
   }
-
   const series: RoutineSeries[] = [];
-  let colorIndex = 0;
   for (const [routineId, runs] of runsByRoutine) {
     if (runs.length < 2) {
       continue;
     }
-    const ordered = runs.slice().sort((left, right) => left.started - right.started);
-    const points = ordered.map((workout, index) => {
-      const value = workoutScore(workout);
-      const previous = index > 0 ? workoutScore(ordered[index - 1]) : value;
-      return { time: workout.started, value, delta: value - previous };
-    });
     series.push({
       name: nameById.get(routineId) || untitled,
-      color: CHART_COLORS[colorIndex % CHART_COLORS.length],
-      points,
+      color: CHART_COLORS[series.length % CHART_COLORS.length],
+      points: runs
+        .slice()
+        .sort((left, right) => left.started - right.started)
+        .map((workout) => ({ time: workout.started, value: Math.round(workoutDurationMs(workout) / 60000) })),
     });
-    colorIndex += 1;
   }
   return series;
 }
 
-// Sums `valueOf` into the last 12 weekly buckets (empty weeks included, so a
-// training gap actually shows as a gap). Weeks start Monday.
+// Sums `valueOf` into the last `weekCount` weekly buckets (empty weeks
+// included, so a training gap actually shows as a gap). Weeks start Monday.
 export function weeklyBuckets(
   workouts: Workout[],
   valueOf: (workout: Workout) => number,
+  weekCount = 12,
 ): { time: number; value: number }[] {
-  const weekCount = 12;
   const currentWeek = startOfWeek(new Date(), { weekStartsOn: 1 });
   const buckets: { time: number; value: number }[] = [];
   for (let offset = weekCount - 1; offset >= 0; offset -= 1) {

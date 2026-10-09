@@ -12,7 +12,7 @@ const SEGMENTS = 10;
 
 /**
  * The sensor in use: its type, when it started, and how much of its life is
- * left as ten segments, the remaining ones in the brand colour.
+ * left as ten segments, the remaining ones in the brand colour from the left.
  */
 export function SensorCard({ className }: { className?: string }) {
   const { t, i18n } = useTranslation();
@@ -63,7 +63,7 @@ export function SensorCard({ className }: { className?: string }) {
             {Array.from({ length: SEGMENTS }, (_, index) => (
               <i
                 key={index}
-                className={`block h-2 flex-1 rounded ${index >= SEGMENTS - left ? "bg-primary" : "bg-divider"}`}
+                className={`block h-2 flex-1 rounded ${index < left ? "bg-primary" : "bg-divider"}`}
               />
             ))}
           </div>

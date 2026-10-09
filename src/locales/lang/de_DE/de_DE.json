@@ -572,7 +572,19 @@
     "kind": "Typ",
     "kind_reps": "Wiederholungen",
     "kind_weighted": "Gewicht",
-    "kind_timed": "Zeit"
+    "kind_timed": "Zeit",
+    "search": "Übung suchen",
+    "since": "seit {{date}}",
+    "per_set": "Ø pro Satz",
+    "last": "Zuletzt",
+    "per_session": "Pro Einheit",
+    "in_routines": "In Routinen",
+    "position": "Übung {{n}} von {{total}}",
+    "not_in_routines": "Noch in keiner Routine.",
+    "range_months": "{{n}} M",
+    "range_all": "Alle",
+    "best_line": "Bestwert {{value}}",
+    "pick": "Wähle links eine Übung."
   },
   "exercise_stats": {
     "title": "Übungsstatistiken",

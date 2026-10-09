@@ -1,44 +1,29 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Pencil, Plus, Running, Trash2 } from "@/components/icons";
-import { PageHeader } from "@/components/page-header";
+import { Plus } from "@/components/icons";
 import PanelPage from "@/layouts/panel";
+import { PageHeader } from "@/components/page-header";
 import { CardSkeleton } from "@/components/card-skeleton";
 import { Button } from "@/components/ui/button";
-import { ConfirmDelete } from "@/components/confirm-delete";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Spinner } from "@/components/ui/spinner";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import sportService, {
-  type ExerciseKind,
-  type SportExercise,
-} from "@/api/services/sport-service";
+import sportService, { type SportExercise } from "@/api/services/sport-service";
 import { newId } from "../routines/shared";
-
-const KINDS: ExerciseKind[] = ["reps", "weighted", "timed"];
+import { buildStats } from "../exercise-stats/stats";
+import { ExerciseEditor } from "./exercise-editor";
+import { ExerciseList } from "./exercise-list";
+import { ExerciseDetail } from "./exercise-detail";
 
 export default function ExercisesPage() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { data, isLoading } = useQuery({ queryKey: ["exercises"], queryFn: sportService.exercises });
-  const list = data?.exercises ?? [];
+  const workouts = useQuery({ queryKey: ["workouts"], queryFn: sportService.workouts });
+  const routines = useQuery({ queryKey: ["routines"], queryFn: sportService.routines });
+  const list = useMemo(() => data?.exercises ?? [], [data]);
+  const stats = useMemo(() => buildStats(workouts.data?.workouts ?? [], list), [workouts.data, list]);
+  const [query, setQuery] = useState("");
+  const [selectedId, setSelectedId] = useState<string>();
 
   const mutation = useMutation({
     mutationFn: (next: SportExercise[]) => sportService.syncExercises(next),
@@ -52,7 +37,6 @@ export default function ExercisesPage() {
     },
     onError: () => toast.error(t("exercises.save_failed")),
   });
-
   const [editing, setEditing] = useState<SportExercise | null>(null);
 
   const save = (exercise: SportExercise) =>
@@ -63,65 +47,47 @@ export default function ExercisesPage() {
   const remove = (exercise: SportExercise) =>
     mutation.mutate(list.filter((entry) => entry.id !== exercise.id));
 
+  const shown = list.filter((exercise) => exercise.name.toLowerCase().includes(query.trim().toLowerCase()));
+  const selected = list.find((exercise) => exercise.id === selectedId) ?? list[0];
+  const setsById = new Map(stats.map((stat) => [stat.exercise.id, stat.totalSets]));
+
   return (
     <PanelPage title={t("exercises.title")} parents={[{ title: t("nav.health") }]}>
       <PageHeader
         title={t("exercises.title")}
         actions={
-          <Button onClick={() => setEditing({ id: newId(), name: "", kind: "reps" })}>
+          <Button className="h-10 px-4" onClick={() => setEditing({ id: newId(), name: "", kind: "reps" })}>
             <Plus className="size-4" />
             {t("exercises.add")}
           </Button>
         }
       />
-      <Card className="gap-0 px-6 py-3">
-        {isLoading ? (
-          <div className="py-3">
-            <CardSkeleton />
-          </div>
-        ) : list.length === 0 ? (
-          <p className="py-16 text-center text-sm text-muted-foreground">
-            {t("exercises.empty")}
-          </p>
-        ) : (
-          <div className="divide-y divide-divider">
-            {list.map((exercise) => (
-              <div key={exercise.id} className="flex items-center gap-3 py-3">
-                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-brand/12 text-brand">
-                  <Running size={17} />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <b className="block truncate text-sm">{exercise.name}</b>
-                  <span className="block text-xs text-muted-foreground">
-                    {t("exercises.kind_" + exercise.kind)}
-                  </span>
-                </div>
-                <Button
-                  size="icon"
-                  variant="secondary"
-                  aria-label={t("common.edit")}
-                  onClick={() => setEditing(exercise)}
-                >
-                  <Pencil className="size-4" />
-                </Button>
-                <ConfirmDelete
-                  onConfirm={() => remove(exercise)}
-                  description={t("exercises.delete_confirm", { name: exercise.name })}
-                >
-                  <Button
-                    size="icon"
-                    variant="secondary"
-                    aria-label={t("common.delete")}
-                    disabled={mutation.isPending}
-                  >
-                    <Trash2 className="size-4 text-destructive" />
-                  </Button>
-                </ConfirmDelete>
-              </div>
-            ))}
-          </div>
-        )}
-      </Card>
+      {isLoading ? (
+        <CardSkeleton />
+      ) : list.length === 0 ? (
+        <p className="py-16 text-center text-sm text-muted-foreground">{t("exercises.empty")}</p>
+      ) : (
+        <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]">
+          <ExerciseList
+            exercises={shown}
+            setsById={setsById}
+            selectedId={selected?.id}
+            query={query}
+            onQuery={setQuery}
+            onSelect={setSelectedId}
+          />
+          {selected && (
+            <ExerciseDetail
+              exercise={selected}
+              stat={stats.find((stat) => stat.exercise.id === selected.id)}
+              routines={routines.data?.routines ?? []}
+              deleting={mutation.isPending}
+              onEdit={() => setEditing(selected)}
+              onDelete={() => remove(selected)}
+            />
+          )}
+        </div>
+      )}
 
       {editing && (
         <ExerciseEditor
@@ -132,68 +98,5 @@ export default function ExercisesPage() {
         />
       )}
     </PanelPage>
-  );
-}
-
-function ExerciseEditor({
-  exercise,
-  saving,
-  onCancel,
-  onSave,
-}: {
-  exercise: SportExercise;
-  saving: boolean;
-  onCancel: () => void;
-  onSave: (exercise: SportExercise) => void;
-}) {
-  const { t } = useTranslation();
-  const [draft, setDraft] = useState<SportExercise>(exercise);
-
-  return (
-    <Dialog open onOpenChange={(open) => !open && onCancel()}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>{exercise.name ? t("exercises.edit") : t("exercises.add")}</DialogTitle>
-        </DialogHeader>
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-2">
-            <Label>{t("exercises.name")}</Label>
-            <Input
-              value={draft.name}
-              onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))}
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label>{t("exercises.kind")}</Label>
-            <Select
-              value={draft.kind}
-              onValueChange={(kind) =>
-                setDraft((current) => ({ ...current, kind: kind as ExerciseKind }))
-              }
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {KINDS.map((kind) => (
-                  <SelectItem key={kind} value={kind}>
-                    {t("exercises.kind_" + kind)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="secondary" onClick={onCancel}>
-            {t("common.cancel")}
-          </Button>
-          <Button onClick={() => onSave(draft)} disabled={saving || !draft.name.trim()}>
-            {t("common.save")}
-            {saving && <Spinner className="ml-2" />}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
   );
 }

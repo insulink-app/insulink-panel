@@ -572,7 +572,19 @@
     "kind": "Type",
     "kind_reps": "Reps",
     "kind_weighted": "Weighted",
-    "kind_timed": "Timed"
+    "kind_timed": "Timed",
+    "search": "Search exercises",
+    "since": "since {{date}}",
+    "per_set": "Ø per set",
+    "last": "Last",
+    "per_session": "Per session",
+    "in_routines": "In routines",
+    "position": "Exercise {{n}} of {{total}}",
+    "not_in_routines": "Not part of any routine yet.",
+    "range_months": "{{n}} M",
+    "range_all": "All",
+    "best_line": "Best {{value}}",
+    "pick": "Pick an exercise on the left."
   },
   "exercise_stats": {
     "title": "Exercise statistics",

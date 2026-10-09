@@ -137,10 +137,11 @@
   --teal: #0b7f6a;
   --prediction: #6a7e91;
 
-  --sleep-deep: #8c7bff;
-  --sleep-light: #5bc0f8;
-  --sleep-rem: #2ed8b6;
-  --sleep-restless: #f06292;
+  --sleep-deep: #6f5ed6;
+  --sleep-light: #3f86d6;
+  --sleep-rem: #0b9e83;
+  --sleep-awake: var(--text);
+  --sleep-restless: #d6457a;
 }
 
 .dark {
@@ -168,6 +169,12 @@
   --pulse: #c9a7ff;
   --teal: #2ed8b6;
   --prediction: #97a9ba;
+
+  --sleep-deep: #8e7cf0;
+  --sleep-light: #7fb2f0;
+  --sleep-rem: #2ed8b6;
+  --sleep-awake: var(--text);
+  --sleep-restless: #f06292;
 }
 
 /* shadcn aliases. `--accent` stays shadcn's neutral hover tone (a raised

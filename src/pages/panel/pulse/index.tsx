@@ -45,7 +45,7 @@ export default function PulsePage() {
     band: [PULSE_REST, PULSE_ELEVATED],
     domain: STRIP_DOMAIN,
     format: (value) => String(value),
-    color: () => "var(--pulse)",
+    color: (value) => (value > PULSE_ELEVATED ? "var(--pulse)" : "var(--brand)"),
     change: (value, previous) => value - previous,
   };
   const bpm = t("pulse.bpm");

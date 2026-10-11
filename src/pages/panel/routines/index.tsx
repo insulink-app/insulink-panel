@@ -1,11 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Activity, ChevronRight, Dumbbell, ListChecks, Play, Plus } from "@/components/icons";
+import { Activity, ListChecks, Play, Plus } from "@/components/icons";
 import PanelPage from "@/layouts/panel";
 import { CardSkeleton } from "@/components/card-skeleton";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { PageHeader } from "@/components/page-header";
+import { RoutineCard } from "./routine-card";
+import { RecentWorkouts, WorkoutsPerWeek } from "./recent-workouts";
 import sportService from "@/api/services/sport-service";
 import { FREE_ROUTINE_ID } from "@/lib/workout";
 
@@ -18,7 +21,9 @@ export default function RoutinesPage() {
     queryFn: sportService.activeWorkout,
     refetchInterval: 15000,
   });
+  const workouts = useQuery({ queryKey: ["workouts"], queryFn: sportService.workouts });
   const list = routines.data?.routines ?? [];
+  const workoutList = workouts.data?.workouts ?? [];
   const running = active.data?.workout;
   const runningRoutine = list.find((entry) => entry.id === running?.routine);
   // A free workout is in no list, so its name comes from the snapshot itself.
@@ -29,74 +34,49 @@ export default function RoutinesPage() {
 
   return (
     <PanelPage title={t("routines.title")} parents={[{ title: t("nav.health") }]}>
-      <div className="py-6 flex flex-col gap-4">
+      <PageHeader
+        title={t("routines.title")}
+        actions={
+          <>
+            <Button asChild variant="outline" className="h-10 border border-line bg-panel px-4 hover:bg-raised">
+              <Link to={`/health/routines/${FREE_ROUTINE_ID}/run`}>
+                <Play className="size-4" />
+                {t("routines.free")}
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="h-10 border border-line bg-panel px-4 hover:bg-raised">
+              <Link to="/health/routines/exercises">
+                <ListChecks className="size-4" />
+                {t("exercises.title")}
+              </Link>
+            </Button>
+            <Button asChild className="h-10 px-4">
+              <Link to="/health/routines/new">
+                <Plus className="size-4" />
+                {t("routines.add")}
+              </Link>
+            </Button>
+          </>
+        }
+      />
+      <div className="flex flex-col gap-4">
         {running && <RunningWorkoutCard routineId={running.routine} name={runningName} />}
-
-        <div className="flex justify-end gap-2">
-          <Button asChild variant="outline">
-            <Link to={`/health/routines/${FREE_ROUTINE_ID}/run`}>
-              <Play className="size-4" />
-              {t("routines.free")}
-            </Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link to="/health/routines/exercises">
-              <ListChecks className="size-4" />
-              {t("exercises.title")}
-            </Link>
-          </Button>
-          <Button asChild>
-            <Link to="/health/routines/new">
-              <Plus className="size-4" />
-              {t("routines.add")}
-            </Link>
-          </Button>
-        </div>
 
         {routines.isLoading ? (
           <CardSkeleton />
         ) : list.length === 0 ? (
-          <p className="py-16 text-center text-sm text-muted-foreground">
-            {t("routines.empty")}
-          </p>
+          <p className="py-16 text-center text-sm text-muted-foreground">{t("routines.empty")}</p>
         ) : (
-          list.map((routine) => (
-            <Card key={routine.id} className="relative transition-colors hover:bg-secondary/50">
-              <CardContent className="flex items-center gap-4 py-4">
-                {/* Stretched link: the ::after covers the whole card, so clicking
-                    anywhere on the box opens the routine. The Play button below
-                    sits above it via z-10 to stay a separate target. */}
-                <Link
-                  to={`/health/routines/${routine.id}`}
-                  className="flex flex-1 items-center gap-4 after:absolute after:inset-0"
-                >
-                  <div className="flex size-10 items-center justify-center rounded-lg bg-secondary">
-                    <Dumbbell className="size-5" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-medium">{routine.name || t("routines.untitled")}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {t("routines.count", { n: routine.items.length })}
-                    </div>
-                  </div>
-                </Link>
-                {routine.items.length > 0 && (
-                  <Button
-                    asChild
-                    size="icon"
-                    className="relative z-10 size-11 shrink-0 rounded-full"
-                    aria-label={t("routines.start")}
-                  >
-                    <Link to={`/health/routines/${routine.id}/run`}>
-                      <Play className="size-5" />
-                    </Link>
-                  </Button>
-                )}
-                <ChevronRight className="size-5 shrink-0 text-muted-foreground" />
-              </CardContent>
-            </Card>
-          ))
+          <div className="grid items-stretch gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {list.map((routine) => (
+              <RoutineCard key={routine.id} routine={routine} />
+            ))}
+          </div>
         )}
+        <div className="grid items-stretch gap-4 lg:grid-cols-[minmax(0,1.9fr)_minmax(0,1fr)]">
+          <RecentWorkouts workouts={workoutList} routines={list} />
+          <WorkoutsPerWeek workouts={workoutList} />
+        </div>
       </div>
     </PanelPage>
   );
@@ -109,17 +89,15 @@ function RunningWorkoutCard({ routineId, name }: { routineId: string; name: stri
   const { t } = useTranslation();
   return (
     <Link to={`/health/routines/${routineId}/run`}>
-      <Card className="cursor-pointer border-primary/50 bg-primary/5 transition-colors hover:bg-primary/10">
-        <CardContent className="flex items-center gap-4 py-4">
-          <div className="flex size-10 items-center justify-center rounded-lg bg-primary/15">
-            <Activity className="size-5 text-primary" />
-          </div>
-          <div className="flex-1">
-            <div className="font-medium">{t("routines.running")}</div>
-            <div className="text-xs text-muted-foreground">{name || t("routines.untitled")}</div>
-          </div>
-          <Button size="sm">{t("routines.continue")}</Button>
-        </CardContent>
+      <Card className="flex-row items-center gap-3 px-6 py-4 transition-colors hover:bg-raised">
+        <span className="grid size-9 shrink-0 place-items-center rounded-full bg-brand/12 text-brand">
+          <Activity size={17} />
+        </span>
+        <span className="min-w-0 flex-1">
+          <b className="block text-sm">{t("routines.running")}</b>
+          <span className="block truncate text-xs text-muted-foreground">{name || t("routines.untitled")}</span>
+        </span>
+        <span className={buttonVariants({ size: "sm" })}>{t("routines.continue")}</span>
       </Card>
     </Link>
   );

@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
+import { StatStrip } from "@/components/stat-strip";
 import { Flag } from "@/components/icons";
 import type { Workout } from "@/api/services/sport-service";
 import { formatDuration } from "./format";
@@ -23,16 +24,11 @@ export function WorkoutSummaryCard({
   const ratio = previous ? effortRatioVsPrevious(workout, previous) : null;
   const percent = ratio != null ? Math.round((ratio - 1) * 100) : null;
 
-  const color =
-    percent == null || percent === 0
-      ? "var(--muted-foreground)"
-      : percent > 0
-        ? "var(--glucose-in-range)"
-        : "var(--destructive)";
+  // Brand for a gain, muted otherwise: green and red belong to glucose.
+  const color = percent != null && percent > 0 ? "var(--brand)" : "var(--muted-foreground)";
 
   return (
-    <Card>
-      <CardContent className="flex flex-col items-center gap-6 py-6">
+    <Card className="items-center gap-6 p-6">
         <ProgressRing fraction={ratio ?? 1} color={ratio == null ? "var(--primary)" : color}>
           {percent == null ? (
             <div className="flex flex-col items-center gap-1">
@@ -52,12 +48,15 @@ export function WorkoutSummaryCard({
           )}
         </ProgressRing>
 
-        <div className="flex w-full justify-around">
-          <Stat value={String(current.exercises)} label={t("summary.exercises")} />
-          <Stat value={String(current.sets)} label={t("routines.sets")} />
-          <Stat value={formatDuration(current.durationSecs)} label={t("activity.duration")} />
+        <div className="w-full">
+          <StatStrip
+            cells={[
+              { label: t("summary.exercises"), value: String(current.exercises) },
+              { label: t("routines.sets"), value: String(current.sets) },
+              { label: t("activity.duration"), value: formatDuration(current.durationSecs) },
+            ]}
+          />
         </div>
-      </CardContent>
     </Card>
   );
 }
@@ -84,7 +83,7 @@ function ProgressRing({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="var(--secondary)"
+          stroke="var(--divider)"
           strokeWidth={stroke}
         />
         <circle
@@ -100,15 +99,6 @@ function ProgressRing({
         />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">{children}</div>
-    </div>
-  );
-}
-
-function Stat({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="flex flex-col items-center">
-      <span className="text-2xl font-bold">{value}</span>
-      <span className="text-sm text-muted-foreground">{label}</span>
     </div>
   );
 }

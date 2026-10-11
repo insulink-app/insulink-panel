@@ -12,7 +12,7 @@ export function ChartTooltipBox({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-lg border border-border bg-popover px-3 py-2 shadow-md">
+    <div className="rounded-xl border border-divider bg-popover px-3 py-2">
       <div className="text-xs text-muted-foreground">{caption}</div>
       {children}
     </div>

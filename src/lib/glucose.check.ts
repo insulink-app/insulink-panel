@@ -62,8 +62,8 @@ for (const mgdl of [20, 54, 60, 70, 120, 180, 200, 250, 400]) {
 // mg/dL is storage; mmol/L is display-only, a pure /18 to one decimal.
 assert.equal(toDisplay(180), "180");
 assert.equal(toDisplay(180.4), "180");
-assert.equal(toDisplay(180, "mmol"), "10.0");
-assert.equal(toDisplay(90, "mmol"), "5.0");
+assert.equal(toDisplay(180, "mmol"), "10,0");
+assert.equal(toDisplay(90, "mmol"), "5,0");
 assert.equal(unitLabel(), "mg/dL");
 assert.equal(unitLabel("mmol"), "mmol/L");
 
@@ -71,7 +71,7 @@ assert.equal(unitLabel("mmol"), "mmol/L");
 assert.equal(bandRange("in-range"), "70–180 mg/dL");
 assert.equal(bandRange("very-high"), "> 250 mg/dL");
 assert.equal(bandRange("very-low"), "< 54 mg/dL");
-assert.equal(bandRange("in-range", 70, 180, "mmol"), "3.9–10.0 mmol/L");
+assert.equal(bandRange("in-range", 70, 180, "mmol"), "3,9–10,0 mmol/L");
 
 // Summary statistics over a known set: mean 100, so GMI = 3.31 + 2.392 = 5.702.
 assert.equal(summaryStats([]), null);

@@ -14,12 +14,17 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
+import { CardHeading } from "@/components/card-heading";
+import { CHART_MARGIN_TIGHT, GRID_STYLE, X_AXIS_STYLE } from "@/components/chart-kit";
+import { formatNumber } from "@/lib/format";
 import { ChartTooltipBox, ChartTooltipValue } from "@/components/chart-tooltip";
 
-const GLUCOSE_COLOR = "#6366f1";
-const PULSE_COLOR = "#e0533d";
-const SPEED_COLOR = "#16a34a";
+// As in the app's training chart: glucose in the brand colour, the pulse
+// violet, speed teal. None of them green, amber or red.
+const GLUCOSE_COLOR = "var(--brand)";
+const PULSE_COLOR = "var(--pulse)";
+const SPEED_COLOR = "var(--teal)";
 
 type VitalsRow = {
   t: number;
@@ -84,16 +89,18 @@ export const VitalsChart = memo(function VitalsChart({
   const hasSpeed = data.some((point) => point.speed != null);
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>{t("activity.vitals")}</CardTitle>
-        <div className="flex gap-4 text-xs">
-          {hasGlucose && <Legend color={GLUCOSE_COLOR} label={t("activity.glucose")} />}
-          {hasPulse && <Legend color={PULSE_COLOR} label={t("activity.pulse")} />}
-          {hasSpeed && <Legend color={SPEED_COLOR} label={t("activity.speed")} />}
-        </div>
-      </CardHeader>
-      <CardContent>
+    <Card className="gap-0 p-6">
+      <CardHeading
+        title={t("activity.vitals")}
+        action={
+          <div className="flex gap-4 text-xs">
+            {hasGlucose && <Legend color={GLUCOSE_COLOR} label={t("activity.glucose")} />}
+            {hasPulse && <Legend color={PULSE_COLOR} label={t("activity.pulse")} />}
+            {hasSpeed && <Legend color={SPEED_COLOR} label={t("activity.speed")} />}
+          </div>
+        }
+      />
+      <div className="mt-4">
         {!hasGlucose && !hasPulse && !hasSpeed ? (
           <p className="py-12 text-center text-sm text-muted-foreground">{t("activity.no_vitals")}</p>
         ) : (
@@ -107,33 +114,20 @@ export const VitalsChart = memo(function VitalsChart({
                 }
               }}
               onMouseLeave={() => onHover(null)}
+              margin={CHART_MARGIN_TIGHT}
             >
               <ScaleProbe scaleRef={inverseScaleRef} />
-              <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+              <CartesianGrid {...GRID_STYLE} />
               <XAxis
+                {...X_AXIS_STYLE}
                 dataKey="t"
                 type="number"
-                scale="time"
                 domain={[from, to]}
                 ticks={ticks}
                 tickFormatter={(value) => format(new Date(value), "HH:mm")}
-                fontSize={12}
               />
-              <YAxis
-                yAxisId="glucose"
-                fontSize={12}
-                width={40}
-                domain={["dataMin - 10", "dataMax + 10"]}
-                stroke={GLUCOSE_COLOR}
-              />
-              <YAxis
-                yAxisId="pulse"
-                orientation="right"
-                fontSize={12}
-                width={36}
-                domain={["dataMin - 5", "dataMax + 5"]}
-                stroke={PULSE_COLOR}
-              />
+              <YAxis yAxisId="glucose" hide domain={["dataMin - 10", "dataMax + 10"]} />
+              <YAxis yAxisId="pulse" hide domain={["dataMin - 5", "dataMax + 5"]} />
               {/* Speed scales to its own range but shows no axis — a third visible
                   axis would crowd the plot. */}
               <YAxis yAxisId="speed" hide domain={["dataMin - 1", "dataMax + 1"]} />
@@ -155,7 +149,8 @@ export const VitalsChart = memo(function VitalsChart({
                 type="monotone"
                 dataKey="glucose"
                 stroke={GLUCOSE_COLOR}
-                strokeWidth={2}
+                strokeWidth={2.4}
+                strokeLinecap="round"
                 dot={false}
                 activeDot={activeDot}
                 connectNulls
@@ -166,7 +161,8 @@ export const VitalsChart = memo(function VitalsChart({
                 type="monotone"
                 dataKey="pulse"
                 stroke={PULSE_COLOR}
-                strokeWidth={2}
+                strokeWidth={2.4}
+                strokeLinecap="round"
                 dot={false}
                 activeDot={activeDot}
                 connectNulls
@@ -177,7 +173,8 @@ export const VitalsChart = memo(function VitalsChart({
                 type="monotone"
                 dataKey="speed"
                 stroke={SPEED_COLOR}
-                strokeWidth={2}
+                strokeWidth={2.4}
+                strokeLinecap="round"
                 dot={false}
                 activeDot={activeDot}
                 connectNulls
@@ -186,7 +183,7 @@ export const VitalsChart = memo(function VitalsChart({
             </LineChart>
           </ResponsiveContainer>
         )}
-      </CardContent>
+      </div>
     </Card>
   );
 });
@@ -326,7 +323,7 @@ function VitalsTooltip({
       )}
       {speed != null && (
         <ChartTooltipValue color={SPEED_COLOR}>
-          {speedLabel}: {speed.toFixed(1)} {speedUnit}
+          {speedLabel}: {formatNumber(speed, 1)} {speedUnit}
         </ChartTooltipValue>
       )}
     </ChartTooltipBox>

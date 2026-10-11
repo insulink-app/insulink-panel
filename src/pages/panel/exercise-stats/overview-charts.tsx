@@ -1,159 +1,129 @@
-// The whole-training overview: how consistently you train, and how each routine
-// run compares to the last.
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Legend,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { Routine, Workout } from "@/api/services/sport-service";
-import { routineComparison, weeklyBuckets } from "./stats";
+import { PeriodBars } from "@/components/period-bars";
 import { ChartTooltipBox, ChartTooltipValue } from "@/components/chart-tooltip";
-import { ChartCard, StatTooltip } from "./shared";
+import { CHART_MARGIN_TIGHT, GRID_STYLE, LINE_STYLE, X_AXIS_STYLE } from "@/components/chart-kit";
+import { routineDurations, weeklyBuckets, type RoutineSeries } from "./stats";
+import { ChartCard } from "./shared";
 
-export function OverviewCharts({ workouts, routines }: { workouts: Workout[]; routines: Routine[] }) {
+import { DURATION_CHART_HEIGHT as HEIGHT, endLabelPositions, topOf } from "./label-positions";
+
+/** Workouts per week beside how long each routine's runs took. */
+export function OverviewCharts({
+  workouts,
+  routines,
+  weekCount,
+}: {
+  workouts: Workout[];
+  routines: Routine[];
+  weekCount: number;
+}) {
   const { t } = useTranslation();
-  const frequency = useMemo(() => weeklyBuckets(workouts, () => 1), [workouts]);
-  const comparison = useMemo(
-    () => routineComparison(workouts, routines, t("routines.untitled")),
+  const frequency = useMemo(() => weeklyBuckets(workouts, () => 1, weekCount), [workouts, weekCount]);
+  const durations = useMemo(
+    () => routineDurations(workouts, routines, t("routines.untitled")),
     [workouts, routines, t],
   );
 
-  if (workouts.length === 0) {
-    return null;
-  }
-
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
-      <ChartCard title={t("exercise_stats.chart_frequency")}>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={frequency}>
-            <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-            <XAxis
-              dataKey="time"
-              tickFormatter={(value) => format(new Date(value), "dd.MM.")}
-              fontSize={12}
-              interval="preserveStartEnd"
-            />
-            <YAxis fontSize={12} width={28} allowDecimals={false} />
-            <Tooltip
-              isAnimationActive={false}
-              cursor={{ fill: "var(--muted)", opacity: 0.3 }}
-              content={
-                <StatTooltip
-                  formatLabel={(label) => format(new Date(label as number), "dd.MM.yyyy")}
-                  formatValue={(value) => `${value} ${t("exercise_stats.workouts")}`}
-                />
-              }
-            />
-            <Bar
-              dataKey="value"
-              fill="var(--primary)"
-              radius={[4, 4, 0, 0]}
-              isAnimationActive={false}
-            />
-          </BarChart>
-        </ResponsiveContainer>
+    <div className="grid items-stretch gap-4 lg:grid-cols-2">
+      <ChartCard title={t("routines.per_week")}>
+        <PeriodBars
+          data={frequency}
+          height={HEIGHT}
+          averageLabel={(avg) => t("routines.average_short", { avg })}
+          formatValue={(value) => `${value} ${t("exercise_stats.workouts")}`}
+        />
       </ChartCard>
-
-      <ChartCard title={t("exercise_stats.chart_comparison")}>
-        {comparison.length === 0 ? (
-          <p className="flex h-[300px] items-center justify-center text-center text-sm text-muted-foreground">
+      <ChartCard title={t("exercise_stats.chart_duration")}>
+        {durations.length === 0 ? (
+          <p className="flex items-center justify-center text-center text-sm text-muted-foreground" style={{ height: HEIGHT }}>
             {t("exercise_stats.comparison_empty")}
           </p>
         ) : (
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart>
-              <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-              <XAxis
-                dataKey="time"
-                type="number"
-                scale="time"
-                domain={["dataMin", "dataMax"]}
-                tickFormatter={(value) => format(new Date(value), "dd.MM.")}
-                fontSize={12}
-                allowDuplicatedCategory={false}
-              />
-              <YAxis fontSize={12} width={36} allowDecimals={false} />
-              <Tooltip
-                isAnimationActive={false}
-                cursor={{ stroke: "var(--border)" }}
-                content={<ComparisonTooltip achievedLabel={t("exercise_stats.achieved")} />}
-              />
-              <Legend />
-              {comparison.map((series) => (
-                <Line
-                  key={series.name}
-                  data={series.points}
-                  dataKey="value"
-                  name={series.name}
-                  stroke={series.color}
-                  strokeWidth={2}
-                  dot={{ r: 3 }}
-                  isAnimationActive={false}
-                />
-              ))}
-            </LineChart>
-          </ResponsiveContainer>
+          <DurationChart series={durations} />
         )}
       </ChartCard>
     </div>
   );
 }
 
-// Lists each routine that has a run at this point, its score, and the change
-// from that routine's previous run (the "more/less than last time" the chart is
-// built to show).
-function ComparisonTooltip({
-  active,
-  payload,
-  label,
-  achievedLabel,
-}: {
-  active?: boolean;
-  payload?: { value?: number; name?: string; color?: string; payload?: { delta: number } }[];
-  label?: number | string;
-  achievedLabel: string;
-}) {
-  if (!active || !payload?.length) {
-    return null;
-  }
+/** One line per routine, named at its end instead of in a legend. */
+function DurationChart({ series }: { series: RoutineSeries[] }) {
+  const { t } = useTranslation();
+  const minutes = t("overview.unit_min");
+  const labelY = endLabelPositions(series);
   return (
-    <ChartTooltipBox caption={format(new Date(label as number), "dd.MM.yyyy")}>
-      {payload.map((entry) => {
-        const delta = entry.payload?.delta ?? 0;
-        const sign = delta > 0 ? "+" : delta < 0 ? "−" : "±";
-        return (
-          <ChartTooltipValue key={entry.name} className="mt-1">
-            <span style={{ color: entry.color }}>{entry.name}</span>
-            {": "}
-            {Math.round(Number(entry.value)).toLocaleString()} {achievedLabel}
-            <span
-              className="ml-1 text-xs font-medium"
-              style={{
-                color:
-                  delta > 0
-                    ? "var(--glucose-in-range)"
-                    : delta < 0
-                      ? "var(--glucose-low)"
-                      : undefined,
-              }}
-            >
-              ({sign}
-              {Math.abs(Math.round(delta)).toLocaleString()})
-            </span>
-          </ChartTooltipValue>
-        );
-      })}
-    </ChartTooltipBox>
+    <ResponsiveContainer width="100%" height={HEIGHT}>
+      <LineChart margin={{ ...CHART_MARGIN_TIGHT, right: 120 }}>
+        <CartesianGrid {...GRID_STYLE} />
+        <XAxis
+          {...X_AXIS_STYLE}
+          dataKey="time"
+          type="number"
+          domain={["dataMin", "dataMax"]}
+          tickFormatter={(value) => format(new Date(value), "dd.MM.")}
+          allowDuplicatedCategory={false}
+          minTickGap={40}
+        />
+        <YAxis hide domain={[0, topOf(series)]} />
+        <Tooltip
+          isAnimationActive={false}
+          cursor={{ stroke: "var(--divider)" }}
+          content={({ active, payload, label }) =>
+            active && payload?.length ? (
+              <ChartTooltipBox caption={format(new Date(label as number), "dd.MM.yyyy")}>
+                {payload.map((entry) => (
+                  <ChartTooltipValue key={String(entry.name)} color={entry.color}>
+                    {entry.name}: {entry.value} {minutes}
+                  </ChartTooltipValue>
+                ))}
+              </ChartTooltipBox>
+            ) : null
+          }
+        />
+        {series.map((line) => (
+          <Line
+            {...LINE_STYLE}
+            key={line.name}
+            data={line.points}
+            dataKey="value"
+            name={line.name}
+            stroke={line.color}
+            label={(props: { x?: number | string; y?: number | string; index?: number }) =>
+              props.index === line.points.length - 1 ? (
+                <EndLabel
+                  key={line.name}
+                  x={Number(props.x)}
+                  y={labelY.get(line.name) ?? Number(props.y)}
+                  color={line.color}
+                  name={line.name}
+                  value={`${line.points[line.points.length - 1].value} ${minutes}`}
+                />
+              ) : (
+                <g key={`${line.name}-${props.index}`} />
+              )
+            }
+          />
+        ))}
+      </LineChart>
+    </ResponsiveContainer>
   );
 }
+
+/** A line's name and latest value, written right after its last point. */
+function EndLabel({ x, y, color, name, value }: { x: number; y: number; color: string; name: string; value: string }) {
+  return (
+    <g>
+      <circle cx={x + 14} cy={y} r={4} fill={color} />
+      <text x={x + 24} y={y + 4} fontSize={12} fontWeight={700} fill="var(--text)">
+        {name.length > 12 ? `${name.slice(0, 11)}…` : name}
+        <tspan fontWeight={400} fill="var(--text-muted)">{` ${value}`}</tspan>
+      </text>
+    </g>
+  );
+}
+

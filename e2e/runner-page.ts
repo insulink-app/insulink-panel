@@ -2,8 +2,13 @@ import { expect, type Page } from "@playwright/test";
 import { fakeSportApi, type SportState } from "./fake-sport-api";
 import { signIn, signInAndOpen } from "./mock-api";
 
-/** A fixed wall clock, so durations and rests come out exact. */
-export const START = new Date("2026-10-04T10:00:00");
+/**
+ * A fixed wall clock, so durations and rests come out exact: 10:00 today. It
+ * must track the real date, because the sign-in cookie takes its expiry from
+ * the page clock and the browser drops it against the real one; a hard-coded
+ * day stopped every runner test once it lay further back than the cookie lives.
+ */
+export const START = new Date(new Date().setHours(10, 0, 0, 0));
 
 /**
  * Serves `seed`, signs in, then stops time at START and opens the runner for
@@ -17,24 +22,24 @@ export async function openRunner(page: Page, routineId: string, seed: Partial<Sp
   await expect(page).toHaveURL(/\/overview\/$/);
   await page.clock.pauseAt(START);
   await page.goto(`/health/routines/${routineId}/run`);
-  await tickUntilVisible(page, "Total");
+  await tickUntilVisible(page);
   return api;
 }
 
 /**
  * TanStack Query hands results over through `setTimeout(0)`, which a paused
- * clock never fires, so the page is ticked in 10 ms steps until it shows
- * `text`. The session therefore starts a few ms after START, never later.
+ * clock never fires, so the page is ticked in 10 ms steps until the session
+ * clock shows. The session therefore starts a few ms after START, never later.
  */
-async function tickUntilVisible(page: Page, text: string) {
-  const marker = page.getByText(text, { exact: true });
+async function tickUntilVisible(page: Page) {
+  const marker = totalClock(page);
   for (let tick = 0; tick < 500; tick += 1) {
     if (await marker.isVisible()) {
       return;
     }
     await page.clock.runFor(10);
   }
-  throw new Error(`"${text}" never appeared`);
+  throw new Error("the session clock never appeared");
 }
 
 /** Asserts a span of epoch ms is `seconds` long, to the whole second. */
@@ -46,13 +51,16 @@ export function expectSeconds(spanMs: number, seconds: number) {
 export async function openLiveRunner(page: Page, routineId: string, seed: Partial<SportState>) {
   const api = await fakeSportApi(page, seed);
   await signInAndOpen(page, `/health/routines/${routineId}/run`);
-  await expect(page.getByText("Total", { exact: true })).toBeVisible();
+  await expect(totalClock(page)).toBeVisible();
   return api;
 }
 
-/** The "Exercise 1/2 · Set 1/3" line, whitespace-tolerant. */
-export function position(page: Page, exercise: string, set: string) {
-  return page.getByText(new RegExp(`Exercise ${exercise}\\s+·\\s+Set ${set}`));
+/** Where the workout stands: "1/2" exercises in the header, "1/3" sets on the current card. */
+export async function expectPosition(page: Page, exercise: string, set: string) {
+  const [exerciseNumber, exercises] = exercise.split("/");
+  const [setNumber, sets] = set.split("/");
+  await expect(page.getByText(`${exerciseNumber} / ${exercises} exercises`)).toBeVisible();
+  await expect(currentCard(page)).toContainText(`set ${setNumber} of ${sets}`);
 }
 
 /** The running order at the right edge. */
@@ -65,9 +73,9 @@ export function currentCard(page: Page) {
   return runningOrder(page).locator('li[aria-current="step"]');
 }
 
-/** The session clock under "Total". */
+/** The session clock at the start of the timeline. */
 export function totalClock(page: Page) {
-  return page.getByText("Total", { exact: true }).locator("xpath=following-sibling::span[1]");
+  return page.getByRole("timer", { name: "Total" });
 }
 
 export async function advance(page: Page, seconds: number) {

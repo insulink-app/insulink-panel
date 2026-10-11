@@ -77,20 +77,8 @@ export default function LoginForm() {
     return <Navigate to="/overview/" replace />;
   }
 
-  // Homepage heading font (loaded in index.html), mirrors insulink.de.
-  const headFont = '"Space Grotesk", system-ui, sans-serif';
-
   return (
     <div className="relative min-h-screen flex items-center justify-start flex-col px-4 pt-[20vh] pb-16 overflow-hidden bg-background">
-      {/* Indigo hero glow, mirroring the homepage radial background. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute left-1/2 top-[-10%] -translate-x-1/2 w-[900px] max-w-[140vw] aspect-square rounded-full"
-        style={{
-          background:
-            "radial-gradient(circle, color-mix(in srgb, var(--primary) 32%, transparent) 0%, transparent 60%)",
-        }}
-      />
 
       <div className="relative flex flex-col items-center mb-10 text-center">
         <div className="flex items-center gap-3 mb-8">
@@ -104,24 +92,18 @@ export default function LoginForm() {
             alt="Insulink"
             className="h-11 w-11 hidden dark:block"
           />
-          <span
-            className="font-bold text-3xl tracking-tight"
-            style={{ fontFamily: headFont }}
-          >
+          <span className="font-extrabold text-3xl tracking-tight">
             Insulink
           </span>
         </div>
-        <h1
-          className="text-4xl sm:text-5xl font-semibold tracking-tight max-w-[14ch]"
-          style={{ fontFamily: headFont }}
-        >
+        <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight max-w-[14ch]">
           {t("login.tagline")}
         </h1>
       </div>
 
-      <Card className="relative w-full max-w-md shadow-xl">
+      <Card className="relative w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-xl" style={{ fontFamily: headFont }}>
+          <CardTitle className="text-lg font-extrabold">
             {t("login.welcome")}
           </CardTitle>
           <CardDescription>{t("login.subtitle")}</CardDescription>
@@ -141,7 +123,7 @@ export default function LoginForm() {
                       <input
                         id="name"
                         placeholder={t("login.username")}
-                        className="w-full px-4 py-2.5 rounded-xl bg-secondary border border-transparent focus:border-primary focus:outline-none transition-colors"
+                        className="w-full px-4 py-2.5 h-12 rounded-2xl bg-ground border-[1.5px] border-transparent placeholder:text-placeholder focus:border-primary focus:outline-none transition-colors"
                         {...field}
                       />
                     </FormControl>
@@ -163,7 +145,7 @@ export default function LoginForm() {
                           id="password"
                           type={passwordShown ? "text" : "password"}
                           placeholder={t("login.password")}
-                          className="w-full pl-4 pr-12 py-2.5 rounded-xl bg-secondary border border-transparent focus:border-primary focus:outline-none transition-colors"
+                          className="w-full pl-4 pr-12 py-2.5 h-12 rounded-2xl bg-ground border-[1.5px] border-transparent placeholder:text-placeholder focus:border-primary focus:outline-none transition-colors"
                           {...field}
                         />
                         {/* type="button" — inside a form, the default would submit it. */}
@@ -196,7 +178,7 @@ export default function LoginForm() {
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(event) => setRememberMe(event.target.checked)}
-                  className="h-4 w-4 mr-3 border border-gray-600 rounded-sm bg-transparent"
+                  className="h-4 w-4 mr-3 rounded-sm border-divider bg-ground text-primary"
                 />
                 <label htmlFor="remember-check" className="select-none">
                   {t("login.remember")}
@@ -206,12 +188,7 @@ export default function LoginForm() {
               <button
                 type="submit"
                 id="login"
-                className="w-full py-3 rounded-full text-primary-foreground font-semibold hover:brightness-110 transition inline-flex items-center justify-center disabled:opacity-60"
-                style={{
-                  fontFamily: headFont,
-                  background:
-                    "radial-gradient(circle at center, color-mix(in srgb, var(--primary) 78%, #000) 0%, var(--primary) 85%)",
-                }}
+                className="w-full h-12 rounded-full bg-primary text-primary-foreground font-extrabold hover:brightness-110 transition inline-flex items-center justify-center disabled:opacity-60"
                 disabled={loading}
               >
                 {t("login.submit")}

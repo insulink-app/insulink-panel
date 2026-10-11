@@ -22,6 +22,8 @@ import sportService, {
   type RoutineItem,
   type SportExercise,
 } from "@/api/services/sport-service";
+import { Card } from "@/components/ui/card";
+import { CardHeading } from "@/components/card-heading";
 
 export const newId = () =>
   crypto.randomUUID?.() ?? `id-${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -100,39 +102,36 @@ export function RoutineForm({
     }));
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-6">
       {/* The name doubles as the page's headline — no boxed field around it. */}
       <Input
         value={draft.name}
         aria-label={t("routines.name")}
         onChange={(event) => setDraft((current) => ({ ...current, name: event.target.value }))}
         placeholder={t("routines.name_placeholder")}
-        className="h-auto border-0 bg-transparent p-0 text-3xl font-bold tracking-tight shadow-none focus-visible:ring-0 md:text-3xl dark:bg-transparent"
+        className="h-auto rounded-xl border-0 bg-transparent px-0 py-1 text-[28px] font-extrabold tracking-tight focus-visible:bg-panel focus-visible:px-3"
       />
 
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
-            {t("routines.exercises")}
-          </h3>
-          <Button variant="ghost" size="sm" onClick={addItem} disabled={exercises.length === 0}>
-            <Plus className="size-4" />
-            {t("routines.add_exercise")}
-          </Button>
-        </div>
+      <Card className="gap-2 p-6">
+        <CardHeading
+          title={t("routines.exercises")}
+          action={
+            <Button variant="secondary" size="sm" onClick={addItem} disabled={exercises.length === 0}>
+              <Plus className="size-4" />
+              {t("routines.add_exercise")}
+            </Button>
+          }
+        />
 
         {exercises.length === 0 ? (
-          <p className="rounded-xl bg-secondary/40 py-10 text-center text-sm text-muted-foreground">
-            {t("routines.no_exercises")}
-          </p>
+          <p className="py-10 text-center text-sm text-muted-foreground">{t("routines.no_exercises")}</p>
         ) : (
           draft.items.length === 0 && (
-            <p className="rounded-xl bg-secondary/40 py-10 text-center text-sm text-muted-foreground">
-              {t("routines.no_items")}
-            </p>
+            <p className="py-10 text-center text-sm text-muted-foreground">{t("routines.no_items")}</p>
           )
         )}
 
+        <div className="divide-y divide-divider">
         {draft.items.map((item, index) => (
           <ItemRow
             key={item.id}
@@ -143,14 +142,15 @@ export function RoutineForm({
             onRemove={() => removeItem(item.id)}
           />
         ))}
-      </div>
+        </div>
+      </Card>
 
       <div className="flex gap-2">
         <Button onClick={() => onSave(draft)} disabled={saving || !draft.name.trim()}>
           {t("common.save")}
           {saving && <Spinner className="ml-2" />}
         </Button>
-        <Button variant="ghost" onClick={onCancel}>
+        <Button variant="secondary" onClick={onCancel}>
           {t("common.cancel")}
         </Button>
       </div>
@@ -158,8 +158,8 @@ export function RoutineForm({
   );
 }
 
-// One exercise line: a muted panel, with borderless fields sitting on the page
-// surface so only the values carry contrast.
+// One exercise line of the card's divider list, its fields sunk into the page
+// colour so only the values carry contrast.
 function ItemRow({
   item,
   position,
@@ -175,15 +175,15 @@ function ItemRow({
 }) {
   const { t } = useTranslation();
   return (
-    <div className="flex flex-col gap-4 rounded-xl bg-secondary/40 p-4 lg:flex-row lg:items-end">
+    <div className="flex flex-col gap-4 py-4 lg:flex-row lg:items-end">
       <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <Label className="text-[11px] font-normal text-muted-foreground">
+        <Label className="text-xs font-normal text-muted-foreground">
           {position}. {t("routines.exercise")}
         </Label>
         <Select value={item.ex} onValueChange={(value) => onChange({ ex: value })}>
           <SelectTrigger
             aria-label={t("routines.exercise")}
-            className="h-9 w-full border-0 bg-background font-medium shadow-none dark:bg-background dark:hover:bg-background"
+            className="w-full font-bold"
           >
             <SelectValue />
           </SelectTrigger>
@@ -197,7 +197,7 @@ function ItemRow({
         </Select>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:w-[360px]">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:w-[400px]">
         <NumberField
           label={t("routines.sets")}
           value={item.sets}
@@ -223,10 +223,10 @@ function ItemRow({
       </div>
 
       <Button
-        variant="ghost"
+        variant="secondary"
         size="icon"
         aria-label={t("common.delete")}
-        className="shrink-0 self-end"
+        className="shrink-0 self-end lg:mb-1"
         onClick={onRemove}
       >
         <Trash2 className="size-4 text-destructive" />
@@ -248,14 +248,14 @@ function NumberField({
 }) {
   return (
     <div className="flex min-w-0 flex-col gap-1">
-      <Label className="text-[11px] font-normal text-muted-foreground">{label}</Label>
+      <Label className="text-xs font-normal text-muted-foreground">{label}</Label>
       <Input
         type="number"
         min={0}
         step={step}
         value={value}
         onChange={(event) => onChange(Number(event.target.value) || 0)}
-        className="border-0 bg-background px-2 text-center font-medium tabular-nums shadow-none dark:bg-background"
+        className="px-2 text-center font-bold"
       />
     </div>
   );

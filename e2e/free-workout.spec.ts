@@ -7,7 +7,7 @@ import {
   expectWorkoutPage,
   finishWorkout,
   openRunner,
-  position,
+  expectPosition,
 } from "./runner-page";
 import { LIBRARY, PLANK, PUSHUP, PUSH_DAY, runningSnapshot } from "./sport-fixtures";
 
@@ -20,7 +20,7 @@ test("a free workout is picked exercise by exercise and logged as free", async (
   await page.getByRole("button", { name: "Add exercise" }).click();
   await page.getByRole("dialog").getByRole("button", { name: PUSHUP.name }).click();
 
-  await expect(position(page, "1/1", "1/1")).toBeVisible();
+  await expectPosition(page, "1/1", "1/1");
   await expect(page.getByRole("spinbutton")).toHaveValue("10");
   await completeSet(page);
 
@@ -31,7 +31,7 @@ test("a free workout is picked exercise by exercise and logged as free", async (
   await page.getByRole("button", { name: "Next exercise" }).click();
   await page.getByRole("dialog").getByRole("button", { name: PLANK.name }).click();
 
-  await expect(position(page, "2/2", "1/1")).toBeVisible();
+  await expectPosition(page, "2/2", "1/1");
   await expect(page.getByText("Target: 10 s")).toBeVisible();
   await advance(page, 20);
   await completeSet(page);

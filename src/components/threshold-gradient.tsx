@@ -10,6 +10,7 @@ import { PLOT_BOTTOM, PLOT_TOP } from "@/lib/chart-geometry";
 // which is the data extent, not the axis domain — the thresholds would drift
 // with the data. In user space the stops land on the axis, where they belong.
 export interface ThresholdBand {
+  /** Any CSS colour, a `var(--token)` included: it is set as a style. */
   color: string;
   /** The band's lower edge; omit on the last (lowest) band. */
   until?: number;
@@ -20,10 +21,15 @@ export function ThresholdGradient({
   yMin,
   yMax,
   bands,
+  plotTop = PLOT_TOP,
+  plotBottom = PLOT_BOTTOM,
 }: {
   id: string;
   yMin: number;
   yMax: number;
+  /** The plot area's pixel edges, for a chart not built on chart-geometry. */
+  plotTop?: number;
+  plotBottom?: number;
   /** Highest band first. */
   bands: ThresholdBand[];
 }) {
@@ -37,9 +43,9 @@ export function ThresholdGradient({
       id={id}
       gradientUnits="userSpaceOnUse"
       x1={0}
-      y1={PLOT_TOP}
+      y1={plotTop}
       x2={0}
-      y2={PLOT_BOTTOM}
+      y2={plotBottom}
     >
       {bands.map((band, index) => {
         const previousEdge = bands[index - 1]?.until;
@@ -47,8 +53,8 @@ export function ThresholdGradient({
         const end = band.until === undefined ? 1 : offsetOf(band.until);
         return (
           <Fragment key={`${id}-${index}`}>
-            <stop offset={start} stopColor={band.color} />
-            <stop offset={end} stopColor={band.color} />
+            <stop offset={start} style={{ stopColor: band.color }} />
+            <stop offset={end} style={{ stopColor: band.color }} />
           </Fragment>
         );
       })}

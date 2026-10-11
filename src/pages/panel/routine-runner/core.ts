@@ -1,8 +1,10 @@
 // The runner's session state and the pure helpers around it. Kept apart from
 // the views so the state machine (use-runner-core) can be read on its own.
+import { formatAmount } from "@/lib/nutrition";
 import type {
   ActiveWorkout,
   Routine,
+  RoutineItem,
   SetLog,
   SportExercise,
   Workout,
@@ -136,6 +138,27 @@ export function plannedRoutineSeconds(
   }, 0);
 }
 
+// How full the current exercise's timeline segment is (0..1), live: each
+// planned set counts as its work (~1 min, or the target of a timed exercise,
+// as in `plannedRoutineSeconds`) plus its rest. The set's stopwatch fills the
+// work part and the rest countdown the rest part, so the bar moves on through
+// the rests. `clock` is frozen while paused, which holds the bar still. A rest
+// that leads into a new exercise belongs to the one before, already full.
+export function segmentFill(core: Core, item: RoutineItem, isTimed: boolean, clock: number) {
+  const work = isTimed ? Math.max(1, item.target) : 60;
+  const unit = work + item.rest;
+  if (core.phase === "resting") {
+    if (core.setIndex === 0) {
+      return 0;
+    }
+    const rested = core.restStartedAt == null ? 0 : (clock - core.restStartedAt) / 1000;
+    const restPart = item.rest > 0 ? Math.min(item.rest, Math.max(0, rested)) : 0;
+    return Math.min(1, (core.setIndex - 1 + (work + restPart) / unit) / item.sets);
+  }
+  const worked = Math.min(work, Math.max(0, (clock - core.setStartedAt) / 1000));
+  return Math.min(1, (core.setIndex + worked / unit) / item.sets);
+}
+
 // How much longer the workout is expected to run (seconds), or null when there
 // is no plan to predict against: a free workout, or one already finished.
 // Extrapolates THIS session's own pace — elapsed time per logged set — so it
@@ -223,7 +246,7 @@ export function describeSet(
   }
   const reps = set.reps ?? 0;
   if (set.kg != null && set.kg > 0) {
-    return `${reps} × ${set.kg} ${t("body.kg")}`;
+    return `${reps} × ${formatAmount(set.kg)} ${t("body.kg")}`;
   }
   return String(reps);
 }

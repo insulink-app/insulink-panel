@@ -1,21 +1,35 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { format } from "date-fns";
+import { dateLocale } from "@/lib/when";
 import PanelPage from "@/layouts/panel";
 import glucoseService from "@/api/services/glucose-service";
 import nutritionService from "@/api/services/nutrition-service";
 import settingsService from "@/api/services/settings-service";
 import sportService from "@/api/services/sport-service";
 import { DEFAULT_TARGET_HIGH, DEFAULT_TARGET_LOW } from "@/lib/glucose";
-import { TimeInRangeCard } from "./glucose-cards";
-import { GlucoseChart } from "./glucose-chart";
-import { NutritionCard } from "./nutrition-card";
-import { ActivityCard } from "./activity-card";
+import { useUserInformation } from "@/store/user-store";
+import { PageHeader } from "@/components/page-header";
+import { TimeInRangeCard } from "@/components/time-in-range-card";
+import { GlucoseCard } from "./glucose-card";
+import { DayCards } from "./day-cards";
+import pumpService from "@/api/services/pump-service";
+import { podActive } from "@/lib/pump";
 
 const GLUCOSE_POLL_MS = 60_000;
 
+/** The greeting's key for the hour of the day. */
+function greetingKey(hour: number) {
+  if (hour < 12) {
+    return "overview.greeting_morning";
+  }
+  return hour < 18 ? "overview.greeting_afternoon" : "overview.greeting_evening";
+}
+
 export default function OverviewPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const name = useUserInformation()?.name ?? "";
 
   const { data: settings } = useQuery({
     queryKey: ["settings"],
@@ -38,10 +52,10 @@ export default function OverviewPage() {
     refetchInterval: GLUCOSE_POLL_MS,
   });
   const meals = useQuery({ queryKey: ["meals"], queryFn: nutritionService.meals });
-  const drinks = useQuery({ queryKey: ["drinks"], queryFn: nutritionService.drinks });
   const workouts = useQuery({ queryKey: ["workouts"], queryFn: sportService.workouts });
   const trainings = useQuery({ queryKey: ["trainings"], queryFn: sportService.trainings });
   const routines = useQuery({ queryKey: ["routines"], queryFn: sportService.routines });
+  const pumps = useQuery({ queryKey: ["pump-history"], queryFn: pumpService.history });
   const measurements = useQuery({
     queryKey: ["measurements"],
     queryFn: sportService.measurements,
@@ -61,9 +75,13 @@ export default function OverviewPage() {
 
   return (
     <PanelPage title={t("overview.title")}>
-      <div className="py-6 flex flex-col gap-6">
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
-          <GlucoseChart
+      <PageHeader
+        title={t(greetingKey(new Date().getHours()), { name })}
+        subtitle={format(new Date(), "EEEE, d. MMMM", { locale: dateLocale(i18n.language) })}
+      />
+      <div className="flex flex-col gap-4">
+        <div className="grid gap-4 min-[1100px]:grid-cols-[minmax(0,2.3fr)_minmax(0,1fr)]">
+          <GlucoseCard
             entries={entries}
             low={low}
             high={high}
@@ -72,6 +90,7 @@ export default function OverviewPage() {
             isLoading={glucose.isLoading}
           />
           <TimeInRangeCard
+            period={t("common.range_hours", { n: 24 })}
             entries={entries}
             low={low}
             high={high}
@@ -79,21 +98,15 @@ export default function OverviewPage() {
             isLoading={glucose.isLoading}
           />
         </div>
-
-        <div className="grid gap-6 lg:grid-cols-2">
-          <NutritionCard
-            meals={meals.data?.meals ?? []}
-            drinks={drinks.data?.drinks ?? []}
-            isLoading={meals.isLoading || drinks.isLoading}
-          />
-          <ActivityCard
-            workouts={workouts.data?.workouts ?? []}
-            trainings={trainings.data?.trainings ?? []}
-            routines={routines.data?.routines ?? []}
-            measurements={measurements.data?.entries ?? []}
-            isLoading={workouts.isLoading || trainings.isLoading}
-          />
-        </div>
+        <DayCards
+          meals={meals.data?.meals ?? []}
+          workouts={workouts.data?.workouts ?? []}
+          trainings={trainings.data?.trainings ?? []}
+          routines={routines.data?.routines ?? []}
+          measurements={measurements.data?.entries ?? []}
+          settings={settings}
+          podRunning={(pumps.data?.pumps ?? []).some((pod, _, all) => podActive(pod, all))}
+        />
       </div>
     </PanelPage>
   );

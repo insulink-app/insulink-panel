@@ -46,7 +46,7 @@ test("a new routine is saved with every value typed and shown on its page", asyn
 
   await expect(page.getByRole("heading", { name: "Upper body" })).toBeVisible();
   await expect(page.getByText("4 × 6")).toBeVisible();
-  await expect(page.getByText("62.5 kg")).toBeVisible();
+  await expect(page.getByText("62,5 kg")).toBeVisible();
   await expect(page.getByText("120s")).toBeVisible();
   await expect(page.getByText("3 × 45")).toBeVisible();
 });

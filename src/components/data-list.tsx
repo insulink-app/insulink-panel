@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { ChevronLeft, ChevronRight } from "@/components/icons";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatNumber } from "@/lib/format";
 
 export type ListColumn<T> = {
   header: string;
@@ -11,10 +12,12 @@ export type ListColumn<T> = {
   className?: string;
 };
 
+// One card whose rows are separated by hairlines.
 // ponytail: read-only lists only — no sort/search/filter/column-toggle/select.
 // Add search back on a page that actually needs it.
 export function DataList<T>({
   title,
+  action,
   columns,
   data,
   isLoading,
@@ -23,6 +26,8 @@ export function DataList<T>({
   onRowClick,
 }: {
   title?: string;
+  /** A control at the header's right, such as a sort select. */
+  action?: ReactNode;
   columns: ListColumn<T>[];
   data: T[];
   isLoading?: boolean;
@@ -37,23 +42,24 @@ export function DataList<T>({
   const rows = data.slice(current * pageSize, current * pageSize + pageSize);
 
   return (
-    <div className="rounded-2xl border bg-card overflow-hidden">
+    <div className="min-w-0 rounded-3xl border bg-card p-6">
       {title && (
-        <div className="flex items-center justify-between gap-4 px-5 py-4 border-b">
-          <h3 className="font-semibold">{title}</h3>
-          {!isLoading && (
-            <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium tabular-nums text-muted-foreground">
-              {data.length}
-            </span>
-          )}
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-4">
+          <h2 className="text-lg leading-tight font-extrabold">
+            {title}
+            {!isLoading && (
+              <span className="ml-2 text-[13px] font-normal text-muted-foreground">{formatNumber(data.length)}</span>
+            )}
+          </h2>
+          {action}
         </div>
       )}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b bg-muted/40 text-left text-xs uppercase tracking-wide text-muted-foreground">
+            <tr className="border-b border-divider text-left text-xs text-muted-foreground">
               {columns.map((c, i) => (
-                <th key={i} className={cn("px-5 py-3 font-medium", c.className)}>
+                <th key={i} className={cn("py-3 pr-4 font-normal last:pr-0", c.className)}>
                   {c.header}
                 </th>
               ))}
@@ -62,9 +68,9 @@ export function DataList<T>({
           <tbody>
             {isLoading ? (
               Array.from({ length: Math.min(pageSize, 8) }).map((_, r) => (
-                <tr key={r} className="border-b last:border-0">
+                <tr key={r} className="border-b border-divider last:border-0">
                   {columns.map((c, i) => (
-                    <td key={i} className={cn("px-5 py-3.5", c.className)}>
+                    <td key={i} className={cn("py-3.5 pr-4 last:pr-0", c.className)}>
                       <Skeleton className="h-4 w-24" />
                     </td>
                   ))}
@@ -74,7 +80,7 @@ export function DataList<T>({
               <tr>
                 <td
                   colSpan={columns.length}
-                  className="px-5 py-12 text-center text-muted-foreground"
+                  className="py-12 text-center text-muted-foreground"
                 >
                   {empty ?? t("common.no_data_available")}
                 </td>
@@ -85,7 +91,8 @@ export function DataList<T>({
                   key={r}
                   onClick={onRowClick ? () => onRowClick(row) : undefined}
                   className={cn(
-                    "border-b last:border-0 transition-colors hover:bg-muted/40",
+                    "border-b border-divider last:border-0 transition-colors",
+                    onRowClick && "hover:bg-raised/50",
                     onRowClick && "cursor-pointer",
                   )}
                 >
@@ -93,7 +100,7 @@ export function DataList<T>({
                     <td
                       key={i}
                       className={cn(
-                        "px-5 py-3.5 whitespace-nowrap",
+                        "py-3.5 pr-4 whitespace-nowrap last:pr-0",
                         c.className,
                       )}
                     >
@@ -107,13 +114,13 @@ export function DataList<T>({
         </table>
       </div>
       {pages > 1 && !isLoading && (
-        <div className="flex items-center justify-between px-5 py-3 border-t text-sm text-muted-foreground">
+        <div className="mt-2 flex items-center justify-between border-t border-divider pt-4 text-sm text-muted-foreground">
           <span className="tabular-nums">
             {t("table.page")} {current + 1} {t("table.of")} {pages}
           </span>
           <div className="flex gap-1">
             <button
-              className="rounded-lg border p-1.5 hover:bg-muted disabled:opacity-40"
+              className="grid size-10 place-items-center rounded-full bg-secondary text-foreground hover:bg-accent disabled:opacity-40"
               onClick={() => setPage(current - 1)}
               disabled={current === 0}
               aria-label={t("common.previous_page")}
@@ -121,7 +128,7 @@ export function DataList<T>({
               <ChevronLeft className="size-4" />
             </button>
             <button
-              className="rounded-lg border p-1.5 hover:bg-muted disabled:opacity-40"
+              className="grid size-10 place-items-center rounded-full bg-secondary text-foreground hover:bg-accent disabled:opacity-40"
               onClick={() => setPage(current + 1)}
               disabled={current >= pages - 1}
               aria-label={t("common.next_page")}

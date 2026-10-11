@@ -17,10 +17,13 @@ export {
   ArrowUp,
   ArrowUpRight,
   ArrowsLeftRight,
+  CalendarBlank,
   ChartLine,
   ChartPie,
   Cpu,
+  Code,
   Eye,
+  FileText,
   Flag,
   Footprints,
   Heart,
@@ -33,14 +36,17 @@ export {
   Plus,
   Ruler,
   SkipForward,
+  Table,
   Sun,
   Syringe,
   Timer,
+  WaveSine,
 } from "@phosphor-icons/react";
 
 // Names that map to a differently-named Phosphor glyph.
 export {
   Pulse as Activity,
+  PersonSimpleRun as Running,
   Bicycle as Bike,
   Book as BookA,
   ChartBar as ChartColumnBig,

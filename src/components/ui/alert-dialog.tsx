@@ -37,7 +37,7 @@ function AlertDialogOverlay({
     <AlertDialogPrimitive.Overlay
       data-slot="alert-dialog-overlay"
       className={cn(
-        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50",
+        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-[rgba(5,6,8,0.62)] backdrop-blur-[3px]",
         className,
       )}
       {...props}
@@ -95,7 +95,7 @@ function AlertDialogFooter({
     <div
       data-slot="alert-dialog-footer"
       className={cn(
-        "flex flex-col-reverse gap-2 *:w-full",
+        "mt-1 flex flex-wrap items-center justify-end gap-3 border-t border-divider pt-5",
         className,
       )}
       {...props}
@@ -110,7 +110,7 @@ function AlertDialogTitle({
   return (
     <AlertDialogPrimitive.Title
       data-slot="alert-dialog-title"
-      className={cn("text-lg leading-tight font-extrabold", className)}
+      className={cn("text-[22px] leading-tight font-extrabold", className)}
       {...props}
     />
   );

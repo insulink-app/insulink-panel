@@ -1,6 +1,6 @@
 // npx tsx src/pages/panel/nutrition/daily.check.ts
 import assert from "node:assert/strict";
-import { dailyBuckets } from "./daily";
+import { dailyBuckets, topCounts } from "./daily";
 
 const now = new Date(2026, 9, 9, 12);
 const rows = [
@@ -14,4 +14,9 @@ assert.equal(days.length, 7);
 assert.equal(days[6].value, 30);
 assert.equal(days[0].value, 5);
 assert.equal(days.reduce((sum, day) => sum + day.value, 0), 35);
+const top = topCounts(["Brot", "Joghurt", "Brot", "Apfel", "Brot", "Joghurt"], 2);
+assert.deepEqual(top, [
+  { label: "Brot", count: 3 },
+  { label: "Joghurt", count: 2 },
+]);
 console.log("nutrition daily: ok");

@@ -13,3 +13,15 @@ export function dailyBuckets<T>(rows: T[], at: (row: T) => number, value: (row: 
   }
   return buckets;
 }
+
+/** The `limit` most frequent labels with how often each occurs, most frequent first. */
+export function topCounts(labels: string[], limit = 4) {
+  const counts = new Map<string, number>();
+  for (const label of labels) {
+    counts.set(label, (counts.get(label) ?? 0) + 1);
+  }
+  return [...counts.entries()]
+    .map(([label, count]) => ({ label, count }))
+    .sort((left, right) => right.count - left.count)
+    .slice(0, limit);
+}

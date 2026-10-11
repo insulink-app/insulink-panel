@@ -44,3 +44,15 @@ export function formatWhen(time: number, t: TFunction, language: string): string
   }
   return format(date, "dd.MM.yyyy, HH:mm");
 }
+
+/** A bar's day under a week chart: "Heute", "Gestern", else the short weekday ("Mo."). */
+export function formatWeekday(time: number, t: TFunction, language: string): string {
+  const daysAgo = differenceInCalendarDays(new Date(), new Date(time));
+  if (daysAgo === 0) {
+    return t("common.today");
+  }
+  if (daysAgo === 1) {
+    return t("common.yesterday");
+  }
+  return format(new Date(time), "EEE", { locale: dateLocale(language) });
+}

@@ -827,7 +827,6 @@
     "format_json": "JSON",
     "format_json_hint": "Alle ausgewählten Bereiche in einer Datei, vollständig und unverändert.",
     "data": "Daten",
-    "clarity_fixed": "Clarity hat ein festes Layout: exportiert werden Glukosewerte, Kohlenhydrate und Bolus, sonst nichts.",
     "select_all": "Alle auswählen",
     "select_none": "Keine auswählen",
     "download": "Herunterladen",
@@ -852,10 +851,21 @@
     "range": "Zeitraum",
     "range_from": "Von",
     "range_to": "Bis",
-    "range_reset": "Gesamter Zeitraum",
-    "range_hint": "Leer lassen, um alles zu exportieren. Beide Tage sind eingeschlossen.",
     "range_invalid": "Das Startdatum liegt nach dem Enddatum.",
-    "range_timeless": "Produkte, Routinen und Übungen haben kein Datum. Sie werden immer vollständig exportiert."
+    "range_timeless": "Produkte, Routinen und Übungen haben kein Datum. Sie werden immer vollständig exportiert.",
+    "format_clarity_short": "Für Glooko, Tidepool und xDrip. Glukose, KH und Bolus.",
+    "format_csv_short": "Eine Tabelle pro Bereich, mehrere als ZIP.",
+    "format_json_short": "Alle gewählten Bereiche vollständig in einer Datei.",
+    "range_all": "Alles",
+    "today": "Heute",
+    "summary": "Zusammenfassung",
+    "areas": "Bereiche",
+    "entries": "Einträge",
+    "size": "Dateigröße",
+    "approx": "≈ {{value}}",
+    "clarity_reason": "Clarity enthält immer Glukose, KH und Bolus. Weitere Bereiche mit CSV oder JSON.",
+    "start": "Beginn",
+    "none_selected": "keine"
   },
   "date": {
     "weekday": {

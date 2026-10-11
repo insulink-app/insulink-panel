@@ -827,7 +827,6 @@
     "format_json": "JSON",
     "format_json_hint": "All selected collections in a single file, raw and complete.",
     "data": "Data",
-    "clarity_fixed": "Clarity has a fixed layout: glucose readings, carbs and bolus are exported, nothing else.",
     "select_all": "Select all",
     "select_none": "Select none",
     "download": "Download",
@@ -852,10 +851,21 @@
     "range": "Time range",
     "range_from": "From",
     "range_to": "To",
-    "range_reset": "All time",
-    "range_hint": "Leave empty to export everything. Both days are included.",
     "range_invalid": "The start date is after the end date.",
-    "range_timeless": "Products, routines and exercises carry no date. They are always exported in full."
+    "range_timeless": "Products, routines and exercises carry no date. They are always exported in full.",
+    "format_clarity_short": "For Glooko, Tidepool and xDrip. Glucose, carbs and bolus.",
+    "format_csv_short": "One table per area, several as a ZIP.",
+    "format_json_short": "All chosen areas complete in one file.",
+    "range_all": "All",
+    "today": "Today",
+    "summary": "Summary",
+    "areas": "Areas",
+    "entries": "Entries",
+    "size": "File size",
+    "approx": "≈ {{value}}",
+    "clarity_reason": "Clarity always holds glucose, carbs and bolus. Other areas with CSV or JSON.",
+    "start": "Start",
+    "none_selected": "none"
   },
   "date": {
     "weekday": {

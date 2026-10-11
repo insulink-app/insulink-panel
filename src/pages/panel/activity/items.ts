@@ -3,6 +3,10 @@
 import { addDays, startOfDay, startOfWeek } from "date-fns";
 import type { CardioType, Training, Workout } from "@/api/services/sport-service";
 import { workoutDurationMs } from "@/lib/workout";
+import { Bike, Footprints, Zap, type LucideIcon } from "@/components/icons";
+
+/** The icon each kind of cardio training shows. */
+export const CARDIO_ICON: Record<CardioType, LucideIcon> = { walk: Footprints, jog: Zap, bike: Bike };
 
 export type ActivityItem =
   | { kind: "workout"; at: number; data: Workout }

@@ -1,15 +1,12 @@
 import { useTranslation } from "react-i18next";
 import { endOfWeek, format, isToday, startOfWeek } from "date-fns";
-import { Bike, Dumbbell, Footprints, Zap } from "@/components/icons";
-import type { LucideIcon } from "@/components/icons";
+import { Dumbbell } from "@/components/icons";
 import { Card } from "@/components/ui/card";
 import { CardHeading } from "@/components/card-heading";
 import type { CardioType } from "@/api/services/sport-service";
 import { formatNumber } from "@/lib/format";
 import { dateLocale } from "@/lib/when";
-import { heatmapDays, itemDurationMs, type ActivityItem } from "./items";
-
-export const CARDIO_ICON: Record<CardioType, LucideIcon> = { walk: Footprints, jog: Zap, bike: Bike };
+import { CARDIO_ICON, heatmapDays, itemDurationMs, type ActivityItem } from "./items";
 
 /** This week's count, active time, sets and distance as a 2×2 grid. */
 export function WeekCard({ items }: { items: ActivityItem[] }) {

@@ -11,8 +11,8 @@ import { TimelineList } from "@/components/timeline-list";
 import { formatNumber } from "@/lib/format";
 import { workoutTitle } from "@/lib/workout";
 import sportService from "@/api/services/sport-service";
-import { itemDurationMs, matchesFilter, mergeActivities, type ActivityFilter, type ActivityItem } from "./items";
-import { CARDIO_ICON, HeatmapCard, KindsCard, WeekCard } from "./side-cards";
+import { CARDIO_ICON, itemDurationMs, matchesFilter, mergeActivities, type ActivityFilter, type ActivityItem } from "./items";
+import { HeatmapCard, KindsCard, WeekCard } from "./side-cards";
 import { JumpToDate } from "@/components/scroll-pane";
 
 export default function ActivityPage() {

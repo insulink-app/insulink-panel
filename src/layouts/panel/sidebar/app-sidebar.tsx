@@ -42,10 +42,10 @@ export function AppNavigation(t: TFunction, status: { sensor: boolean; pump: boo
     {
       label: t("nav.health"),
       items: [
+        { title: t("nav.activity"), url: "/health/activity", icon: Activity },
         { title: t("nav.routines"), url: "/health/routines", icon: Dumbbell },
         { title: t("nav.exercises"), url: "/health/routines/exercises", icon: Running },
         { title: t("nav.exercise_stats"), url: "/health/routines/stats", icon: ChartLine },
-        { title: t("nav.activity"), url: "/health/activity", icon: Activity },
         { title: t("nav.pulse"), url: "/health/pulse", icon: Heart },
         { title: t("nav.sleep"), url: "/health/sleep", icon: Moon },
         { title: t("nav.body"), url: "/health/body", icon: Ruler },

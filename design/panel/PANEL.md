@@ -1,8 +1,8 @@
 # Insulink Web-Panel – Redesign
 
-Ziel: panel.insulink.de optisch an die neue App angleichen. Funktionen, Routen, Daten und die deutschen Texte bleiben gleich – nur das Design ändert sich. Referenzbreite 1600 px (Training 1920 px); Inhalt max. 1440 px, Seitenabstand 32 px.
+Ziel: panel.insulink.de optisch an die neue App angleichen. Funktionen, Routen, Daten und die deutschen Texte bleiben gleich – nur das Design ändert sich. Referenzbreite 1920 × 1080 für alle Seiten; Inhalt max. 1760 px, Abstand 36/40 px, alles fluid. Farbpalette im Panel neutral (Graphit statt Blau-Türkis), siehe MASTER_PROMPT.md Abschnitt 1.
 
-Referenz: `screens/panel-overview.png`, `screens/panel-workout.png` (1440 px breit), Markup in `reference/*.dc.html` (Inline-Styles = exakte Maße).
+Referenz: `screens/Panel*.png` (1920 px breit), Markup in `reference/*.dc.html` (Inline-Styles = exakte Maße).
 
 ## Tokens (identisch zur App)
 
@@ -27,13 +27,7 @@ Schrift: Atkinson Hyperlegible Next, `font-variant-numeric: tabular-nums`. Zahle
 
 ## Layout
 
-- **Sidebar** 236 px, gleicher Hintergrund wie die Seite (`ground`), nur rechte Linie. Logo 28 px (Radius 9) + „Insulink“.
-  - Kein Glukose-Widget in der Sidebar; direkt unter dem Logo beginnt die Navigation.
-  - Gruppen-Labels 12 px `#62778B`, normale Schreibweise. Items 34 px, Radius 10, Icon 17 px `#7C90A3`, Text `#A9B9C8`.
-  - Aktiv: Fläche `panel`, Text weiß + fett, Icon in accent.
-  - Sensor und Pump haben rechts einen grünen Statuspunkt (verbunden), grau, wenn getrennt.
-  - Unten: Export, Trennlinie, User-Zeile (Avatar, Name, Zahnrad → Settings). Settings ist kein eigener Nav-Eintrag mehr.
-  - Unter 900 px ausgeblendet.
+- **Sidebar** 252 px, eigener dunklerer Hintergrund `#0A0B0E`, rechte Linie. Items 38 px. Aktiv: Akzent-Fläche rgba(157,174,255,0.16), Text `#E4E8FF` fett, Icon accent und ein 4 px Akzentbalken am linken Rand. Das Gruppen-Label der aktiven Seite steht in accentText. Sensor/Pumpe mit Statuspunkt, unten Export und User-Zeile mit Zahnrad.
 - **Topbar** 64 px, Sidebar-Toggle + Breadcrumb (letztes Element fett/weiß), untere Linie.
 - **Inhalt** Padding 28 px, Karten-Gap 16 px, Karten Radius 24, Padding 24, `panel` + 1 px Linie. Keine Boxen in Boxen außer Stat-Kacheln.
 
@@ -41,7 +35,7 @@ Schrift: Atkinson Hyperlegible Next, `font-variant-numeric: tabular-nums`. Zahle
 
 | Seite | Screenshot | Aufbau |
 |---|---|---|
-| Übersicht | PanelOverview.png | Glukose-Karte (Kopf in einer Zeile) + TIR · Ernährung/Sport heute mit Tagesleiste |
+| Übersicht | PanelOverview.png | Glukose-Karte (Kopf in einer Zeile) + TIR · Ernährung/Sport heute (Hauptwert, 2 Nebenwerte, 3 Einträge) |
 | Glukose | PanelGlukose.png | Wert + KPI-Leiste offen · Chart-Karte mit Navigation · Messungen + TIR/Sensor |
 | Ereignisse | PanelEreignisse.png | KPI-Leiste = Legende · gestapelte Balken · Protokoll + Tiefs nach Uhrzeit |
 | Routinen | PanelRoutinen.png | 3er-Kartenraster mit Play · Letzte Trainings + Trainings/Woche |

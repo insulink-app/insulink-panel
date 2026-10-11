@@ -14,3 +14,15 @@ export function formatNumber(value: number, digits = 0): string {
   }
   return formatter.format(value);
 }
+
+/**
+ * Reads a number typed the way [formatNumber] writes it: dots between
+ * thousands, a decimal comma. Null when nothing numeric is left.
+ */
+export function parseNumber(text: string): number | null {
+  const plain = text.replace(/\s/g, "").replace(/\./g, "").replace(",", ".");
+  if (plain === "" || Number.isNaN(Number(plain))) {
+    return null;
+  }
+  return Number(plain);
+}

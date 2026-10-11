@@ -98,6 +98,7 @@
   --color-on-brand: var(--on-brand);
   --color-pulse: var(--pulse);
   --color-teal: var(--teal);
+  --color-water: var(--water);
   --color-nav-icon: var(--nav-icon);
   --color-nav-text: var(--nav-text);
   --color-placeholder: var(--placeholder);
@@ -140,6 +141,7 @@
   --very-low: #9e1f31;
   --pulse: #7b4fcc;
   --teal: #0b7f6a;
+  --water: #3f86d6;
   --prediction: #6a7e91;
 
   --sleep-deep: #6f5ed6;
@@ -177,6 +179,7 @@
   --very-low: #c8293f;
   --pulse: #c9a7ff;
   --teal: #2ed8b6;
+  --water: #7fb2f0;
   --prediction: #9ba2ac;
 
   --sleep-deep: #8e7cf0;

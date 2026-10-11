@@ -37,6 +37,7 @@ export {
   Sun,
   Syringe,
   Timer,
+  WaveSine,
 } from "@phosphor-icons/react";
 
 // Names that map to a differently-named Phosphor glyph.

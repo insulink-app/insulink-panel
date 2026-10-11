@@ -100,13 +100,34 @@ async function exportCsv(ids: DatasetId[], range: ExportRange) {
   );
 }
 
-/** About how many bytes the download will be, from the rows it will hold. */
+/** Rows the size estimate serialises per dataset; the rest is scaled up from them. */
+const SAMPLE = 200;
+
+/** Up to SAMPLE rows spread evenly over `rows`, and how many rows each one stands for. */
+function sample<T>(rows: T[]): { picked: T[]; scale: number } {
+  if (rows.length <= SAMPLE) {
+    return { picked: rows, scale: 1 };
+  }
+  const step = rows.length / SAMPLE;
+  return { picked: Array.from({ length: SAMPLE }, (_, index) => rows[Math.floor(index * step)]), scale: step };
+}
+
+/**
+ * About how many bytes the download will be, from an even sample of its rows:
+ * serialising every row on each change of format or area made the page lag.
+ */
 export function exportBytes(formatId: FormatId, rows: Partial<Record<DatasetId, object[]>>): number {
   if (formatId === "clarity") {
-    return clarityCsv((rows.glucose ?? []) as GlucoseEntry[], (rows.meals ?? []) as Meal[]).length;
+    const glucose = sample((rows.glucose ?? []) as GlucoseEntry[]);
+    const meals = sample((rows.meals ?? []) as Meal[]);
+    return clarityCsv(glucose.picked, []).length * glucose.scale + clarityCsv([], meals.picked).length * meals.scale;
   }
-  if (formatId === "json") {
-    return JSON.stringify(rows).length;
-  }
-  return Object.values(rows).reduce((sum, list) => sum + (list?.length ? toCsv(list as Record<string, unknown>[]).length : 0), 0);
+  return Object.values(rows).reduce((sum, list) => {
+    const { picked, scale } = sample(list ?? []);
+    if (picked.length === 0) {
+      return sum;
+    }
+    const text = formatId === "json" ? JSON.stringify(picked) : toCsv(picked as Record<string, unknown>[]);
+    return sum + text.length * scale;
+  }, 0);
 }

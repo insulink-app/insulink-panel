@@ -4,6 +4,8 @@ import type { LucideIcon } from "@/components/icons";
 
 const SIZE = 104;
 const STROKE = 10;
+/** Visible space between two parts of a split ring, in pixels. */
+const GAP = 5;
 
 export interface RingPart {
   /** Share of the ring, 0..1. */
@@ -55,8 +57,13 @@ export function RingCard({
 function Ring({ parts, children }: { parts: RingPart[]; children: ReactNode }) {
   const radius = (SIZE - STROKE) / 2;
   const circumference = 2 * Math.PI * radius;
-  const lengths = parts.map((part) => circumference * Math.min(1, Math.max(0, part.share)));
-  const starts = lengths.map((_, index) => lengths.slice(0, index).reduce((sum, length) => sum + length, 0));
+  const shares = parts.map((part) => circumference * Math.min(1, Math.max(0, part.share)));
+  const starts = shares.map((_, index) => shares.slice(0, index).reduce((sum, length) => sum + length, 0));
+  // Two or more parts get a clear gap between them; the round caps reach
+  // half a stroke past each end, so the gap leaves room for both.
+  const split = shares.filter((share) => share > 0).length > 1;
+  const gap = split ? STROKE + GAP : 0;
+  const lengths = shares.map((share) => (share > 0 ? Math.max(0.01, share - gap) : 0));
   return (
     <span className="relative grid size-[104px] shrink-0 place-items-center">
       <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="absolute inset-0 -rotate-90" aria-hidden>
@@ -73,7 +80,7 @@ function Ring({ parts, children }: { parts: RingPart[]; children: ReactNode }) {
               strokeWidth={STROKE}
               strokeLinecap="round"
               strokeDasharray={`${lengths[index]} ${circumference}`}
-              strokeDashoffset={-starts[index]}
+              strokeDashoffset={-(starts[index] + gap / 2)}
             />
           ) : null,
         )}

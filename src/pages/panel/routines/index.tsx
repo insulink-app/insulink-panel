@@ -21,16 +21,9 @@ export default function RoutinesPage() {
     queryFn: sportService.activeWorkout,
     refetchInterval: 15000,
   });
-  const exercises = useQuery({ queryKey: ["exercises"], queryFn: sportService.exercises });
   const workouts = useQuery({ queryKey: ["workouts"], queryFn: sportService.workouts });
   const list = routines.data?.routines ?? [];
   const workoutList = workouts.data?.workouts ?? [];
-  const exerciseList = exercises.data?.exercises ?? [];
-  const exerciseById = (exerciseId: string) => exerciseList.find((entry) => entry.id === exerciseId);
-  const lastDone = new Map<string, number>();
-  for (const workout of workoutList) {
-    lastDone.set(workout.routine, Math.max(lastDone.get(workout.routine) ?? 0, workout.started));
-  }
   const running = active.data?.workout;
   const runningRoutine = list.find((entry) => entry.id === running?.routine);
   // A free workout is in no list, so its name comes from the snapshot itself.
@@ -76,12 +69,7 @@ export default function RoutinesPage() {
         ) : (
           <div className="grid items-stretch gap-4 md:grid-cols-2 xl:grid-cols-3">
             {list.map((routine) => (
-              <RoutineCard
-                key={routine.id}
-                routine={routine}
-                exerciseById={exerciseById}
-                lastDone={lastDone.get(routine.id)}
-              />
+              <RoutineCard key={routine.id} routine={routine} />
             ))}
           </div>
         )}

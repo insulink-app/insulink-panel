@@ -28,6 +28,7 @@ const getRoutes = (): RouteObject[] => {
     { path: "health/body", element: Component("/pages/panel/body") },
     { path: "devices", element: <Navigate to="/devices/sensor" replace /> },
     { path: "devices/sensor/:id", element: Component("/pages/panel/sensor-detail") },
+    { path: "devices/pump/:id", element: Component("/pages/panel/pod-detail") },
     { path: "devices/:view", element: Component("/pages/panel/devices") },
     { path: "export", element: Component("/pages/panel/export") },
     { path: "settings", element: <Navigate to="/settings/glucose" replace /> },

@@ -31,7 +31,7 @@ export function PeriodBars({
   const fill = color ? `color-mix(in srgb, ${color} 45%, transparent)` : BAR_FILL;
   return (
     <ResponsiveContainer width="100%" height={height}>
-      <BarChart data={data} margin={{ ...CHART_MARGIN_TIGHT, right: 44 }} barCategoryGap="22%">
+      <BarChart data={data} margin={{ ...CHART_MARGIN_TIGHT, right: line ? 92 : 44 }} barCategoryGap="22%">
         <XAxis {...X_AXIS_STYLE} dataKey="time" tickFormatter={tickLabel} interval="preserveStartEnd" minTickGap={24} />
         <YAxis hide allowDecimals={false} domain={[0, (max: number) => Math.max(max, reference.value * 1.1)]} />
         <Tooltip

@@ -78,7 +78,7 @@ export function ProductsView({
               onChange={(event) => setQuery(event.target.value)}
               placeholder={t("nutrition.products_page.search")}
               aria-label={t("nutrition.products_page.search")}
-              className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-placeholder"
+              className="border-0 p-0 shadow-none focus:ring-0 min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-placeholder"
             />
           </label>
           <Select

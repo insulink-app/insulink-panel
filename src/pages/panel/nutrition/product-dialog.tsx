@@ -174,7 +174,7 @@ function ProductSearch({ onPick }: { onPick: (product: FoodProduct) => void }) {
           onChange={(event) => setTerms(event.target.value)}
           placeholder={t("nutrition.add.search_placeholder")}
           aria-label={t("nutrition.add.search_placeholder")}
-          className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-placeholder"
+          className="border-0 p-0 shadow-none focus:ring-0 min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-placeholder"
         />
       </form>
       {results === undefined ? (
@@ -234,7 +234,7 @@ function TextInput({
         inputMode={numeric ? "decimal" : undefined}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder ?? (numeric ? "0" : undefined)}
-        className="min-w-0 flex-1 bg-transparent text-[15px] font-bold outline-none placeholder:font-normal placeholder:text-placeholder"
+        className="border-0 p-0 shadow-none focus:ring-0 min-w-0 flex-1 bg-transparent text-[15px] font-bold outline-none placeholder:font-normal placeholder:text-placeholder"
       />
       {unit && <span className="shrink-0 text-xs whitespace-nowrap text-muted-foreground">{unit}</span>}
     </span>

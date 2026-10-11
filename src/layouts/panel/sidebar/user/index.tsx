@@ -1,7 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import { Settings } from "@/components/icons";
+import { ChevronsUpDown } from "@/components/icons";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,10 +11,9 @@ import { SettingsDialog } from "@/layouts/panel/settings-dialog.tsx";
 
 /**
  * The sidebar's last row: the avatar and name open the account menu (theme,
- * language, logout), the gear goes to the settings page.
+ * language, logout).
  */
 export function SidebarUser({ name }: { name: string }) {
-  const { t } = useTranslation();
   const { isMobile } = useSidebar();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsCategory, setSettingsCategory] = useState<string>();
@@ -33,7 +30,8 @@ export function SidebarUser({ name }: { name: string }) {
           <span className="grid size-[30px] shrink-0 place-items-center rounded-full bg-divider text-[13px] font-extrabold text-foreground">
             {name.slice(0, 1).toUpperCase()}
           </span>
-          <b className="truncate text-sm text-foreground">{name}</b>
+          <b className="flex-1 truncate text-sm text-foreground">{name}</b>
+          <ChevronsUpDown size={16} className="mr-1 shrink-0 text-nav-icon" aria-hidden />
         </DropdownMenuTrigger>
         <DropdownMenuContent
           className="min-w-56 rounded-2xl"
@@ -44,13 +42,6 @@ export function SidebarUser({ name }: { name: string }) {
           <SidebarUserDropdownContent user={{ name }} onOpenSettings={openSettings} />
         </DropdownMenuContent>
       </DropdownMenu>
-      <Link
-        to="/settings/"
-        aria-label={t("nav.settings")}
-        className="grid size-8 shrink-0 place-items-center rounded-[10px] text-nav-icon transition-colors hover:bg-panel hover:text-foreground"
-      >
-        <Settings size={17} weight="regular" aria-hidden />
-      </Link>
       <SettingsDialog
         open={settingsOpen}
         onOpenChange={setSettingsOpen}

@@ -15,6 +15,7 @@ import {
   Moon,
   Package,
   Ruler,
+  Settings,
   Running,
   Syringe,
   Utensils,
@@ -27,7 +28,7 @@ import { useDeviceStatus } from "./use-device-status";
 
 /**
  * The navigation, grouped the way the sidebar shows it. The first group has no
- * label. Settings is not an entry: it opens from the gear in the user row.
+ * label. Export and Settings sit at the foot, above the user row.
  */
 export function AppNavigation(t: TFunction, status: { sensor: boolean; pump: boolean }): NavGroup[] {
   return [
@@ -88,7 +89,14 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter className="gap-0 px-3 pt-3 pb-4">
         <SidebarNavigation
-          groups={[{ items: [{ title: t("nav.export"), url: "/export", icon: Download }] }]}
+          groups={[
+            {
+              items: [
+                { title: t("nav.export"), url: "/export", icon: Download },
+                { title: t("nav.settings"), url: "/settings", icon: Settings },
+              ],
+            },
+          ]}
         />
         <SidebarUser name={userInformation?.name ?? ""} />
       </SidebarFooter>

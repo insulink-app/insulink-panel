@@ -101,6 +101,8 @@
   --color-nav-icon: var(--nav-icon);
   --color-nav-text: var(--nav-text);
   --color-placeholder: var(--placeholder);
+  --color-bar-neutral: var(--bar-neutral);
+  --color-nav-active-text: var(--nav-active-text);
 
   --font-sans: "Atkinson Hyperlegible Next", system-ui, sans-serif;
 }
@@ -125,6 +127,9 @@
   --nav-icon: #5b6f82;
   --nav-text: #3a4d60;
   --placeholder: #7d8fa0;
+  --sidebar-ground: #e4ebf1;
+  --bar-neutral: #c9d4de;
+  --nav-active-text: #1d2a8a;
   --brand: #3346c8;
   --brand-text: #2a3aa8;
   --on-brand: #ffffff;
@@ -145,22 +150,26 @@
 }
 
 .dark {
-  --ground: #0f1b26;
-  --panel: #152432;
-  --raised: #1a2c3d;
-  --raised-strong: #1e3042;
-  --line: rgba(234, 241, 246, 0.06);
-  --divider: #26394b;
-  --text: #eaf1f6;
-  --text-muted: #97a9ba;
-  /* The spec's #62778B lifted to reach 4.5:1 on the ground. */
-  --text-label: #72879b;
-  --nav-icon: #7c90a3;
-  --nav-text: #a9b9c8;
+  /* The panel's own neutral graphite; the app keeps its blue-teal. Accent,
+     status, pulse and teal stay the app's. */
+  --sidebar-ground: #0a0b0e;
+  --ground: #0f1115;
+  --panel: #171a20;
+  --raised: #1c2027;
+  --raised-strong: #22262e;
+  --line: rgba(236, 238, 241, 0.06);
+  --divider: #2a2f38;
+  --bar-neutral: #363b45;
+  --text: #eceef1;
+  --text-muted: #9ba2ac;
+  --text-label: #6c737d;
+  --nav-icon: #858c96;
+  --nav-text: #b6bbc2;
+  --nav-active-text: #e4e8ff;
   --placeholder: #4f6377;
   --brand: #9daeff;
   --brand-text: #c4ceff;
-  --on-brand: #0f1b26;
+  --on-brand: #0f1115;
   --range: #7ccb8f;
   --high: #f4b740;
   --low: #ff6b7f;
@@ -168,7 +177,7 @@
   --very-low: #c8293f;
   --pulse: #c9a7ff;
   --teal: #2ed8b6;
-  --prediction: #97a9ba;
+  --prediction: #9ba2ac;
 
   --sleep-deep: #8e7cf0;
   --sleep-light: #7fb2f0;
@@ -210,13 +219,13 @@
   --chart-4: var(--text-muted);
   --chart-5: var(--brand-text);
 
-  --sidebar: var(--ground);
+  --sidebar: var(--sidebar-ground);
   --sidebar-foreground: var(--nav-text);
   --sidebar-primary: var(--brand);
   --sidebar-primary-foreground: var(--on-brand);
   --sidebar-accent: var(--panel);
   --sidebar-accent-foreground: var(--text);
-  --sidebar-border: var(--line);
+  --sidebar-border: var(--divider);
   --sidebar-ring: var(--brand);
 }
 

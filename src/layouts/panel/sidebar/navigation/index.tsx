@@ -48,11 +48,13 @@ function SidebarLink({ item, active }: { item: NavItem; active: boolean }) {
       aria-current={active ? "page" : undefined}
       onClick={() => isMobile && setOpenMobile(false)}
       className={cn(
-        "flex h-[34px] items-center gap-[11px] rounded-[10px] px-2.5 text-sm transition-colors",
-        active ? "bg-panel font-bold text-foreground" : "text-nav-text hover:bg-panel/60 hover:text-foreground",
+        "relative flex h-[38px] items-center gap-[11px] rounded-[10px] px-2.5 text-sm transition-colors",
+        active
+          ? "bg-brand/16 font-extrabold text-nav-active-text before:absolute before:inset-y-1.5 before:-left-3 before:w-1 before:rounded-r-full before:bg-brand"
+          : "text-nav-text hover:bg-panel hover:text-foreground",
       )}
     >
-      <Icon size={17} weight="regular" className={active ? "text-brand" : "text-nav-icon"} aria-hidden />
+      <Icon size={18} weight="regular" className={active ? "text-brand" : "text-nav-icon"} aria-hidden />
       <span className="truncate">{item.title}</span>
       {item.connected !== undefined && (
         <i

@@ -2,8 +2,13 @@ import { expect, type Page } from "@playwright/test";
 import { fakeSportApi, type SportState } from "./fake-sport-api";
 import { signIn, signInAndOpen } from "./mock-api";
 
-/** A fixed wall clock, so durations and rests come out exact. */
-export const START = new Date("2026-10-04T10:00:00");
+/**
+ * A fixed wall clock, so durations and rests come out exact: 10:00 today. It
+ * must track the real date, because the sign-in cookie takes its expiry from
+ * the page clock and the browser drops it against the real one; a hard-coded
+ * day stopped every runner test once it lay further back than the cookie lives.
+ */
+export const START = new Date(new Date().setHours(10, 0, 0, 0));
 
 /**
  * Serves `seed`, signs in, then stops time at START and opens the runner for

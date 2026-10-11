@@ -1,24 +1,23 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { format, subMonths } from "date-fns";
+import { subMonths } from "date-fns";
 import PanelPage from "@/layouts/panel";
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/page-header";
 import { Segmented } from "@/components/segmented";
-import { StatusChip } from "@/components/status-chip";
-import { formatNumber } from "@/lib/format";
-import { formatDay } from "@/lib/when";
+import { KpiStrip } from "@/components/kpi-strip";
 import sportService, { type MeasurementType } from "@/api/services/sport-service";
 import settingsService from "@/api/services/settings-service";
-import { METRICS } from "./series";
-import { BodyChart } from "./body-chart";
-import { KeyFigures, LatestReadings } from "./side-cards";
+import { METRICS, keyFigureCells } from "./series";
+import { BodyChart, BodyLegend } from "./body-chart";
+import { BodyHero } from "./body-hero";
+import { LatestReadings } from "./side-cards";
 
 type Span = 3 | 6 | 12 | 0;
 
 export default function BodyPage() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [metricType, setMetricType] = useState<MeasurementType>("WEIGHT");
   const [span, setSpan] = useState<Span>(0);
   const { data, isLoading } = useQuery({ queryKey: ["measurements"], queryFn: sportService.measurements });
@@ -34,7 +33,6 @@ export default function BodyPage() {
   }, [data, metricType, span]);
   const descending = useMemo(() => ascending.slice().reverse(), [ascending]);
   const latest = descending[0];
-  const change = latest && descending[1] ? latest.value - descending[1].value : null;
   const goal = metricType === "WEIGHT" ? settings?.["sport.weight_goal_kg"] : undefined;
 
   return (
@@ -51,30 +49,15 @@ export default function BodyPage() {
           />
         }
       />
+      <div className="mb-6 grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)]">
+        <BodyHero latest={latest} previous={descending[1]} metric={metric} unit={unit} />
+        <KpiStrip cells={keyFigureCells(ascending.map((entry) => entry.value), metric, unit, t)} />
+      </div>
       <div className="grid items-stretch gap-4 lg:grid-cols-[minmax(0,1.9fr)_minmax(0,1fr)]">
         <Card className="gap-0 p-6">
-          <div className="flex flex-wrap items-start gap-4">
-            <div className="min-w-0 flex-1">
-              <span className="text-sm text-muted-foreground">
-                {t(metric.labelKey)}
-                {latest && ` · ${formatDay(latest.time, t, i18n.language)}, ${format(new Date(latest.time), "HH:mm")}`}
-              </span>
-              <div className="mt-1 flex flex-wrap items-center gap-3.5">
-                <span>
-                  <b className="text-[64px] leading-none font-extrabold tracking-[-0.04em]">
-                    {latest ? formatNumber(latest.value, metric.digits) : "–"}
-                  </b>
-                  <span className="text-[22px] font-bold text-muted-foreground"> {unit}</span>
-                </span>
-                {change != null && (
-                  <StatusChip color="var(--text-muted)">
-                    {t("body.vs_previous", {
-                      value: `${change >= 0 ? "+" : "−"}${formatNumber(Math.abs(change), metric.digits)} ${unit}`,
-                    })}
-                  </StatusChip>
-                )}
-              </div>
-            </div>
+          <div className="mb-5 flex flex-wrap items-center gap-x-5 gap-y-3">
+            <h2 className="flex-1 text-lg font-extrabold">{t("body.history")}</h2>
+            {!metric.daily && <BodyLegend />}
             <Segmented
               label={t("overview.range")}
               value={span}
@@ -87,25 +70,20 @@ export default function BodyPage() {
               ]}
             />
           </div>
-          <div className="mt-6 flex flex-1 flex-col">
-            {isLoading ? (
-              <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
-            ) : ascending.length === 0 ? (
-              <p className="py-16 text-center text-sm text-muted-foreground">{t("common.no_data")}</p>
-            ) : (
-              <BodyChart
-                points={ascending.map((entry) => ({ t: entry.time, value: entry.value }))}
-                metric={metric}
-                unit={unit}
-                goal={goal}
-              />
-            )}
-          </div>
+          {isLoading ? (
+            <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
+          ) : ascending.length === 0 ? (
+            <p className="py-16 text-center text-sm text-muted-foreground">{t("common.no_data")}</p>
+          ) : (
+            <BodyChart
+              points={ascending.map((entry) => ({ t: entry.time, value: entry.value }))}
+              metric={metric}
+              unit={unit}
+              goal={goal}
+            />
+          )}
         </Card>
-        <div className="flex min-w-0 flex-col gap-4">
-          <KeyFigures values={ascending.map((entry) => entry.value)} metric={metric} unit={unit} />
-          <LatestReadings entries={descending} metric={metric} unit={unit} className="flex-1" />
-        </div>
+        <LatestReadings entries={descending} metric={metric} unit={unit} />
       </div>
     </PanelPage>
   );

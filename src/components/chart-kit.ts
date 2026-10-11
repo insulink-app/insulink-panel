@@ -30,8 +30,8 @@ export const LINE_STYLE = {
 
 export const BAR_STYLE = { radius: [5, 5, 0, 0] as [number, number, number, number], isAnimationActive: false };
 
-/** Muted bars; the latest one is drawn in the brand colour. */
-export const BAR_FILL = "color-mix(in srgb, var(--text-muted) 38%, transparent)";
+/** Bars in a faint brand tint; the latest one in the full brand colour. */
+export const BAR_FILL = "color-mix(in srgb, var(--brand) 38%, transparent)";
 export const BAR_FILL_CURRENT = "var(--brand)";
 
 /** The single end-point dot for the "now" value. */

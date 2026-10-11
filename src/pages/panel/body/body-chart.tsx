@@ -27,7 +27,7 @@ import {
   thresholdLabel,
 } from "@/components/chart-kit";
 import { formatNumber } from "@/lib/format";
-import { withWeeklyAverage, type MetricSpec } from "./series";
+import { barPoints, withWeeklyAverage, type MetricSpec } from "./series";
 
 /**
  * Weight as a thin muted line of the readings under the seven-day average in
@@ -69,11 +69,12 @@ export function BodyChart({
     const average =
       points.reduce((sum, point) => sum + point.value, 0) /
       Math.max(1, points.length);
+    const bars = barPoints(points);
     return (
       <div className="min-h-[300px] flex-1">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
-            data={points}
+            data={bars}
             margin={CHART_MARGIN_TIGHT}
             barCategoryGap="22%"
           >
@@ -86,11 +87,11 @@ export function BodyChart({
             <YAxis hide />
             {tooltip}
             <Bar {...BAR_STYLE} dataKey="value">
-              {points.map((point, index) => (
+              {bars.map((point, index) => (
                 <Cell
                   key={point.t}
                   fill={
-                    index === points.length - 1 ? BAR_FILL_CURRENT : BAR_FILL
+                    index === bars.length - 1 ? BAR_FILL_CURRENT : BAR_FILL
                   }
                 />
               ))}
@@ -111,58 +112,63 @@ export function BodyChart({
   const averaged = withWeeklyAverage(points);
   const latest = averaged[averaged.length - 1];
   return (
-    <>
-      <div className="min-h-[300px] flex-1">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={averaged} margin={CHART_MARGIN_TIGHT}>
-            <CartesianGrid {...GRID_STYLE} />
-            <XAxis
-              {...X_AXIS_STYLE}
-              dataKey="t"
-              type="number"
-              domain={["dataMin", "dataMax"]}
-              tickFormatter={(value) => format(new Date(value), "dd.MM.")}
-              minTickGap={50}
-            />
-            <YAxis hide domain={["dataMin - 1", "dataMax + 1"]} />
-            {tooltip}
-            {goal != null && (
-              <ReferenceLine
-                y={goal}
-                stroke="var(--text-muted)"
-                strokeOpacity={0.5}
-                strokeDasharray="2 5"
-                label={thresholdLabel(
-                  t("body.goal", {
-                    value: `${formatNumber(goal, metric.digits)} ${unit}`,
-                  }),
-                )}
-              />
-            )}
-            <Line
-              {...LINE_STYLE}
-              dataKey="value"
+    <div className="min-h-[300px] flex-1">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={averaged} margin={CHART_MARGIN_TIGHT}>
+          <CartesianGrid {...GRID_STYLE} />
+          <XAxis
+            {...X_AXIS_STYLE}
+            dataKey="t"
+            type="number"
+            domain={["dataMin", "dataMax"]}
+            tickFormatter={(value) => format(new Date(value), "dd.MM.")}
+            minTickGap={50}
+          />
+          <YAxis hide domain={["dataMin - 1", "dataMax + 1"]} />
+          {tooltip}
+          {goal != null && (
+            <ReferenceLine
+              y={goal}
               stroke="var(--text-muted)"
-              strokeOpacity={0.55}
-              strokeWidth={1.2}
+              strokeOpacity={0.5}
+              strokeDasharray="2 5"
+              label={thresholdLabel(
+                t("body.goal", {
+                  value: `${formatNumber(goal, metric.digits)} ${unit}`,
+                }),
+              )}
             />
-            <Line {...LINE_STYLE} dataKey="average" stroke="var(--brand)" />
-            {latest && (
-              <ReferenceDot x={latest.t} y={latest.average} {...NOW_DOT} />
-            )}
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-      <div className="mt-3 flex gap-5 text-xs text-muted-foreground">
-        <span className="flex items-center gap-1.5">
-          <i className="block h-[3px] w-4 rounded bg-primary" aria-hidden />
-          {t("body.average_7")}
-        </span>
-        <span className="flex items-center gap-1.5">
-          <i className="block h-px w-4 bg-muted-foreground" aria-hidden />
-          {t("body.raw")}
-        </span>
-      </div>
-    </>
+          )}
+          <Line
+            {...LINE_STYLE}
+            dataKey="value"
+            stroke="var(--text-muted)"
+            strokeOpacity={0.55}
+            strokeWidth={1.2}
+          />
+          <Line {...LINE_STYLE} dataKey="average" stroke="var(--brand)" />
+          {latest && (
+            <ReferenceDot x={latest.t} y={latest.average} {...NOW_DOT} />
+          )}
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+/** The two weight lines, named in the chart card's header. */
+export function BodyLegend() {
+  const { t } = useTranslation();
+  return (
+    <div className="flex gap-4 text-xs text-muted-foreground">
+      <span className="flex items-center gap-1.5">
+        <i className="block h-[3px] w-4 rounded bg-primary" aria-hidden />
+        {t("body.average_7")}
+      </span>
+      <span className="flex items-center gap-1.5">
+        <i className="block h-px w-4 bg-muted-foreground" aria-hidden />
+        {t("body.raw")}
+      </span>
+    </div>
   );
 }

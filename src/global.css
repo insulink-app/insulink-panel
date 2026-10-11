@@ -145,7 +145,7 @@
   --sleep-deep: #6f5ed6;
   --sleep-light: #3f86d6;
   --sleep-rem: #0b9e83;
-  --sleep-awake: var(--text);
+  --sleep-awake: var(--low);
   --sleep-restless: #d6457a;
 }
 
@@ -182,7 +182,7 @@
   --sleep-deep: #8e7cf0;
   --sleep-light: #7fb2f0;
   --sleep-rem: #2ed8b6;
-  --sleep-awake: var(--text);
+  --sleep-awake: var(--low);
   --sleep-restless: #f06292;
 }
 

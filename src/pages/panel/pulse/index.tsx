@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
@@ -17,12 +17,14 @@ import healthService from "@/api/services/health-service";
 import { PulseChart } from "./pulse-chart";
 import { RestingWeekCard, ZonesCard } from "./side-cards";
 import { PULSE_ELEVATED, PULSE_REST } from "./zones";
+import { JumpToDate } from "@/components/scroll-pane";
 
 // Where the history strip starts and ends, in bpm.
 const STRIP_DOMAIN: [number, number] = [40, 160];
 
 export default function PulsePage() {
   const { t } = useTranslation();
+  const [jumpTo, setJumpTo] = useState<number>();
   const { data, isLoading } = useQuery({ queryKey: ["pulse"], queryFn: healthService.pulse });
   const days = useQuery({ queryKey: ["health-days"], queryFn: healthService.days });
 
@@ -99,6 +101,7 @@ export default function PulsePage() {
               {t("pulse.readings")}
               <span className="ml-2 text-[13px] font-bold text-muted-foreground">{formatNumber(ascending.length)}</span>
             </h2>
+            <JumpToDate onPick={setJumpTo} />
             <Button asChild variant="outline" size="sm" className="h-9 border border-line bg-panel px-4 text-sm">
               <Link to="/export/">
                 <Download className="size-4" />
@@ -106,7 +109,7 @@ export default function PulsePage() {
               </Link>
             </Button>
           </div>
-          <RangeHistory readings={descending.map((sample) => ({ time: sample.t, value: sample.b }))} scale={scale} olderLabel={t("pulse.older")} />
+          <RangeHistory readings={descending.map((sample) => ({ time: sample.t, value: sample.b }))} scale={scale} jumpTo={jumpTo} />
         </Card>
         <div className="flex min-w-0 flex-col gap-4">
           <ZonesCard samples={windowData} period={period} />

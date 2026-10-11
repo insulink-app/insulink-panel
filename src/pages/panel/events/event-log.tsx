@@ -9,6 +9,7 @@ import { formatNumber } from "@/lib/format";
 import { CATEGORY_META, categoryOf, eventValue, type EventCategory } from "@/lib/events";
 import { toDisplay, unitLabel } from "@/lib/glucose";
 import type { EventEntry } from "@/api/services/event-service";
+import { JumpToDate } from "@/components/scroll-pane";
 
 const CATEGORY_ICON: Record<EventCategory, LucideIcon> = {
   low: ArrowDown,
@@ -37,6 +38,7 @@ export function EventLog({
 }) {
   const { t } = useTranslation();
   const [filter, setFilter] = useState<Filter>("all");
+  const [jumpTo, setJumpTo] = useState<number>();
   const shown = filter === "all" ? entries : entries.filter((entry) => categoryOf(entry.type) === filter);
   const filterLabel: Record<Filter, string> = {
     all: t("events.filter_all"),
@@ -59,13 +61,14 @@ export function EventLog({
           onChange={setFilter}
           options={(Object.keys(filterLabel) as Filter[]).map((value) => ({ value, label: filterLabel[value] }))}
         />
+        <JumpToDate onPick={setJumpTo} />
       </div>
       {shown.length === 0 ? (
         <p className="py-12 text-center text-sm text-muted-foreground">{t("events.empty")}</p>
       ) : (
         <TimelineList
           countLabel={(count) => t("events.count", { count })}
-          olderLabel={t("events.older")}
+          jumpTo={jumpTo}
           items={shown.map((entry) => {
             const category = categoryOf(entry.type);
             const Icon = CATEGORY_ICON[category];

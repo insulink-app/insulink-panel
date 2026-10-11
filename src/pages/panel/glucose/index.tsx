@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import PanelPage from "@/layouts/panel";
@@ -27,12 +27,14 @@ import {
   unitLabel,
 } from "@/lib/glucose";
 import { SensorCard } from "./sensor-card";
+import { JumpToDate } from "@/components/scroll-pane";
 
 // Where the history strip starts and ends, in mg/dL.
 const STRIP_DOMAIN: [number, number] = [40, 260];
 
 export default function GlucosePage() {
   const { t } = useTranslation();
+  const [jumpTo, setJumpTo] = useState<number>();
   const { data: settings } = useQuery({ queryKey: ["settings"], queryFn: settingsService.find });
   const { data, isLoading } = useQuery({ queryKey: ["glucose-history"], queryFn: glucoseService.history });
 
@@ -108,6 +110,7 @@ export default function GlucosePage() {
               {t("glucose.readings")}
               <span className="ml-2 text-[13px] font-bold text-muted-foreground">{formatNumber(ascending.length)}</span>
             </h2>
+            <JumpToDate onPick={setJumpTo} />
             <Button asChild variant="outline" size="sm" className="h-9 border border-line bg-panel px-4 text-sm">
               <Link to="/export/">
                 <Download className="size-4" />
@@ -118,7 +121,7 @@ export default function GlucosePage() {
           {isLoading ? (
             <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
           ) : (
-            <RangeHistory readings={descending} scale={scale} olderLabel={t("glucose.older")} />
+            <RangeHistory readings={descending} scale={scale} jumpTo={jumpTo} />
           )}
         </Card>
         <div className="flex min-w-0 flex-col gap-4">

@@ -105,7 +105,8 @@
     "every_minutes": "alle {{n}} Minuten",
     "older_entries": "Ältere Einträge",
     "export": "Exportieren",
-    "now_button": "Jetzt"
+    "now_button": "Jetzt",
+    "jump_to_date": "Zu Datum springen"
   },
   "login": {
     "welcome": "Willkommen zurück",
@@ -168,8 +169,7 @@
     "maximum": "Maximum",
     "in_range": "Im Zielbereich",
     "readings": "Messungen",
-    "chart_title": "Graph",
-    "older": "Ältere Messungen"
+    "chart_title": "Graph"
   },
   "nutrition": {
     "title": "Ernährung",
@@ -415,8 +415,7 @@
     "below": "unter {{n}} bpm",
     "between": "{{from}}–{{to}} bpm",
     "above": "über {{n}} bpm",
-    "resting_week": "Ruhepuls · 7 Tage",
-    "older": "Ältere Messungen"
+    "resting_week": "Ruhepuls · 7 Tage"
   },
   "body": {
     "title": "Körper",
@@ -486,7 +485,6 @@
     "filter_workout": "Training",
     "count_one": "{{count}} Aktivität",
     "count_other": "{{count}} Aktivitäten",
-    "older": "Ältere Aktivitäten",
     "history": "Verlauf",
     "this_week": "Diese Woche",
     "activities": "Aktivitäten",
@@ -750,7 +748,6 @@
     "filter_all": "Alle",
     "filter_signal": "Signal",
     "filter_sensor": "Sensor",
-    "older": "Ältere Ereignisse",
     "lows_by_hour": "Tiefs nach Uhrzeit",
     "peak_prefix": "{{period}} · am häufigsten zwischen",
     "peak_hours": "{{from}} und {{to}} Uhr",

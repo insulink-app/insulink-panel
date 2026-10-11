@@ -41,7 +41,6 @@ export function MealsView({
         ) : (
           <TimelineList
             countLabel={(count) => t("nutrition.count_meals", { count })}
-            olderLabel={t("nutrition.older_meals")}
             items={sorted.map((meal) => {
               const entries = meal.entries ?? [];
               const title = entries[0]?.name ?? t("nutrition.manual_entry");

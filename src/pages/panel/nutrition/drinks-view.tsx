@@ -37,7 +37,6 @@ export function DrinksView({ drinks, goal }: { drinks: Drink[]; goal?: number })
         ) : (
           <TimelineList
             countLabel={(count) => t("nutrition.count_drinks", { count })}
-            olderLabel={t("nutrition.older_drinks")}
             items={sorted.map((drink) => {
               const kind = drinkKind(drink.kind);
               const Icon = DRINK_ICONS[kind as keyof typeof DRINK_ICONS];

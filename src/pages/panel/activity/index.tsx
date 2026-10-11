@@ -13,6 +13,7 @@ import { workoutTitle } from "@/lib/workout";
 import sportService from "@/api/services/sport-service";
 import { itemDurationMs, matchesFilter, mergeActivities, type ActivityFilter, type ActivityItem } from "./items";
 import { CARDIO_ICON, HeatmapCard, KindsCard, WeekCard } from "./side-cards";
+import { JumpToDate } from "@/components/scroll-pane";
 
 export default function ActivityPage() {
   const { t } = useTranslation();
@@ -20,6 +21,7 @@ export default function ActivityPage() {
   const trainings = useQuery({ queryKey: ["trainings"], queryFn: sportService.trainings });
   const routines = useQuery({ queryKey: ["routines"], queryFn: sportService.routines });
   const [filter, setFilter] = useState<ActivityFilter>("all");
+  const [jumpTo, setJumpTo] = useState<number>();
 
   const routineName = useMemo(
     () => new Map((routines.data?.routines ?? []).map((routine) => [routine.id, routine.name])),
@@ -74,6 +76,7 @@ export default function ActivityPage() {
             <div className="mb-4 flex flex-wrap items-center gap-3">
               <h2 className="flex-1 text-lg font-extrabold">{t("activity.history")}</h2>
               <Segmented label={t("activity.history")} value={filter} onChange={setFilter} options={filterOptions} />
+              <JumpToDate onPick={setJumpTo} />
             </div>
             {shown.length === 0 ? (
               <p className="py-16 text-center text-sm text-muted-foreground">{t("common.no_data")}</p>
@@ -81,7 +84,7 @@ export default function ActivityPage() {
               <TimelineList
                 items={shown.map(toRow)}
                 countLabel={(count) => t("activity.count", { count })}
-                olderLabel={t("activity.older")}
+                jumpTo={jumpTo}
               />
             )}
           </Card>

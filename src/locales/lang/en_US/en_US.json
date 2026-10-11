@@ -105,7 +105,8 @@
     "every_minutes": "every {{n}} min",
     "older_entries": "Older entries",
     "export": "Export",
-    "now_button": "Now"
+    "now_button": "Now",
+    "jump_to_date": "Jump to date"
   },
   "login": {
     "welcome": "Welcome back",
@@ -168,8 +169,7 @@
     "maximum": "Maximum",
     "in_range": "In range",
     "readings": "Readings",
-    "chart_title": "Graph",
-    "older": "Older readings"
+    "chart_title": "Graph"
   },
   "nutrition": {
     "title": "Nutrition",
@@ -415,8 +415,7 @@
     "below": "below {{n}} bpm",
     "between": "{{from}}–{{to}} bpm",
     "above": "above {{n}} bpm",
-    "resting_week": "Resting · 7 days",
-    "older": "Older readings"
+    "resting_week": "Resting · 7 days"
   },
   "body": {
     "title": "Body",
@@ -486,7 +485,6 @@
     "filter_workout": "Training",
     "count_one": "{{count}} activity",
     "count_other": "{{count}} activities",
-    "older": "Older activities",
     "history": "History",
     "this_week": "This week",
     "activities": "Activities",
@@ -750,7 +748,6 @@
     "filter_all": "All",
     "filter_signal": "Signal",
     "filter_sensor": "Sensor",
-    "older": "Older events",
     "lows_by_hour": "Lows by time of day",
     "peak_prefix": "{{period}} · most often between",
     "peak_hours": "{{from}}:00 and {{to}}:00",

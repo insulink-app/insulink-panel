@@ -1,8 +1,9 @@
-import { useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
-import { ChevronRight } from "@/components/icons";
+import { ScrollPane } from "@/components/scroll-pane";
+import { dayKey, useInfinitePaging } from "@/hooks/use-infinite-paging";
 import { formatDay } from "@/lib/when";
 
 export interface TimelineItem {
@@ -18,55 +19,54 @@ export interface TimelineItem {
   to?: string;
 }
 
-const PAGE = 12;
-
 /**
  * Entries grouped by day, each day joined by a 2 px rail with a dot in the
  * entry's type colour, so a list of events reads as a timeline. `items`
- * arrive newest first.
+ * arrive newest first; the list scrolls inside its card and loads older days
+ * as its end comes near. `columns` is an optional heading row above it.
  */
 export function TimelineList({
   items,
   countLabel,
-  olderLabel,
+  jumpTo,
+  columns,
+  minHeight,
 }: {
   items: TimelineItem[];
   /** The muted count beside a day heading ("6 Ereignisse"). */
   countLabel: (count: number) => string;
-  olderLabel: string;
+  /** A day (epoch ms of its start) to scroll to, from the card's calendar button. */
+  jumpTo?: number;
+  columns?: ReactNode;
+  minHeight?: number;
 }) {
   const { t, i18n } = useTranslation();
-  const [visible, setVisible] = useState(PAGE);
+  const paging = useInfinitePaging(
+    items.map((item) => item.time),
+    jumpTo,
+  );
   const groups = new Map<string, TimelineItem[]>();
-  for (const item of items.slice(0, visible)) {
-    const key = format(new Date(item.time), "yyyy-MM-dd");
+  for (const item of items.slice(0, paging.visible)) {
+    const key = dayKey(item.time);
     groups.set(key, [...(groups.get(key) ?? []), item]);
   }
   return (
-    <div className="flex flex-1 flex-col">
-      {[...groups.values()].map((group, groupIndex) => (
-        <section key={group[0].key} className={groupIndex > 0 ? "mt-[18px]" : ""}>
-          <div className="mb-1.5 flex items-baseline gap-2">
-            <h3 className="text-[13px] font-extrabold">{formatDay(group[0].time, t, i18n.language)}</h3>
-            <span className="text-xs text-label">{countLabel(group.length)}</span>
-          </div>
-          {group.map((item, index) => (
-            <TimelineRow key={item.key} item={item} first={index === 0} last={index === group.length - 1} />
+    <div className="flex min-h-0 flex-1 flex-col">
+      <ScrollPane onNearEnd={paging.loadMore} hasMore={paging.hasMore} loaded={paging.visible} minHeight={minHeight} header={columns}>
+        <div id={paging.listId}>
+          {[...groups.values()].map((group, groupIndex) => (
+            <section key={group[0].key} data-day={dayKey(group[0].time)} className={groupIndex > 0 ? "mt-3" : ""}>
+              <div className="sticky top-(--list-head) z-10 flex items-baseline gap-2 bg-panel pt-1 pb-1.5">
+                <h3 className="text-[13px] font-extrabold">{formatDay(group[0].time, t, i18n.language)}</h3>
+                <span className="text-xs text-label">{countLabel(group.length)}</span>
+              </div>
+              {group.map((item, index) => (
+                <TimelineRow key={item.key} item={item} first={index === 0} last={index === group.length - 1} />
+              ))}
+            </section>
           ))}
-        </section>
-      ))}
-      {visible < items.length && (
-        <div className="mt-auto border-t border-divider pt-3.5 text-center">
-          <button
-            type="button"
-            onClick={() => setVisible((count) => count + PAGE)}
-            className="inline-flex items-center gap-1 rounded-md text-[13px] font-bold text-brand-text hover:underline"
-          >
-            {olderLabel}
-            <ChevronRight className="size-3.5" aria-hidden />
-          </button>
         </div>
-      )}
+      </ScrollPane>
     </div>
   );
 }

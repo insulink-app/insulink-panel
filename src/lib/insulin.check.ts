@@ -1,6 +1,6 @@
-// npx tsx src/pages/panel/pod-detail/delivery.check.ts
+// npx tsx src/lib/insulin.check.ts
 import assert from "node:assert/strict";
-import { activeInsulin, basalSteps, basalUnits } from "./delivery";
+import { activeInsulin, basalSteps, basalUnits } from "./insulin";
 
 const HOUR = 60 * 60 * 1000;
 const start = new Date(2026, 9, 11, 9, 30).getTime();

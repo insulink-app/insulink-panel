@@ -17,7 +17,7 @@ import { formatSpan } from "@/lib/sensor";
 import { formatDay, formatWhen } from "@/lib/when";
 import { BackPill, CompareCard, DeviceHero, FactsCard, RuntimeCard } from "../devices/detail-parts";
 import { isRunning, podRecords, type DeviceRecord } from "../devices/records";
-import { activeInsulin, basalSteps, basalUnits, bolusDoses } from "./delivery";
+import { activeInsulin, basalSteps, basalUnits, bolusDoses } from "@/lib/insulin";
 import { DeliveryChart } from "./delivery-chart";
 
 const COMPARED = 4;

@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { formatNumber } from "@/lib/format";
-import type { BolusDose } from "./delivery";
+import type { BolusDose } from "@/lib/insulin";
 
 const TICKS = 4;
 

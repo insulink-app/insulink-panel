@@ -13,8 +13,9 @@ import { useUserInformation } from "@/store/user-store";
 import { PageHeader } from "@/components/page-header";
 import { TimeInRangeCard } from "@/components/time-in-range-card";
 import { GlucoseCard } from "./glucose-card";
-import { NutritionCard } from "./nutrition-card";
-import { ActivityCard } from "./activity-card";
+import { DayCards } from "./day-cards";
+import pumpService from "@/api/services/pump-service";
+import { podActive } from "@/lib/pump";
 
 const GLUCOSE_POLL_MS = 60_000;
 
@@ -54,6 +55,7 @@ export default function OverviewPage() {
   const workouts = useQuery({ queryKey: ["workouts"], queryFn: sportService.workouts });
   const trainings = useQuery({ queryKey: ["trainings"], queryFn: sportService.trainings });
   const routines = useQuery({ queryKey: ["routines"], queryFn: sportService.routines });
+  const pumps = useQuery({ queryKey: ["pump-history"], queryFn: pumpService.history });
   const measurements = useQuery({
     queryKey: ["measurements"],
     queryFn: sportService.measurements,
@@ -96,19 +98,15 @@ export default function OverviewPage() {
             isLoading={glucose.isLoading}
           />
         </div>
-        <div className="grid gap-4 min-[1100px]:grid-cols-2">
-          <NutritionCard
-            meals={meals.data?.meals ?? []}
-            isLoading={meals.isLoading}
-          />
-          <ActivityCard
-            workouts={workouts.data?.workouts ?? []}
-            trainings={trainings.data?.trainings ?? []}
-            routines={routines.data?.routines ?? []}
-            measurements={measurements.data?.entries ?? []}
-            isLoading={workouts.isLoading || trainings.isLoading}
-          />
-        </div>
+        <DayCards
+          meals={meals.data?.meals ?? []}
+          workouts={workouts.data?.workouts ?? []}
+          trainings={trainings.data?.trainings ?? []}
+          routines={routines.data?.routines ?? []}
+          measurements={measurements.data?.entries ?? []}
+          settings={settings}
+          podRunning={(pumps.data?.pumps ?? []).some((pod, _, all) => podActive(pod, all))}
+        />
       </div>
     </PanelPage>
   );

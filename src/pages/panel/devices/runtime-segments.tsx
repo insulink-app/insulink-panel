@@ -7,19 +7,21 @@ const HOUR = 60 * 60 * 1000;
 const segmentMs = (record: DeviceRecord) => (record.rated <= 3 * 24 * HOUR ? 6 * HOUR : 24 * HOUR);
 
 /**
- * The rated runtime as segments filled up to the time worn, and, with
- * `showGrace`, one hatched segment for the grace window after it.
+ * The rated runtime as segments, the time still left filled in from the left
+ * like the Glukose page's sensor card and the app, and, with `showGrace`, one
+ * hatched segment for the grace window after it.
  */
 export function RuntimeSegments({ record, showGrace, className }: { record: DeviceRecord; showGrace?: boolean; className?: string }) {
   const size = segmentMs(record);
   const count = Math.max(1, Math.round(record.rated / size));
-  const fill = (index: number) => Math.min(1, Math.max(0, (record.worn - index * size) / size));
+  const left = Math.max(0, record.rated - record.worn);
+  const fill = (index: number) => Math.min(1, Math.max(0, (left - index * size) / size));
   return (
     <div
       role="progressbar"
       aria-valuemin={0}
       aria-valuemax={Math.round(record.rated / HOUR)}
-      aria-valuenow={Math.round(Math.min(record.worn, record.rated) / HOUR)}
+      aria-valuenow={Math.round(left / HOUR)}
       className={cn("flex h-2.5 gap-1", className)}
     >
       {Array.from({ length: count }, (_, index) => (

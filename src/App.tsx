@@ -32,7 +32,7 @@ function App({ children }: { children: React.ReactNode }) {
         disableTransitionOnChange
       >
         <Helmet>
-          <link rel="icon" type="image/png" href="/icon.png" />
+          <link rel="icon" type="image/png" href="/favicon.png" />
           <title>Insulink</title>
         </Helmet>
         <RouteLoading />

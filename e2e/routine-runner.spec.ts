@@ -98,6 +98,7 @@ test("finishing early asks first and saves only what was done", async ({ page })
 
   await page.getByRole("button", { name: "Finish", exact: true }).click();
   await page.getByRole("alertdialog").getByRole("button", { name: "Cancel" }).click();
+  await expect(page.getByRole("alertdialog")).toHaveCount(0);
   await expect(page.getByText("Rest", { exact: true })).toBeVisible();
   expect(writes.workouts).toHaveLength(0);
 

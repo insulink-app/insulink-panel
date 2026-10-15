@@ -56,6 +56,9 @@ test("deleting asks first and sends the list without it", async ({ page }) => {
   await page.getByRole("button", { name: "Delete" }).first().click();
   await expect(page.getByRole("alertdialog")).toContainText(`"${BENCH.name}"`);
   await page.getByRole("button", { name: "Cancel" }).click();
+  // The cancelled dialog fades out; opening the next one while it still does
+  // would aim the click at the one being removed.
+  await expect(page.getByRole("alertdialog")).toHaveCount(0);
   expect(writes.exercises).toHaveLength(0);
 
   await page.getByRole("button", { name: "Delete" }).first().click();

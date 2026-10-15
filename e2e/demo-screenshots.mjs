@@ -10,7 +10,7 @@ const THEMES = ["dark", "light"];
 const browser = await chromium.launch();
 for (const [language, locale] of Object.entries(LANGUAGES)) {
   for (const theme of THEMES) {
-    const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2 });
+    const page = await browser.newPage({ viewport: { width: 1600, height: 900 }, deviceScaleFactor: 2 });
     const failures = [];
     page.on("pageerror", (error) => failures.push(error.message));
     await page.addInitScript(([storedLocale, storedTheme]) => {

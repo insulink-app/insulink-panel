@@ -31,7 +31,7 @@ npm run build   # tsc -b && vite build
 npm run test:e2e  # Playwright smoke tests (e2e/), API mocked via page.route
 ```
 
-Demo: `npm run build:demo` builds with `.env.demo` (`VITE_DEMO=true`, base
+Demo: `pnpm run demo` serves it at `localhost:5173/insulink-panel/`; `npm run build:demo` builds with `.env.demo` (`VITE_DEMO=true`, base
 `/insulink-panel/`). `src/demo/demo-adapter.ts` replaces the axios adapter with a
 generated in-memory account, and `main.tsx` signs straight into it. The `Demo`
 workflow publishes it to GitHub Pages (`insulink-app.github.io/insulink-panel/`) on every

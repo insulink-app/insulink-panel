@@ -34,7 +34,7 @@ npm run test:e2e  # Playwright smoke tests (e2e/), API mocked via page.route
 Demo: `npm run build:demo` builds with `.env.demo` (`VITE_DEMO=true`, base
 `/insulink-panel/`). `src/demo/demo-adapter.ts` replaces the axios adapter with a
 generated in-memory account, and `main.tsx` signs straight into it. The `Demo`
-workflow publishes it to GitHub Pages (`insulink.de/insulink-panel/`) on every
+workflow publishes it to GitHub Pages (`insulink-app.github.io/insulink-panel/`) on every
 push to `main`. Public assets go through `import.meta.env.BASE_URL`, never a bare
 `/`, or they break under that base.
 

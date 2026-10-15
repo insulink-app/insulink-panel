@@ -916,6 +916,6 @@
     "events": "Events"
   },
   "demo": {
-    "notice": "Demo: sample data, changes are not saved"
+    "label": "Demo"
   }
 }

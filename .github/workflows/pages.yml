@@ -32,6 +32,15 @@ jobs:
         run: npm ci
       - name: Build demo
         run: npm run build:demo
+      # Photographs the overview into dist/screenshots/ (docs/SCREENSHOTS.md), so
+      # the pictures are published with the demo and always show the current panel.
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Take screenshots
+        run: |
+          npx vite preview --mode demo --port 4173 --strictPort &
+          curl -sf --retry 30 --retry-connrefused --retry-delay 1 -o /dev/null http://localhost:4173/insulink-panel/
+          node e2e/demo-screenshots.mjs http://localhost:4173/insulink-panel/ dist/screenshots
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:

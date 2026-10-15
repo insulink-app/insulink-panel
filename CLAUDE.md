@@ -36,7 +36,8 @@ Demo: `pnpm run demo` serves it at `localhost:5173/insulink-panel/`; `npm run bu
 generated in-memory account, and `main.tsx` signs straight into it. The `Demo`
 workflow publishes it to GitHub Pages (`insulink-app.github.io/insulink-panel/`) on every
 push to `main`. Public assets go through `import.meta.env.BASE_URL`, never a bare
-`/`, or they break under that base.
+`/`, or they break under that base. Each deploy also publishes overview
+screenshots in both languages and themes: `docs/SCREENSHOTS.md`.
 
 E2E: `e2e/fake-sport-api.ts` serves an in-memory sport account (syncs replace,
 finds return it, `state` can be changed to play the phone) and records every

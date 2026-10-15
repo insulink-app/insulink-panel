@@ -9,7 +9,8 @@ always show the current panel with the demo's sample data. Nothing is committed.
 `https://insulink-app.github.io/insulink-panel/screenshots/<language>-<theme>/overview.png`
 
 `<language>-<theme>` is `de-dark`, `de-light`, `en-dark` or `en-light`. Each
-picture is 2880 x 1800 (a 1440 x 900 window at 2x). A deploy replaces the set, so
+picture is 3200 x 1800 (a 1600 x 900 window at 2x, 16:9 like the
+website's panel window). A deploy replaces the set, so
 a fixed URL always serves the newest picture.
 
 ## How they are made

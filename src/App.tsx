@@ -32,7 +32,7 @@ function App({ children }: { children: React.ReactNode }) {
         disableTransitionOnChange
       >
         <Helmet>
-          <link rel="icon" type="image/png" href="/favicon.png" />
+          <link rel="icon" type="image/png" href={`${import.meta.env.BASE_URL}favicon.png`} />
           <title>Insulink</title>
         </Helmet>
         <RouteLoading />

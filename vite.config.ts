@@ -4,7 +4,9 @@ import path from 'path';
 import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
+  // The demo is served from the repo's GitHub Pages path.
+  base: mode === "demo" ? "/insulink-panel/" : "/",
   plugins: [
     react(),
     tailwindcss(),
@@ -22,4 +24,4 @@ export default defineConfig({
       },
     },
   },
-})
+}))

@@ -16,6 +16,13 @@ const axiosInstance = axios.create({
   headers: { "Content-Type": "application/json;charset=utf-8" },
 });
 
+// The GitHub Pages demo has no backend: a generated account answers in-browser.
+// Loaded lazily inside the flag so the real build never ships the sample data.
+if (import.meta.env.VITE_DEMO === "true") {
+  axiosInstance.defaults.adapter = async (config) =>
+    (await import("@/demo/demo-adapter")).demoAdapter(config);
+}
+
 let isRefreshing = false;
 let failedQueue: {
   resolve: (token: string) => void;

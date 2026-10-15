@@ -78,8 +78,8 @@ export function AppSidebar() {
       <SidebarHeader className="px-3 pt-4 pb-0">
         <Link to="/overview/" className="flex items-center gap-2.5 rounded-[10px] px-1.5 pt-0.5 pb-4">
           <span className="grid size-7 place-items-center rounded-[9px] bg-primary p-1">
-            <img src="/logo-white.png" alt="" className="size-full object-contain dark:hidden" />
-            <img src="/logo-black.png" alt="" className="hidden size-full object-contain dark:block" />
+            <img src={`${import.meta.env.BASE_URL}logo-white.png`} alt="" className="size-full object-contain dark:hidden" />
+            <img src={`${import.meta.env.BASE_URL}logo-black.png`} alt="" className="hidden size-full object-contain dark:block" />
           </span>
           <b className="text-base tracking-tight text-foreground">Insulink</b>
         </Link>

@@ -133,6 +133,7 @@ const userStore = {
           auth.actions.clearAuthenticationToken();
           refresh.actions.clearRefreshToken();
         },
+        setUserInformation: auth.actions.setInformation,
       },
     };
   },

@@ -83,12 +83,12 @@ export default function LoginForm() {
       <div className="relative flex flex-col items-center mb-10 text-center">
         <div className="flex items-center gap-3 mb-8">
           <img
-            src="/logo-black.png"
+            src={`${import.meta.env.BASE_URL}logo-black.png`}
             alt="Insulink"
             className="h-11 w-11 block dark:hidden"
           />
           <img
-            src="/logo-white.png"
+            src={`${import.meta.env.BASE_URL}logo-white.png`}
             alt="Insulink"
             className="h-11 w-11 hidden dark:block"
           />

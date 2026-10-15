@@ -914,5 +914,8 @@
     "since_sensor": "Seit dem letzten Sensorwechsel",
     "remaining": "verbleibend",
     "events": "Ereignisse"
+  },
+  "demo": {
+    "notice": "Demo: Beispieldaten, Änderungen werden nicht gespeichert"
   }
 }

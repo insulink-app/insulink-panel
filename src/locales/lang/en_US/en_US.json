@@ -914,5 +914,8 @@
     "since_sensor": "Since the last sensor change",
     "remaining": "remaining",
     "events": "Events"
+  },
+  "demo": {
+    "notice": "Demo: sample data, changes are not saved"
   }
 }

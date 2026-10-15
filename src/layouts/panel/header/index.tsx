@@ -60,6 +60,11 @@ export function AppHeader({ title, parents }: AppHeaderProps) {
           </BreadcrumbList>
         </Breadcrumb>
       )}
+      {import.meta.env.VITE_DEMO === "true" && (
+        <span className="ml-auto shrink-0 rounded-full bg-panel px-3 py-1 text-xs text-muted-foreground">
+          {t("demo.notice")}
+        </span>
+      )}
     </header>
   );
 }

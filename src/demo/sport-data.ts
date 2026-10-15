@@ -21,8 +21,9 @@ export const DEMO_ROUTINES: Routine[] = [
 
 /** The full-body routine done every three or four days, slowly getting heavier. */
 export function demoWorkouts(): Workout[] {
-  return [12, 9, 5, 2].map((daysAgo, session) => {
-    const started = midnight(daysAgo) + 18 * HOUR_MS;
+  const sessions = Math.floor((DEMO_DAYS - 2) / 3.5);
+  return Array.from({ length: sessions }, (_, session) => {
+    const started = midnight(Math.round(2 + (sessions - 1 - session) * 3.5)) + 18 * HOUR_MS;
     let cursor = started;
     const sets = DEMO_ROUTINES[0].items.flatMap((item) =>
       Array.from({ length: item.sets }, () => {
@@ -30,7 +31,7 @@ export function demoWorkouts(): Workout[] {
         const timed = item.ex === "plank";
         return {
           ex: item.ex, reps: timed ? undefined : item.target, secs: timed ? item.target : undefined,
-          kg: timed ? undefined : item.weight + session * 2.5, dur: 40, rest: item.rest, ts: cursor,
+          kg: timed ? undefined : item.weight + Math.floor(session / 2) * 1.25, dur: Math.round(between(30, 55)), rest: item.rest, ts: cursor,
         };
       }),
     );
@@ -64,7 +65,7 @@ export function demoMeasurements(): Measurement[] {
     const time = daysAgo === 0 ? NOW : midnight(daysAgo) + DAY_MS - MINUTE_MS;
     const steps = Math.round(between(6000, 13000));
     entries.push(
-      { type: "WEIGHT", value: Math.round((78 - (DEMO_DAYS - daysAgo) * 0.08 + between(-0.3, 0.3)) * 10) / 10, time: midnight(daysAgo) + 7 * HOUR_MS },
+      { type: "WEIGHT", value: Math.round((80 - (DEMO_DAYS - daysAgo) * 0.04 + between(-0.3, 0.3)) * 10) / 10, time: midnight(daysAgo) + 7 * HOUR_MS },
       { type: "STEPS", value: steps, time },
       { type: "DISTANCE", value: Math.round(steps * 0.075) / 100, time },
       { type: "CALORIES", value: Math.round(steps * 0.045), time },

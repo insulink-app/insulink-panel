@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Fragment } from "react";
 import { PanelLeftIcon } from "@/components/icons";
 import { useSidebar } from "@/components/ui/sidebar";
+import { StatusChip } from "@/components/status-chip";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -61,8 +62,8 @@ export function AppHeader({ title, parents }: AppHeaderProps) {
         </Breadcrumb>
       )}
       {import.meta.env.VITE_DEMO === "true" && (
-        <span className="ml-auto shrink-0 rounded-full bg-panel px-3 py-1 text-xs text-muted-foreground">
-          {t("demo.notice")}
+        <span className="ml-auto">
+          <StatusChip color="var(--glucose-in-range)">{t("demo.label")}</StatusChip>
         </span>
       )}
     </header>

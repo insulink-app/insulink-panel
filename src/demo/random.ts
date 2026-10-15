@@ -17,7 +17,7 @@ export function between(low: number, high: number): number {
 export const MINUTE_MS = 60_000;
 export const HOUR_MS = 60 * MINUTE_MS;
 export const DAY_MS = 24 * HOUR_MS;
-export const DEMO_DAYS = 14;
+export const DEMO_DAYS = 90;
 
 /** Now, floored to the minute, the anchor every generated series ends at. */
 export const NOW = Math.floor(Date.now() / MINUTE_MS) * MINUTE_MS;

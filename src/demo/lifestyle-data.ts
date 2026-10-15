@@ -38,10 +38,10 @@ export function demoHealthDays(): HealthDay[] {
   });
 }
 
-/** Pulse every five minutes over the last day, higher while awake. */
+/** Pulse every five minutes over the last two weeks, higher while awake. */
 export function demoPulse(): PulseSample[] {
   const samples: PulseSample[] = [];
-  for (let time = NOW - DAY_MS; time <= NOW; time += 5 * MINUTE_MS) {
+  for (let time = NOW - 14 * DAY_MS; time <= NOW; time += 5 * MINUTE_MS) {
     const hour = new Date(time).getHours();
     const base = hour < 7 || hour >= 23 ? 55 : 72;
     samples.push({ t: time, b: Math.round(base + between(-6, 14)) });

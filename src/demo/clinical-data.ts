@@ -23,32 +23,48 @@ export function demoMeals(): Meal[] {
   return meals;
 }
 
-/** The rise a meal causes `minutesAfter` it: up for an hour, back down by three. */
-function mealEffect(meal: Meal, time: number): number {
-  const minutesAfter = (time - meal.time) / MINUTE_MS;
-  if (minutesAfter < 0 || minutesAfter > 240) {
-    return 0;
+const SLOT_MS = 5 * MINUTE_MS;
+const FIRST_READING = NOW - DEMO_DAYS * DAY_MS;
+
+/**
+ * The rise every meal adds per five-minute slot: up for an hour, back down by
+ * four. Spread once per meal so the curve stays linear in the window length.
+ */
+function mealRise(meals: Meal[]): Float64Array {
+  const rise = new Float64Array(DEMO_DAYS * (DAY_MS / SLOT_MS) + 1);
+  for (const meal of meals) {
+    const firstSlot = Math.round((meal.time - FIRST_READING) / SLOT_MS);
+    for (let minutes = 0; minutes <= 240; minutes += 5) {
+      const slot = firstSlot + minutes / 5;
+      if (slot < rise.length) {
+        rise[slot] += (meal.carbs ?? 0) * 1.4 * Math.sin((Math.PI * minutes) / 240);
+      }
+    }
   }
-  return (meal.carbs ?? 0) * 1.4 * Math.sin((Math.PI * minutesAfter) / 240);
+  return rise;
 }
 
 /** Five-minute CGM readings over the demo window, shaped by the meals. */
 export function demoGlucose(meals: Meal[]): GlucoseEntry[] {
+  const rise = mealRise(meals);
   const entries: GlucoseEntry[] = [];
   let drift = 0;
-  for (let time = NOW - DEMO_DAYS * DAY_MS; time <= NOW; time += 5 * MINUTE_MS) {
+  for (let slot = 0; slot < rise.length; slot += 1) {
+    const time = FIRST_READING + slot * SLOT_MS;
     drift = drift * 0.97 + between(-4, 4);
     const dawn = 18 * Math.sin((2 * Math.PI * (time % DAY_MS)) / DAY_MS);
-    const meal = meals.reduce((sum, candidate) => sum + mealEffect(candidate, time), 0);
-    const value = Math.round(115 + dawn + meal + drift * 3);
+    const value = Math.round(115 + dawn + rise[slot] + drift * 3);
     entries.push({ value: Math.min(Math.max(value, 48), 330), time });
   }
   return entries;
 }
 
-/** Lows and highs read off the glucose curve, plus a sensor swap. */
-export function demoEvents(glucose: GlucoseEntry[], sensorStart: number): EventEntry[] {
-  const events: EventEntry[] = [{ type: "new_sensor", data: "", time: sensorStart }];
+/** Lows and highs read off the glucose curve, sensor swaps and signal losses. */
+export function demoEvents(glucose: GlucoseEntry[], sensorStarts: number[]): EventEntry[] {
+  const events: EventEntry[] = sensorStarts.map((time) => ({ type: "new_sensor", data: "", time }));
+  for (let daysAgo = 2; daysAgo < DEMO_DAYS; daysAgo += 9) {
+    events.push({ type: "signal_loss", data: "", time: NOW - daysAgo * DAY_MS - 3 * HOUR_MS });
+  }
   let lastType = "";
   for (const entry of glucose) {
     const type = entry.value < 70 ? "glucose_low" : entry.value > 250 ? "glucose_high" : "";
@@ -57,25 +73,33 @@ export function demoEvents(glucose: GlucoseEntry[], sensorStart: number): EventE
     }
     lastType = type;
   }
-  events.push({ type: "signal_loss", data: "", time: NOW - 2 * DAY_MS - 3 * HOUR_MS });
   return events;
 }
 
-/** Two expired Dexcom G7s and the one worn now. */
+const SENSOR_DAYS = 10.5;
+const POD_DAYS = 3;
+
+/** Start offsets in days ago, oldest first, the newest `newestDaysAgo` back. */
+function changeDays(everyDays: number, newestDaysAgo: number): number[] {
+  const count = Math.floor((DEMO_DAYS - newestDaysAgo) / everyDays) + 1;
+  return Array.from({ length: count }, (_, index) => newestDaysAgo + (count - 1 - index) * everyDays);
+}
+
+/** Dexcom G7s worn back to back, the newest one still running. */
 export function demoSensors(): SensorHistoryEntry[] {
-  const lifetime = 10.5 * DAY_MS;
-  return [24, 13.5, 3].map((daysAgo, index) => {
+  const lifetime = SENSOR_DAYS * DAY_MS;
+  return changeDays(SENSOR_DAYS, 3).map((daysAgo, index) => {
     const start = NOW - daysAgo * DAY_MS;
-    const data = { sensor_type: "dexcom_g7", sensor_start: start, resolved_key: `DXCM-${index}`, pairing_code: `${4210 + index}` };
+    const data = { sensor_type: "dexcom_g7", sensor_start: start, resolved_key: `DXCM-${index}`, pairing_code: `${4210 + index * 7}` };
     return { id: `sensor-${index}`, data: JSON.stringify(data), registered_at: start + 10 * MINUTE_MS, expires_at: start + lifetime };
   });
 }
 
 /** Omnipod DASH pods changed every three days, the last one still running. */
 export function demoPods(): PumpHistoryEntry[] {
-  return [10, 7, 4, 1.25].map((daysAgo, index) => {
+  return changeDays(POD_DAYS, 1.25).map((daysAgo, index) => {
     const start = NOW - daysAgo * DAY_MS;
-    const delivered = Math.round(Math.min(daysAgo, 3) * 38);
+    const delivered = Math.round(Math.min(daysAgo, POD_DAYS) * 38);
     const data = {
       pump_type: "omnipod_dash", lot_number: 135792, pod_sequence_number: 4100 + index,
       activated_at: start, expiry_hours: 80, last_seen_at: Math.min(NOW - 4 * MINUTE_MS, start + 72 * HOUR_MS),

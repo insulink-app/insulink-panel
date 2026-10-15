@@ -5,7 +5,8 @@ import type { AxiosAdapter, InternalAxiosRequestConfig } from "axios";
 import { demoEvents, demoGlucose, demoMeals, demoPods, demoPrediction, demoSensors, demoSettings } from "./clinical-data";
 import { DEMO_PRODUCTS, demoDrinks, demoHealthDays, demoPulse } from "./lifestyle-data";
 import { DEMO_EXERCISES, DEMO_ROUTINES, demoMeasurements, demoTrainings, demoWorkouts } from "./sport-data";
-import { between, NOW } from "./random";
+import { between } from "./random";
+import { sensorStart } from "@/lib/sensor";
 
 type Body = Record<string, unknown>;
 
@@ -18,7 +19,7 @@ const TOKENS = { success: true, name: "Demo", authentication_token: "demo", refr
 /** What every read endpoint returns, keyed by its path. Syncs overwrite it. */
 const reads: Record<string, Body> = {
   "/glucose/history/": { success: true, entries: glucose },
-  "/event/history/": { success: true, entries: demoEvents(glucose, NOW - 3 * 86_400_000) },
+  "/event/history/": { success: true, entries: demoEvents(glucose, sensors.map(sensorStart)) },
   "/sensor/history/": { success: true, sensors },
   "/sensor/current/": { success: true, ...sensors[sensors.length - 1], type: "DEXCOM_G7" },
   "/pump/history/": { success: true, pumps },

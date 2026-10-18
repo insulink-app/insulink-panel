@@ -19,6 +19,7 @@ export interface MealEntry {
   carbs: number;
   protein?: number;
   serving?: number; // the product's serving size in `unit`, if it declares one
+  photo_id?: string; // the stored photo a photo-estimated food came from
 }
 
 export interface Drink {
@@ -43,6 +44,14 @@ export interface FoodProduct {
 const meals = () =>
   client.get<{ success: boolean; meals?: Meal[] }>({
     url: "/nutrition/meals/find/",
+  });
+
+// Stored photos are never served by URL: the id goes in the body and only its
+// owner gets the JPEG back, as base64.
+const photo = (id: string) =>
+  client.post<{ success: boolean; image?: string }>({
+    url: "/nutrition/photos/find/",
+    data: { id },
   });
 
 const drinks = () =>
@@ -134,4 +143,4 @@ const parseOffProduct = (product: Record<string, unknown>): FoodProduct => {
   };
 };
 
-export default { meals, drinks, products, syncProducts, searchProducts };
+export default { meals, photo, drinks, products, syncProducts, searchProducts };

@@ -2,8 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Utensils } from "@/components/icons";
-import { ListRow } from "@/components/list-row";
+import { ArrowLeft } from "@/components/icons";
 import { ReferenceLine } from "recharts";
 import PanelPage from "@/layouts/panel";
 import { Button } from "@/components/ui/button";
@@ -13,10 +12,7 @@ import { PageHeader } from "@/components/page-header";
 import { StatStrip } from "@/components/stat-strip";
 import { GlucoseLineChart } from "@/components/glucose-line-chart";
 import { formatNumber } from "@/lib/format";
-import nutritionService, {
-  type Meal,
-  type MealEntry,
-} from "@/api/services/nutrition-service";
+import nutritionService, { type Meal } from "@/api/services/nutrition-service";
 import glucoseService, { type GlucoseEntry } from "@/api/services/glucose-service";
 import settingsService from "@/api/services/settings-service";
 import {
@@ -27,8 +23,9 @@ import {
   toDisplay,
   unitLabel,
 } from "@/lib/glucose";
-import { formatAmount, withUnit } from "@/lib/nutrition";
+import { withUnit } from "@/lib/nutrition";
 import { formatWhen } from "@/lib/when";
+import { MealFoods } from "./meal-foods";
 
 // Glucose window around the meal: enough run-up to see the pre-meal level and
 // enough tail to cover the rise it caused.
@@ -119,6 +116,8 @@ function MealBody({ meal }: { meal: Meal }) {
         ]}
       />
 
+      <MealFoods entries={entries} />
+
       <MealGlucoseChart
         mealTime={meal.time}
         entries={glucose.data?.entries ?? []}
@@ -127,41 +126,7 @@ function MealBody({ meal }: { meal: Meal }) {
         unit={unit}
       />
 
-      <Card className="gap-2 p-6">
-        <CardHeading title={t("nutrition.meal_detail.products")} />
-        <div className="divide-y divide-divider">
-          {entries.length === 0 ? (
-            <p className="py-6 text-center text-sm text-muted-foreground">
-              {t("nutrition.meal_detail.no_products")}
-            </p>
-          ) : (
-            entries.map((entry, index) => (
-              <EntryRow key={(entry.barcode || entry.name) + index} entry={entry} />
-            ))
-          )}
-        </div>
-      </Card>
     </>
-  );
-}
-
-function EntryRow({ entry }: { entry: MealEntry }) {
-  const { t } = useTranslation();
-  const unit = entry.unit ?? "g";
-  const servings = entry.serving && entry.serving > 0 ? entry.amount / entry.serving : null;
-  // "2 servings · 60 g" when the product declares a serving size, else "60 g".
-  const amount = withUnit(entry.amount, unit);
-  const subtitle =
-    servings == null
-      ? amount
-      : `${formatAmount(servings)} ${t(
-          servings === 1
-            ? "nutrition.meal_detail.serving_one"
-            : "nutrition.meal_detail.servings",
-        )} · ${amount}`;
-
-  return (
-    <ListRow icon={<Utensils />} title={entry.name} subtitle={subtitle} value={withUnit(entry.carbs, "g")} />
   );
 }
 

@@ -29,6 +29,7 @@ import {
 } from "@/lib/glucose";
 import { formatAmount, withUnit } from "@/lib/nutrition";
 import { formatWhen } from "@/lib/when";
+import { MealPhoto } from "./meal-photo";
 
 // Glucose window around the meal: enough run-up to see the pre-meal level and
 // enough tail to cover the rise it caused.
@@ -88,6 +89,7 @@ function MealBody({ meal }: { meal: Meal }) {
   const high = settings?.glucose_target_high ?? DEFAULT_TARGET_HIGH;
   const entries = meal.entries ?? [];
   const protein = entries.reduce((sum, entry) => sum + (entry.protein ?? 0), 0);
+  const photoId = entries.find((entry) => entry.photo_id)?.photo_id;
 
   return (
     <>
@@ -118,6 +120,8 @@ function MealBody({ meal }: { meal: Meal }) {
           { label: t("nutrition.meal_detail.products"), value: String(entries.length) },
         ]}
       />
+
+      {photoId && <MealPhoto photoId={photoId} />}
 
       <MealGlucoseChart
         mealTime={meal.time}

@@ -42,7 +42,7 @@ jobs:
           curl -sf --retry 30 --retry-connrefused --retry-delay 1 -o /dev/null http://localhost:4173/insulink-panel/
           node e2e/demo-screenshots.mjs http://localhost:4173/insulink-panel/ dist/screenshots
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         with:
           path: dist
       - name: Deploy to GitHub Pages

@@ -245,7 +245,9 @@
       "chart_title": "Glukose rund um diese Mahlzeit",
       "meal_marker": "Mahlzeit",
       "photo": "Foto",
-      "photo_alt": "Foto der Mahlzeit"
+      "photo_alt": "Foto der Mahlzeit",
+      "photo_open": "Foto vergrößern",
+      "photo_foods": "Auf dem Foto"
     },
     "per_meal": "Ø pro Mahlzeit",
     "carbs_week": "Kohlenhydrate · 7 Tage",

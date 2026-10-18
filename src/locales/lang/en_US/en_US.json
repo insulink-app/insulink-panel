@@ -245,7 +245,9 @@
       "chart_title": "Glucose around this meal",
       "meal_marker": "Meal",
       "photo": "Photo",
-      "photo_alt": "Photo of the meal"
+      "photo_alt": "Photo of the meal",
+      "photo_open": "Open photo",
+      "photo_foods": "On the photo"
     },
     "per_meal": "Ø per meal",
     "carbs_week": "Carbs · 7 days",

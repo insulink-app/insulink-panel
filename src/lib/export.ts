@@ -5,11 +5,17 @@
 // Nested values (a meal's `entries`) are kept as JSON rather than flattened —
 // ponytail: one column of JSON beats a column explosion; flatten if a consumer
 // ever needs the nested fields addressable.
+/**
+ * One CSV cell. Text starting with a formula character gets a leading
+ * apostrophe, so a spreadsheet shows it instead of running it (CSV injection);
+ * numbers are left alone, a negative value is not a formula.
+ */
 function csvCell(value: unknown): string {
   if (value == null) {
     return "";
   }
-  const text = typeof value === "object" ? JSON.stringify(value) : String(value);
+  const raw = typeof value === "object" ? JSON.stringify(value) : String(value);
+  const text = typeof value === "string" && /^[=+\-@\t\r]/.test(raw) ? `'${raw}` : raw;
   return /["\n,]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
 }
 

@@ -56,8 +56,17 @@ the API base. **CORS:** the panel origin must be in the backend `config.ini`
   These status codes are Insulink-specific — don't change them to 401.
 - `src/api/services/*.ts` — one file per domain area: typed request/response +
   thin `client.get/post` calls. Read endpoints are the `find/history/current`
-  ones; the panel only writes settings and account (name/password). The app
-  owns the offline `sync` (full-replace) writes — don't add them here.
+  ones; the panel only writes settings and account (name/password, deletion).
+  The app owns the offline `sync` (full-replace) writes — don't add them here.
+- Password change (`src/layouts/panel/account-panel.tsx`) re-wraps the
+  account's data key for the new password with WebCrypto (`src/lib/data-key.ts`,
+  checked against the app's vector by `data-key.check.ts`) and sends it with the
+  change; the api refuses a change without it once the account has a key (1006).
+  See the app's `docs/POD_KEY_ENCRYPTION.md`.
+- `nginx.conf` sends a strict CSP: scripts and fonts only from this origin,
+  images also from Esri's tiles, fetches also to Open Food Facts. A new outside
+  source has to be added there or the browser blocks it. Fonts are self-hosted
+  (`src/assets/fonts/`), not loaded from Google.
 - `src/store/user-store.ts` — auth token (cookie `user`) + refresh token
   (cookie `user-refresh`) + user `information` (just `name`). `useLogin` /
   `useLogout` / `useUserToken` / `useUserActions`. A non-hook `userStore.getState()`

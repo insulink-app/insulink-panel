@@ -17,7 +17,12 @@ function factors(api: SettingsFormApi) {
   };
 }
 
-/** The two factors the bolus calculator divides by. */
+/**
+ * The two factors the bolus calculator divides by, held to the app's own
+ * editor bounds (`ProfileBolusState`): the app clamps anything outside them
+ * when it reads the value, so a wider range here would only show a number the
+ * phone never uses.
+ */
 export function BolusForm({ api }: { api: SettingsFormApi }) {
   const { t } = useTranslation();
   const values = factors(api);
@@ -28,8 +33,8 @@ export function BolusForm({ api }: { api: SettingsFormApi }) {
           value={values.correction}
           onChange={(next) => api.set("bolus_correction_factor", next)}
           step={1}
-          min={5}
-          max={200}
+          min={10}
+          max={100}
           unit="mg/dL"
           label={t("settings.correction_factor")}
         />
@@ -39,8 +44,8 @@ export function BolusForm({ api }: { api: SettingsFormApi }) {
           value={values.carbs}
           onChange={(next) => api.set("bolus_carb_factor", next)}
           step={1}
-          min={1}
-          max={100}
+          min={5}
+          max={30}
           unit={t("settings.units.g")}
           label={t("settings.carb_factor")}
         />

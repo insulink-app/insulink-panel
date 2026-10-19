@@ -1,6 +1,4 @@
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { useTheme } from "next-themes";
 import { useTranslation } from "react-i18next";
 import {
@@ -19,14 +17,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/lib/utils";
 import pkg from "@/../package.json";
-import userService from "@/api/services/user-service";
-import { useUserActions, useUserInformation } from "@/store/user-store";
+import { AccountPanel } from "@/layouts/panel/account-panel";
 
 const APPEARANCE = "appearance";
 const LANGUAGE = "language";
@@ -187,90 +182,5 @@ function OptionCard({
       )}
       <span className="text-sm font-medium text-muted-foreground">{label}</span>
     </Label>
-  );
-}
-
-function AccountPanel() {
-  const { t } = useTranslation();
-  const info = useUserInformation();
-  const { setUserInformation } = useUserActions();
-
-  const [name, setName] = useState(info?.name ?? "");
-  const [current, setCurrent] = useState("");
-  const [next, setNext] = useState("");
-
-  const nameMutation = useMutation({
-    mutationFn: (updated: string) => userService.changeName(updated),
-    onSuccess: (res) => {
-      if (res.success) {
-        setUserInformation({ name });
-        toast.success(t("account.name_changed"));
-      } else {
-        toast.error(t("account.name_change_failed"));
-      }
-    },
-    onError: () => toast.error(t("account.name_change_failed")),
-  });
-
-  const passwordMutation = useMutation({
-    mutationFn: () => userService.changePassword(current, next),
-    onSuccess: (res) => {
-      if (res.success) {
-        setCurrent("");
-        setNext("");
-        toast.success(t("account.password_changed"));
-      } else {
-        toast.error(t("account.password_change_failed"));
-      }
-    },
-    onError: () => toast.error(t("account.password_change_failed")),
-  });
-
-  return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-2">
-        <Label>{t("account.name")}</Label>
-        <Input
-          className="w-64"
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-        />
-        <Button
-          className="self-start"
-          disabled={nameMutation.isPending || !name || name === info?.name}
-          onClick={() => nameMutation.mutate(name)}
-        >
-          {t("common.save")}
-          {nameMutation.isPending && <Spinner className="ml-2" />}
-        </Button>
-      </div>
-
-      <div className="border-t" />
-
-      <div className="flex flex-col gap-2">
-        <Label>{t("account.current_password")}</Label>
-        <Input
-          type="password"
-          className="w-64"
-          value={current}
-          onChange={(event) => setCurrent(event.target.value)}
-        />
-        <Label className="mt-2">{t("account.new_password")}</Label>
-        <Input
-          type="password"
-          className="w-64"
-          value={next}
-          onChange={(event) => setNext(event.target.value)}
-        />
-        <Button
-          className="self-start mt-2"
-          disabled={passwordMutation.isPending || !current || !next}
-          onClick={() => passwordMutation.mutate()}
-        >
-          {t("account.change_password")}
-          {passwordMutation.isPending && <Spinner className="ml-2" />}
-        </Button>
-      </div>
-    </div>
   );
 }

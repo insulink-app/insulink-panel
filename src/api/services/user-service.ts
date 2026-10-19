@@ -7,7 +7,7 @@ export interface LoginRequest {
 
 export type LoginResponse = {
   success: boolean;
-  error?: number; // 1000 = wrong credentials
+  error?: { code?: number }; // 1000 = wrong credentials, 1003 = too many attempts
   user?: string;
   name?: string;
   authentication_token?: string;
@@ -24,14 +24,18 @@ export type RefreshResponse = {
   refresh_token?: string;
 };
 
-export type SuccessResponse = { success: boolean; error?: number };
+export type SuccessResponse = { success: boolean; error?: { code?: number } };
+
+export type KeyResponse = { success: boolean; key?: string };
 
 export const UserApi = {
   Login: "/signin/",
   Refresh: "/refresh/",
   Logout: "/logout/",
-  ChangeName: "/name/change/",
+  ChangeName: "/user/name/change/",
   ChangePassword: "/user/password/change/",
+  FindKey: "/user/key/find/",
+  Delete: "/user/delete/",
 } as const;
 
 const login = (data: LoginRequest) =>
@@ -45,10 +49,25 @@ const logout = () => client.get({ url: UserApi.Logout });
 const changeName = (name: string) =>
   client.post<SuccessResponse>({ url: UserApi.ChangeName, data: { name } });
 
-const changePassword = (password: string, new_password: string) =>
+/** `key` is the account's data key wrapped for the new password (`@/lib/data-key`). */
+const changePassword = (password: string, new_password: string, key?: string) =>
   client.post<SuccessResponse>({
     url: UserApi.ChangePassword,
-    data: { password, new_password },
+    data: key ? { password, new_password, key } : { password, new_password },
   });
 
-export default { login, refresh, logout, changeName, changePassword };
+/** The wrapped data key; the api answers 1000 when the account has none. */
+const findKey = () => client.get<KeyResponse>({ url: UserApi.FindKey });
+
+const deleteAccount = (password: string) =>
+  client.post<SuccessResponse>({ url: UserApi.Delete, data: { password } });
+
+export default {
+  login,
+  refresh,
+  logout,
+  changeName,
+  changePassword,
+  findKey,
+  deleteAccount,
+};

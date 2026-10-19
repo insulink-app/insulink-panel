@@ -121,7 +121,8 @@
     "submit": "Sign in",
     "invalid_credentials": "Wrong username or password.",
     "failed": "Login failed.",
-    "tagline": "Make diabetes easy."
+    "tagline": "Make diabetes easy.",
+    "throttled": "Too many attempts. Please wait a few minutes and try again."
   },
   "overview": {
     "title": "Overview",
@@ -451,7 +452,13 @@
     "name_changed": "Name changed.",
     "name_change_failed": "Could not change name.",
     "password_changed": "Password changed.",
-    "password_change_failed": "Could not change password."
+    "password_change_failed": "Could not change password.",
+    "password_wrong": "The current password is wrong.",
+    "password_too_short": "The new password must be at least 10 characters long.",
+    "delete": "Delete account",
+    "delete_title": "Delete account?",
+    "delete_description": "Your account and all data on it will be deleted for good. A pod on your body stays paired with the phone and still has to be deactivated there.",
+    "delete_failed": "Could not delete the account. Check your password."
   },
   "sensor": {
     "unknown": "Unknown"

@@ -16,6 +16,10 @@ assert.equal(toCsv([{ v: "a,b" }]), 'v\n"a,b"');
 assert.equal(toCsv([{ v: 'say "hi"' }]), 'v\n"say ""hi"""');
 assert.equal(toCsv([{ v: "line\nbreak" }]), 'v\n"line\nbreak"');
 assert.equal(toCsv([{ v: "plain" }]), "v\nplain");
+// A cell that a spreadsheet would run as a formula is shown as text instead.
+assert.equal(toCsv([{ v: "=HYPERLINK(\"x\")" }]), 'v\n"\'=HYPERLINK(""x"")"');
+assert.equal(toCsv([{ v: "@SUM(A1)" }]), "v\n'@SUM(A1)");
+assert.equal(toCsv([{ v: -5 }]), "v\n-5");
 
 // null and undefined are empty cells, not the strings "null"/"undefined".
 assert.equal(toCsv([{ v: null }]), "v\n");

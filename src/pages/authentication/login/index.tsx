@@ -14,6 +14,7 @@ import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useLogin, useUserToken } from "@/store/user-store";
 import { toast } from "sonner";
+import { apiErrorCode } from "@/api/api-error";
 import {
   Form,
   FormControl,
@@ -62,12 +63,10 @@ export default function LoginForm() {
       if (response.success) {
         navigate("/overview/", { replace: true });
       } else {
-        toast.error(
-          response.error === 1000
-            ? t("login.invalid_credentials")
-            : t("login.failed"),
-        );
+        toast.error(t(loginErrorKey(response)));
       }
+    } catch (failure) {
+      toast.error(t(loginErrorKey(failure)));
     } finally {
       setLoading(false);
     }
@@ -200,4 +199,16 @@ export default function LoginForm() {
       </Card>
     </div>
   );
+}
+
+/** 1000 wrong credentials, 1003 too many failed attempts (the api's sign-in throttle). */
+function loginErrorKey(failure: unknown) {
+  switch (apiErrorCode(failure)) {
+    case 1000:
+      return "login.invalid_credentials";
+    case 1003:
+      return "login.throttled";
+    default:
+      return "login.failed";
+  }
 }

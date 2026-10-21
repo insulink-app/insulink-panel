@@ -32,6 +32,7 @@ export default function ExportPage() {
   const [range, setRange] = useState<ExportRange>({});
   const [busy, setBusy] = useState(false);
   const ids = formatId === "clarity" ? CLARITY_IDS : selected;
+  const allSelected = selected.length === DATASET_IDS.length;
   const rangeValid = isRangeValid(range);
   const rows = useQueries({
     queries: ids.map((id) => ({
@@ -122,6 +123,15 @@ export default function ExportPage() {
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
               <h2 className="text-lg font-extrabold">{t("export.data")}</h2>
               {formatId === "clarity" && <span className="text-[13px] text-muted-foreground">{t("export.clarity_reason")}</span>}
+              {formatId !== "clarity" && (
+                <button
+                  type="button"
+                  onClick={() => setSelected(allSelected ? [] : DATASET_IDS)}
+                  className="ml-auto text-sm font-bold text-brand hover:underline"
+                >
+                  {t(allSelected ? "export.select_none" : "export.select_all")}
+                </button>
+              )}
             </div>
             <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {DATASET_IDS.map((id) => {

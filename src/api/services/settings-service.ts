@@ -118,4 +118,18 @@ const change = (settings: UserSettings) =>
     data: { settings: JSON.stringify(settings) },
   });
 
-export default { find, change };
+// One recorded change to a single settings key. `old_value` is null for a key
+// that was added, `new_value` null for one that was removed.
+export interface SettingsChange {
+  key: string;
+  old_value: string | null;
+  new_value: string | null;
+  time: number; // epoch ms
+}
+
+const history = () =>
+  client.get<{ success: boolean; changes?: SettingsChange[] }>({
+    url: "/user/settings/history/",
+  });
+
+export default { find, change, history };

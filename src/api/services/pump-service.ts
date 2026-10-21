@@ -37,6 +37,28 @@ export type PumpHistoryResponse = {
 const history = () =>
   client.get<PumpHistoryResponse>({ url: "/pump/history/" });
 
+// /insulin/delivery/find/ -> { success, deliveries: [...] }. Every dose the pod
+// was told to give, `at` in epoch ms, `units` in IE.
+export interface PumpDelivery {
+  at: number;
+  kind: string;
+  source: string;
+  units: number;
+  confirmed: boolean;
+}
+
+const deliveries = () =>
+  client.get<{ success: boolean; deliveries?: PumpDelivery[] }>({
+    url: "/insulin/delivery/find/",
+  });
+
+// /pump/contact/find/ -> { success, contacts: [epoch ms, ...] }, the moments the
+// app reached the pod.
+const contacts = () =>
+  client.get<{ success: boolean; contacts?: number[] }>({
+    url: "/pump/contact/find/",
+  });
+
 // Map a pump type to a readable label. Keyed by both the blob's `pump_type` and
 // the backend `PumpType` name, so it works whichever the caller has.
 export const PUMP_TYPE_LABEL: Record<string, string> = {
@@ -59,4 +81,4 @@ export function pumpType(entry: PumpHistoryEntry): string {
 
 // The runtime maths over these entries lives in `@/lib/pump`.
 
-export default { current, history };
+export default { current, history, deliveries, contacts };

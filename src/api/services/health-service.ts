@@ -27,6 +27,11 @@ export interface HealthDay {
   tl?: SleepSegment[]; // hypnogram timeline
 }
 
+export interface Hba1cReading {
+  percent: number;
+  time: number; // epoch ms
+}
+
 export interface PulseSample {
   t: number; // epoch ms
   b: number; // bpm
@@ -42,6 +47,11 @@ const pulse = () =>
     url: "/health/pulse/find/",
   });
 
+const hba1c = () =>
+  client.get<{ success: boolean; readings?: Hba1cReading[] }>({
+    url: "/health/hba1c/find/",
+  });
+
 // The band's current bpm, relayed live by the phone (~1 Hz) through a server-side
 // cache — no history, nothing stored. `b` is absent when the band went quiet: the
 // backend only ever hands back a fresh reading, so its presence *is* the liveness
@@ -51,4 +61,4 @@ const livePulse = () =>
     url: "/health/pulse/live/find/",
   });
 
-export default { days, pulse, livePulse };
+export default { days, pulse, hba1c, livePulse };

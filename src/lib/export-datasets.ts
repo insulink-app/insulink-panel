@@ -9,6 +9,9 @@ import sportService from "@/api/services/sport-service";
 import healthService from "@/api/services/health-service";
 import sensorService from "@/api/services/sensor-service";
 import eventService from "@/api/services/event-service";
+import pumpService from "@/api/services/pump-service";
+import inventoryService from "@/api/services/inventory-service";
+import settingsService from "@/api/services/settings-service";
 
 interface Dataset {
   fetch: () => Promise<object[]>;
@@ -24,8 +27,8 @@ function dataset<T extends object>(
   return { fetch, timeOf: timeOf as Dataset["timeOf"] };
 }
 
-// The time field differs per collection, and three of them are catalogues with
-// no time at all — a product list is not a diary, so a range must never filter
+// The time field differs per collection, and the catalogues (and the current
+// settings) have no time at all — a product list is not a diary, so a range must never filter
 // it down to nothing.
 export const EXPORT_DATASETS = {
   glucose: dataset(
@@ -77,6 +80,38 @@ export const EXPORT_DATASETS = {
   ),
   events: dataset(
     () => eventService.history().then((res) => res.entries ?? []),
+    (row) => row.time,
+  ),
+  pumps: dataset(
+    () => pumpService.history().then((res) => res.pumps ?? []),
+    (row) => row.registered_at,
+  ),
+  pump_deliveries: dataset(
+    () => pumpService.deliveries().then((res) => res.deliveries ?? []),
+    (row) => row.at,
+  ),
+  pump_contacts: dataset(
+    () =>
+      pumpService
+        .contacts()
+        .then((res) => (res.contacts ?? []).map((at) => ({ at }))),
+    (row) => row.at,
+  ),
+  hba1c: dataset(
+    () => healthService.hba1c().then((res) => res.readings ?? []),
+    (row) => row.time,
+  ),
+  inventory: dataset(() =>
+    inventoryService.items().then((res) => res.items ?? []),
+  ),
+  // The settings are one object, so they export as a single row.
+  settings: dataset(() =>
+    settingsService
+      .find()
+      .then((settings) => (Object.keys(settings).length > 0 ? [settings] : [])),
+  ),
+  settings_history: dataset(
+    () => settingsService.history().then((res) => res.changes ?? []),
     (row) => row.time,
   ),
 } satisfies Record<string, Dataset>;

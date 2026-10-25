@@ -123,7 +123,7 @@ importers:
         specifier: ^3.14.10
         version: 3.14.13(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@types/leaflet':
-        specifier: ^1.9.21
+        specifier: ^1.9.22
         version: 1.9.22
       ace-builds:
         specifier: ^1.44.0

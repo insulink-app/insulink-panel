@@ -955,6 +955,7 @@
     "about_revoke": "Jeder, der den Link hat, kann ihn öffnen. Lösche einen Link, um ihn zu widerrufen.",
     "app_title": "Blutzucker",
     "gone": "Diesen Link gibt es nicht oder er wurde gelöscht.",
-    "disclaimer": "Insulink ist kein Medizinprodukt. Triff nie Therapieentscheidungen auf Grundlage dieser Seite."
+    "greeting": "Hallo {{name}}",
+    "owner_glucose": "Blutzucker von {{owner}}"
   }
 }

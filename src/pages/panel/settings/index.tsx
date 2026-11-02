@@ -4,7 +4,6 @@ import PanelPage from "@/layouts/panel";
 import { PageHeader } from "@/components/page-header";
 import { CardSkeleton } from "@/components/card-skeleton";
 import { cn } from "@/lib/utils";
-import { BasalSettings } from "./basal/basal-settings";
 import { SettingsNav } from "./section-nav";
 import { SETTINGS_SECTIONS, type Section } from "./sections";
 import { SettingsCard, SettingsCardHeader } from "./settings-card";
@@ -13,7 +12,7 @@ import { useSettingsForm } from "./use-settings-form";
 /**
  * Settings: the tabs as a list on the left, the form in the middle and a card
  * on the right that shows what the values mean. Basal swaps the form for its
- * profile list and editor.
+ * profile list and editor, share for its links.
  */
 export default function SettingsPage() {
   const { t } = useTranslation();
@@ -33,7 +32,7 @@ export default function SettingsPage() {
         <div className="lg:row-span-2 xl:row-span-1">
           <SettingsNav current={section.id} />
         </div>
-        {section.Form ? <SectionForm key={section.id} section={section} /> : <BasalSettings />}
+        {section.Form ? <SectionForm key={section.id} section={section} /> : section.Page && <section.Page />}
       </div>
     </PanelPage>
   );

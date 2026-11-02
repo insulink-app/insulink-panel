@@ -557,7 +557,9 @@
       "g": "g",
       "insulin": "U",
       "insulin_per_hour": "U/h"
-    }
+    },
+    "section_share": "Share",
+    "desc_share": "Links that show your glucose"
   },
   "pulse": {
     "title": "Pulse",
@@ -937,5 +939,22 @@
   },
   "demo": {
     "label": "Demo"
+  },
+  "share": {
+    "none": "No links yet.",
+    "name": "Who is it for",
+    "name_placeholder": "e.g. Mum",
+    "create": "Create link",
+    "created": "Created {{day}}",
+    "copy": "Copy",
+    "copied": "Copied",
+    "delete_title": "Delete link",
+    "delete_confirm": "The link for \"{{name}}\" stops working at once.",
+    "about_title": "What a link shows",
+    "about_shows": "Whoever opens the link sees your current glucose and the last 24 hours, nothing else. No sign-in is needed, and the page can be added to the home screen.",
+    "about_revoke": "Anyone holding the link can see it. Delete a link to revoke it.",
+    "app_title": "Glucose",
+    "gone": "This link does not exist or was deleted.",
+    "disclaimer": "Insulink is not a medical device. Never base treatment decisions on this page."
   }
 }

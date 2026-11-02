@@ -94,6 +94,8 @@ export {
   CircleHalf as SunMoon,
   ClockCounterClockwise as TimerReset,
   Trash as Trash2,
+  ShareNetwork as Share,
+  Copy as CopyIcon,
   Warning as TriangleAlertIcon,
   User as UserRound,
   ForkKnife as Utensils,

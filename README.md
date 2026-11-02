@@ -8,7 +8,10 @@ scoped to the caller's own account via JWT.
 It speaks the same `/v1` REST API as the mobile app (bearer token,
 `{ success: bool }` envelope, refresh on `417`, logout on `403`).
 
-![The panel's overview page](./docs/overview.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://insulink-app.github.io/insulink-panel/screenshots/en-dark/overview.png">
+  <img alt="The panel's overview page" src="https://insulink-app.github.io/insulink-panel/screenshots/en-light/overview.png">
+</picture>
 
 ## Features
 

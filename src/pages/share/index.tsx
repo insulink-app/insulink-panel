@@ -20,6 +20,7 @@ export default function SharedGlucosePage() {
   const { t } = useTranslation();
   const { id = "" } = useParams();
   useShareManifest(t("share.app_title"));
+  useShareWorker();
   const { data, isLoading } = useQuery({
     queryKey: ["shared-glucose", id],
     queryFn: () => shareService.shared(id),
@@ -85,4 +86,19 @@ function useShareManifest(title: string) {
       document.title = previousTitle;
     };
   }, [title]);
+}
+
+/**
+ * Registers the offline worker (vite.config.ts) for the share pages only, so
+ * the signed-in panel never runs from a cache. Production builds only: the dev
+ * server has no `sw.js`.
+ */
+function useShareWorker() {
+  useEffect(() => {
+    if (!import.meta.env.PROD || !("serviceWorker" in navigator)) {
+      return;
+    }
+    const base = import.meta.env.BASE_URL;
+    navigator.serviceWorker.register(`${base}sw.js`, { scope: `${base}share/` }).catch(() => undefined);
+  }, []);
 }

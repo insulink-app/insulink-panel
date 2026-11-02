@@ -104,3 +104,28 @@ export function WeightStepper(props: {
     </Stepper>
   );
 }
+
+// The sets planned for the exercise being done, stepped by one and never below
+// the set in progress. Changes this session only.
+export function SetsStepper(props: {
+  label: string;
+  decreaseLabel: string;
+  increaseLabel: string;
+  sets: number;
+  minimum: number;
+  onSets: (sets: number) => void;
+}) {
+  return (
+    <Stepper
+      label={props.label}
+      decreaseLabel={props.decreaseLabel}
+      increaseLabel={props.increaseLabel}
+      onDecrease={() => props.onSets(Math.max(props.minimum, props.sets - 1))}
+      onIncrease={() => props.onSets(Math.min(99, props.sets + 1))}
+    >
+      <span className="flex h-12 w-24 items-center justify-center text-[44px] leading-none font-extrabold">
+        {props.sets}
+      </span>
+    </Stepper>
+  );
+}

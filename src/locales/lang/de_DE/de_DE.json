@@ -557,7 +557,9 @@
       "g": "g",
       "insulin": "E",
       "insulin_per_hour": "E/h"
-    }
+    },
+    "section_share": "Teilen",
+    "desc_share": "Links, die deinen Blutzucker zeigen"
   },
   "pulse": {
     "title": "Puls",
@@ -759,6 +761,8 @@
     "sets_progress": "{{done}} von {{planned}} Sätzen",
     "reps_up": "Mehr Wiederholungen",
     "reps_down": "Weniger Wiederholungen",
+    "sets_up": "Mehr Sätze",
+    "sets_down": "Weniger Sätze",
     "session_progress": "{{exercise}} / {{exercises}} Übungen · {{done}} / {{planned}} Sätze",
     "ends": "Ende",
     "workout_progress": "Trainingsfortschritt",
@@ -935,5 +939,22 @@
   },
   "demo": {
     "label": "Demo"
+  },
+  "share": {
+    "none": "Noch keine Links.",
+    "name": "Für wen",
+    "name_placeholder": "z. B. Mama",
+    "create": "Link erstellen",
+    "created": "Erstellt {{day}}",
+    "copy": "Kopieren",
+    "copied": "Kopiert",
+    "delete_title": "Link löschen",
+    "delete_confirm": "Der Link für „{{name}}“ funktioniert sofort nicht mehr.",
+    "about_title": "Was ein Link zeigt",
+    "about_shows": "Wer den Link öffnet, sieht deinen aktuellen Blutzucker und die letzten 24 Stunden, sonst nichts. Eine Anmeldung ist nicht nötig, und die Seite lässt sich zum Startbildschirm hinzufügen.",
+    "about_revoke": "Jeder, der den Link hat, kann ihn öffnen. Lösche einen Link, um ihn zu widerrufen.",
+    "app_title": "Blutzucker",
+    "gone": "Diesen Link gibt es nicht oder er wurde gelöscht.",
+    "disclaimer": "Insulink ist kein Medizinprodukt. Triff nie Therapieentscheidungen auf Grundlage dieser Seite."
   }
 }

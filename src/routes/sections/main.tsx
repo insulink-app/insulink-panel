@@ -6,6 +6,7 @@ import { Outlet, type RouteObject } from "react-router-dom";
 const Page403 = lazy(() => import("@/pages/error/Page403"));
 const Page404 = lazy(() => import("@/pages/error/Page404"));
 const Page500 = lazy(() => import("@/pages/error/Page500"));
+const SharedGlucosePage = lazy(() => import("@/pages/share"));
 
 export const mainRoutes: RouteObject[] = [
   {
@@ -21,6 +22,7 @@ export const mainRoutes: RouteObject[] = [
       { path: "500", element: <Page500 /> },
       { path: "404", element: <Page404 /> },
       { path: "403", element: <Page403 /> },
+      { path: "share/:id", element: <SharedGlucosePage /> },
     ],
   },
 ];

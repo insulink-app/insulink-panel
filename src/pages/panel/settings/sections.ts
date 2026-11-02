@@ -1,5 +1,7 @@
 import type { ComponentType } from "react";
-import { Droplet, Flag, Ruler, Syringe, Utensils, WaveSine, type LucideIcon } from "@/components/icons";
+import { Droplet, Flag, Ruler, Share, Syringe, Utensils, WaveSine, type LucideIcon } from "@/components/icons";
+import { BasalSettings } from "./basal/basal-settings";
+import { ShareSettings } from "./share/share-settings";
 import { BodyDerived, BodyForm } from "./body-tab";
 import { BolusExample, BolusForm } from "./bolus-tab";
 import { GlucoseForm, GlucosePreview } from "./glucose-tab";
@@ -10,22 +12,24 @@ type Tab = ComponentType<{ api: SettingsFormApi }>;
 
 /**
  * A settings tab: `id` is its stable route and key (shown via
- * `settings.section_<id>`). The basal tab has no `Form`: it renders its own
- * profile list and editor.
+ * `settings.section_<id>`). A tab without `Form` renders its own `Page`
+ * instead: basal (profile list and editor) and share (the links).
  */
 export interface Section {
   id: string;
   icon: LucideIcon;
   Form?: Tab;
   Context?: Tab;
+  Page?: ComponentType;
 }
 
 /** The tabs in the app's order; alert, prediction and developer settings stay app-only. */
 export const SETTINGS_SECTIONS: Section[] = [
   { id: "glucose", icon: Droplet, Form: GlucoseForm, Context: GlucosePreview },
   { id: "bolus", icon: Syringe, Form: BolusForm, Context: BolusExample },
-  { id: "basal", icon: WaveSine },
+  { id: "basal", icon: WaveSine, Page: BasalSettings },
   { id: "body", icon: Ruler, Form: BodyForm, Context: BodyDerived },
   { id: "activity_goals", icon: Flag, Form: SportGoalsForm, Context: SportToday },
   { id: "nutrition", icon: Utensils, Form: NutritionGoalsForm, Context: NutritionToday },
+  { id: "share", icon: Share, Page: ShareSettings },
 ];

@@ -56,7 +56,8 @@ the API base. **CORS:** the panel origin must be in the backend `config.ini`
   These status codes are Insulink-specific — don't change them to 401.
 - `src/api/services/*.ts` — one file per domain area: typed request/response +
   thin `client.get/post` calls. Read endpoints are the `find/history/current`
-  ones; the panel only writes settings and account (name/password, deletion).
+  ones; the panel only writes settings, account (name/password, deletion)
+  and glucose share links (`share-service.ts`).
   The app owns the offline `sync` (full-replace) writes — don't add them here.
 - Password change (`src/layouts/panel/account-panel.tsx`) re-wraps the
   account's data key for the new password with WebCrypto (`src/lib/data-key.ts`,
@@ -78,6 +79,14 @@ the API base. **CORS:** the panel origin must be in the backend `config.ini`
 - `src/layouts/panel/index.tsx` (`PanelPage`) — the sidebar+header shell. **Each
   page wraps its own content in `<PanelPage title="…">`.**
 - `src/layouts/panel/sidebar/app-sidebar.tsx` — nav items live in `AppNavigation()`.
+
+## Public share page
+
+`/share/:id` (`src/pages/share/`) sits outside `LoginAuthGuard`: whoever holds a
+link sees that account's last 24 h of glucose, nothing else (the api's
+`docs/GLUCOSE_SHARE.md`). It links `public/share.webmanifest` while open; the
+manifest has no `start_url`, so an installed copy opens the link it was
+installed from. Links are managed under Settings, Share.
 
 ## Conventions
 

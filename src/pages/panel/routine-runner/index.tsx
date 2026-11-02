@@ -143,6 +143,13 @@ function Runner({
     runner.swapIn(item);
   };
 
+  // Plan more or fewer sets of the exercise being done, this session only. A
+  // fresh id, like a swap: the session resolves an item through its swaps by id.
+  const setPlannedSets = (sets: number) => {
+    const current = routine.items[core.exerciseIndex];
+    session.swap(current.id, { ...current, id: newId(), sets });
+  };
+
   const item = routine.items[core.exerciseIndex];
   const exercise = item ? exerciseById(item.ex) : undefined;
   const plannedSets = routine.items.reduce((sum, entry) => sum + entry.sets, 0);
@@ -247,6 +254,8 @@ function Runner({
               weight={core.currentWeight}
               onReps={runner.recordReps}
               onWeight={runner.adjustWeight}
+              plannedSets={item.sets}
+              onPlannedSets={setPlannedSets}
               lastComparable={lastComparable}
               onComplete={runner.completeSet}
             />

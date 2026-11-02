@@ -12,8 +12,9 @@ export interface GlucoseShare {
 
 export type GlucoseSharesResponse = { success: boolean; shares?: GlucoseShare[] };
 
-// The public reply: the last 24 h of glucose, mg/dL and epoch ms, oldest first.
-export type SharedGlucoseResponse = { success: boolean; entries?: GlucoseEntry[] };
+// The public reply: the link's name, the owner's name and the last 24 h of
+// glucose, mg/dL and epoch ms, oldest first.
+export type SharedGlucoseResponse = { success: boolean; name?: string; owner?: string; entries?: GlucoseEntry[] };
 
 const find = () => client.get<GlucoseSharesResponse>({ url: "/glucose/share/find/" });
 

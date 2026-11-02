@@ -14,12 +14,13 @@ const DAY_MS = 24 * 60 * 60 * 1000;
  * The public page a share link opens: the owner's current glucose and their
  * last 24 h, nothing else, refreshed every minute. No sign-in: the link's id is
  * the credential. Coloured against the fixed 70 to 180 range, because the link
- * carries none of the owner's settings. Installable as a PWA (`useShareManifest`).
+ * carries none of the owner's settings. Greets the link's holder by its name. Installable as a PWA (`useShareManifest`).
  */
 export default function SharedGlucosePage() {
   const { t } = useTranslation();
   const { id = "" } = useParams();
   useShareManifest(t("share.app_title"));
+  useShareWorker();
   const { data, isLoading } = useQuery({
     queryKey: ["shared-glucose", id],
     queryFn: () => shareService.shared(id),
@@ -29,7 +30,7 @@ export default function SharedGlucosePage() {
   const latest = entries[entries.length - 1];
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-6">
-      <h1 className="text-2xl font-extrabold">{t("share.app_title")}</h1>
+      {data?.success && <ShareGreeting name={data.name} owner={data.owner} />}
       {data && !data.success ? (
         <p className="text-muted-foreground">{t("share.gone")}</p>
       ) : (
@@ -52,8 +53,18 @@ export default function SharedGlucosePage() {
           </Card>
         </>
       )}
-      <p className="text-xs text-muted-foreground">{t("share.disclaimer")}</p>
     </main>
+  );
+}
+
+/** "Hello Mum" over "Lukas's glucose": whom the link is for, and whose values it shows. */
+function ShareGreeting({ name, owner }: { name?: string; owner?: string }) {
+  const { t } = useTranslation();
+  return (
+    <header>
+      <h1 className="text-2xl font-extrabold">{t("share.greeting", { name })}</h1>
+      <p className="text-muted-foreground">{t("share.owner_glucose", { owner })}</p>
+    </header>
   );
 }
 
@@ -75,4 +86,19 @@ function useShareManifest(title: string) {
       document.title = previousTitle;
     };
   }, [title]);
+}
+
+/**
+ * Registers the offline worker (vite.config.ts) for the share pages only, so
+ * the signed-in panel never runs from a cache. Production builds only: the dev
+ * server has no `sw.js`.
+ */
+function useShareWorker() {
+  useEffect(() => {
+    if (!import.meta.env.PROD || !("serviceWorker" in navigator)) {
+      return;
+    }
+    const base = import.meta.env.BASE_URL;
+    navigator.serviceWorker.register(`${base}sw.js`, { scope: `${base}share/` }).catch(() => undefined);
+  }, []);
 }

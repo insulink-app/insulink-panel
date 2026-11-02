@@ -955,6 +955,7 @@
     "about_revoke": "Anyone holding the link can see it. Delete a link to revoke it.",
     "app_title": "Glucose",
     "gone": "This link does not exist or was deleted.",
-    "disclaimer": "Insulink is not a medical device. Never base treatment decisions on this page."
+    "greeting": "Hello {{name}}",
+    "owner_glucose": "{{owner}}'s glucose"
   }
 }

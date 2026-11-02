@@ -86,7 +86,11 @@ the API base. **CORS:** the panel origin must be in the backend `config.ini`
 link sees that account's last 24 h of glucose, nothing else (the api's
 `docs/GLUCOSE_SHARE.md`). It links `public/share.webmanifest` while open; the
 manifest has no `start_url`, so an installed copy opens the link it was
-installed from. Links are managed under Settings, Share.
+installed from. Links are managed under Settings, Share. The page registers
+`sw.js` (`VitePWA` in `vite.config.ts`) scoped to `share/` only: page and
+glucose network first, cache only offline, hashed assets cached as they load,
+nothing precached. `nginx.conf` sends `no-cache` for all but `/assets/`, so a
+deploy reaches an installed copy on its next open.
 
 ## Conventions
 

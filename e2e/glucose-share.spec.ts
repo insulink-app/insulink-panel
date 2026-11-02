@@ -13,12 +13,14 @@ test("a share link shows the glucose without signing in, and installs as a PWA",
       { value: 110, time: now - 10 * 60_000 },
       { value: 123, time: now - 5 * 60_000 },
     ];
-    return route.fulfill({ json: path.endsWith(`/share/${SHARE_ID}/`) ? { success: true, entries } : { success: false } });
+    return route.fulfill({ json: path.endsWith(`/share/${SHARE_ID}/`) ? { success: true, name: "Mum", owner: "Lukas", entries } : { success: false } });
   });
 
   await page.goto(`/share/${SHARE_ID}`);
 
   await expect(page.getByText("123", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Hello Mum" })).toBeVisible();
+  await expect(page.getByText("Lukas's glucose")).toBeVisible();
   await expect(page.locator('link[rel="manifest"]')).toHaveAttribute("href", /share\.webmanifest$/);
   expect(requests.every((request) => request.auth === undefined)).toBe(true);
   expect(requests.map((request) => request.path)).not.toContain("/v1/glucose/history/");

@@ -10,7 +10,7 @@ import type {
   SportExercise,
 } from "@/api/services/sport-service";
 import { FREE_ROUTINE_ID } from "@/lib/workout";
-import { clamp, clampReps, coreFrom, type Core } from "./core";
+import { awaitsNextExercise, clamp, clampReps, coreFrom, type Core } from "./core";
 
 export function useRunnerCore({
   routine,
@@ -197,27 +197,31 @@ export function useRunnerCore({
 
   // Enter advances: complete the current set, or skip the rest countdown. The
   // reps field keeps focus (see ExerciseView), so a set is one value typed +
-  // Enter. Mounted once — the handlers drive `setCore` and read fresh state, so
-  // no stale closure; a phase ref keeps the dispatch current.
-  const phaseRef = useRef(core.phase);
+  // Enter. The listener is mounted once and calls through a ref refreshed every
+  // render: the transitions close over `routine`, and a free workout's routine
+  // grows as exercises are added, so a closure from the first render indexes an
+  // empty item list and throws. A free workout waiting for its next pick has no
+  // "continue", so Enter does nothing there.
+  const enterRef = useRef(() => {});
   useEffect(() => {
-    phaseRef.current = core.phase;
-  }, [core.phase]);
+    enterRef.current = () => {
+      if (core.phase === "exercising") {
+        completeSet();
+      } else if (core.phase === "resting" && !awaitsNextExercise(core, routine)) {
+        skipRest();
+      }
+    };
+  });
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== "Enter") {
         return;
       }
       event.preventDefault();
-      if (phaseRef.current === "exercising") {
-        completeSet();
-      } else if (phaseRef.current === "resting") {
-        skipRest();
-      }
+      enterRef.current();
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return {

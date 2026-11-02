@@ -59,3 +59,19 @@ test("a free workout running on the phone is named on the list", async ({ page }
   await card.click();
   await expect(page).toHaveURL(/\/health\/routines\/free\/run$/);
 });
+
+test("Enter logs a set of an exercise picked into a free workout", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await openRunner(page, FREE, { exercises: LIBRARY, routines: [PUSH_DAY] });
+
+  await page.getByRole("button", { name: "Add exercise" }).click();
+  await page.getByRole("dialog").getByRole("button", { name: PUSHUP.name }).click();
+  await expectPosition(page, "1/1", "1/1");
+  await page.keyboard.press("Enter");
+
+  await expect(page.getByText("What comes next?")).toBeVisible();
+  await page.keyboard.press("Enter");
+  await expect(page.getByText("What comes next?")).toBeVisible();
+  expect(errors).toEqual([]);
+});

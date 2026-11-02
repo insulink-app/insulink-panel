@@ -2,7 +2,8 @@
 
 Every push to `main` photographs the demo's overview and publishes the pictures
 next to it on GitHub Pages, like the app does (its `docs/SCREENSHOTS.md`). They
-always show the current panel with the demo's sample data. Nothing is committed.
+always show the current panel with the demo's sample data. Nothing is committed:
+the README embeds them from there, light or dark by the reader's theme.
 
 ## Where they are
 

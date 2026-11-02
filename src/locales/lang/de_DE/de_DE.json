@@ -759,6 +759,8 @@
     "sets_progress": "{{done}} von {{planned}} Sätzen",
     "reps_up": "Mehr Wiederholungen",
     "reps_down": "Weniger Wiederholungen",
+    "sets_up": "Mehr Sätze",
+    "sets_down": "Weniger Sätze",
     "session_progress": "{{exercise}} / {{exercises}} Übungen · {{done}} / {{planned}} Sätze",
     "ends": "Ende",
     "workout_progress": "Trainingsfortschritt",

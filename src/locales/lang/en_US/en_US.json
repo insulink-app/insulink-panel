@@ -759,6 +759,8 @@
     "sets_progress": "{{done}} of {{planned}} sets",
     "reps_up": "More reps",
     "reps_down": "Fewer reps",
+    "sets_up": "More sets",
+    "sets_down": "Fewer sets",
     "session_progress": "{{exercise}} / {{exercises}} exercises · {{done}} / {{planned}} sets",
     "ends": "ends",
     "workout_progress": "Workout progress",

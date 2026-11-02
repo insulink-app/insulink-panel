@@ -75,3 +75,25 @@ test("Enter logs a set of an exercise picked into a free workout", async ({ page
   await expect(page.getByText("What comes next?")).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+test("a free workout plans more sets of the exercise being done", async ({ page }) => {
+  const { writes } = await openRunner(page, FREE, { exercises: LIBRARY, routines: [PUSH_DAY] });
+
+  await page.getByRole("button", { name: "Add exercise" }).click();
+  await page.getByRole("dialog").getByRole("button", { name: PUSHUP.name }).click();
+  await page.getByRole("button", { name: "More sets" }).click();
+  await page.getByRole("button", { name: "More sets" }).click();
+  await page.getByRole("button", { name: "Fewer sets" }).click();
+  await expectPosition(page, "1/1", "1/2");
+
+  await completeSet(page);
+  await expect(page.getByText("What comes next?")).toHaveCount(0);
+  await page.getByRole("button", { name: "Continue" }).click();
+  await expectPosition(page, "1/1", "2/2");
+  await completeSet(page);
+  await expect(page.getByText("What comes next?")).toBeVisible();
+
+  await finishWorkout(page);
+  await expect.poll(() => writes.workouts.length).toBe(1);
+  expect(writes.workouts[0][0].sets).toHaveLength(2);
+});

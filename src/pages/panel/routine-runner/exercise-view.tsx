@@ -5,7 +5,7 @@ import { CheckIcon } from "@/components/icons";
 import type { SetLog } from "@/api/services/sport-service";
 import { formatClock } from "./core";
 import { LastTimeChip } from "./controls";
-import { RepsStepper, WeightStepper } from "./number-stepper";
+import { RepsStepper, SetsStepper, WeightStepper } from "./number-stepper";
 
 // The set being done: its name, its stopwatch, the reps (and weight) to
 // log, the number to beat from last time, and the one button that logs it.
@@ -21,6 +21,8 @@ export function ExerciseView(props: {
   weight: number;
   onReps: (reps: number) => void;
   onWeight: (delta: number) => void;
+  plannedSets: number;
+  onPlannedSets: (sets: number) => void;
   lastComparable?: SetLog;
   onComplete: () => void;
 }) {
@@ -74,6 +76,14 @@ export function ExerciseView(props: {
             )}
           </>
         )}
+        <SetsStepper
+          label={t("routines.sets")}
+          decreaseLabel={t("routines.sets_down")}
+          increaseLabel={t("routines.sets_up")}
+          sets={props.plannedSets}
+          minimum={props.setNumber}
+          onSets={props.onPlannedSets}
+        />
       </div>
 
       <Button className="mt-[34px] h-[58px] w-full max-w-[420px] text-[17px] font-extrabold" onClick={props.onComplete}>

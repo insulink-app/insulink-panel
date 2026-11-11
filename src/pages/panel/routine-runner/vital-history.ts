@@ -15,7 +15,8 @@ const PULSE_WINDOW_MS = PULSE_WINDOW_MINUTES * 60_000;
 // The pulse over the last hour: the stored curve, which the phone uploads in
 // batches, topped up with the ~1 Hz live relay for the minutes it has not
 // uploaded yet. Opening the runner therefore shows the hour at once instead of
-// a line that starts from nothing.
+// a line that starts from nothing. A stored sample stamped in the future is
+// dropped, or it would hide every live point behind it.
 export function usePulseHistory(bpm: number | undefined) {
   const { data: stored } = useQuery({
     queryKey: ["pulse"],
@@ -24,9 +25,10 @@ export function usePulseHistory(bpm: number | undefined) {
   });
   const live = useLivePulse(bpm);
   return useMemo(() => {
-    const since = Date.now() - PULSE_WINDOW_MS;
+    const now = Date.now();
+    const since = now - PULSE_WINDOW_MS;
     const history = (stored?.samples ?? [])
-      .filter((sample) => sample.t >= since)
+      .filter((sample) => sample.t >= since && sample.t <= now)
       .map((sample) => ({ t: sample.t, v: sample.b }))
       .sort((left, right) => left.t - right.t);
     const storedUntil = history.length > 0 ? history[history.length - 1].t : 0;

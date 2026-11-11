@@ -12,7 +12,8 @@ const HEIGHT = 56;
 
 // A continuous line over a fixed time window ending now, so a stretch without
 // data keeps its real width and the right edge is always now. No axes and no
-// fill. `limits` (target range, pulse zones) only keep the scale steady; with
+// fill. Points outside the window (a phone clock running ahead) are dropped,
+// or the line would shoot past the tile across the page. `limits` (target range, pulse zones) only keep the scale steady; with
 // `bands` the line takes its colour from the band it runs through.
 export function Sparkline({
   points,
@@ -30,17 +31,18 @@ export function Sparkline({
   emptyLabel: string;
 }) {
   const gradientId = `spark-${useId().replace(/:/g, "")}`;
-  if (points.length < 2) {
-    return <div className="flex h-14 items-center text-xs text-muted-foreground">{emptyLabel}</div>;
-  }
   const end = Date.now();
   const start = end - windowMs;
-  const values = [...points.map((point) => point.v), ...limits];
+  const visible = points.filter((point) => point.t >= start && point.t <= end);
+  if (visible.length < 2) {
+    return <div className="flex h-14 items-center text-xs text-muted-foreground">{emptyLabel}</div>;
+  }
+  const values = [...visible.map((point) => point.v), ...limits];
   const min = Math.min(...values);
   const span = Math.max(...values) - min || 1;
   // A little headroom above and below, so the line never runs along the edge.
   const yOf = (value: number) => HEIGHT - 4 - ((value - min) / span) * (HEIGHT - 8);
-  const coordinates = points.map(
+  const coordinates = visible.map(
     (point) => `${(((point.t - start) / windowMs) * WIDTH).toFixed(1)},${yOf(point.v).toFixed(1)}`,
   );
   return (

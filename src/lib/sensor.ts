@@ -41,22 +41,31 @@ export function sensorStart(sensor: SensorHistoryEntry): number {
 /**
  * One entry per physical sensor, earliest registration kept. A reinstall
  * restores the running sensor and re-registers it (the local backend id is
- * gone), so the same `resolved_key` can hold several rows.
+ * gone), so the same `resolved_key` can hold several rows. Whether it is
+ * discarded is the NEWEST row's say: a sensor stopped and paired again
+ * registers a fresh, undiscarded row and is running again.
  */
 export function uniqueSensors(
   allSensors: SensorHistoryEntry[],
 ): SensorHistoryEntry[] {
-  const byKey = new Map<string, SensorHistoryEntry>();
-  for (const sensor of allSensors) {
+  const byRegistration = [...allSensors].sort(
+    (first, second) => first.registered_at - second.registered_at,
+  );
+  const earliest = new Map<string, SensorHistoryEntry>();
+  const newest = new Map<string, SensorHistoryEntry>();
+  for (const sensor of byRegistration) {
     // No key (a blob too old to carry one) can't be matched up, so it stands
     // alone under its own id.
     const key = sensorBlob(sensor).resolved_key ?? sensor.id;
-    const seen = byKey.get(key);
-    if (!seen || sensor.registered_at < seen.registered_at) {
-      byKey.set(key, sensor);
+    if (!earliest.has(key)) {
+      earliest.set(key, sensor);
     }
+    newest.set(key, sensor);
   }
-  return [...byKey.values()];
+  return [...earliest].map(([key, sensor]) => ({
+    ...sensor,
+    discarded_at: newest.get(key)?.discarded_at,
+  }));
 }
 
 /** The starts of every sensor that began after this one. */

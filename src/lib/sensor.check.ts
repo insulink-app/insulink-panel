@@ -60,6 +60,14 @@ assert.equal(uniqueSensors(withDuplicate).length, 1);
 assert.equal(uniqueSensors(withDuplicate)[0].id, paired.id);
 assert.equal(sensorWornMs(paired, withDuplicate), G7_SESSION);
 
+// Stopped, then the same sensor paired again: the fresh row is not discarded,
+// so the sensor reads as running.
+const stopped = { ...g7(now - 3 * DAY, HOUR, "re"), discarded_at: now - DAY };
+const pairedAgain = g7(now - 3 * DAY, 2 * DAY, "re");
+const [revived] = uniqueSensors([pairedAgain, stopped]);
+assert.equal(revived.id, stopped.id);
+assert.equal(sensorActive(revived, [stopped, pairedAgain]), true);
+
 // Swapped out early: the successor's START ends it, 3 days in — not its expiry.
 const swappedEarly = g7(now - 5 * DAY, HOUR);
 const running = g7(now - 2 * DAY, HOUR);
